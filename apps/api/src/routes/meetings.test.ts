@@ -39,6 +39,7 @@ const MEETING_A: Meeting = {
   startTime: '2026-03-01T10:00:00.000Z',
   endTime: '2026-03-01T11:00:00.000Z',
   organizerUserId: LEADER.userId,
+  inviteeUserIds: [], // required since the Branch A/B merge — the DB column defaults to '{}'
   zoomMeetingId: 'zoom-123',
   createdAt: '2026-02-01T00:00:00.000Z',
   updatedAt: '2026-02-01T00:00:00.000Z',

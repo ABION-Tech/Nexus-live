@@ -95,6 +95,19 @@ function promisifyRequest<T>(req: IDBRequest<T>): Promise<T> {
   });
 }
 
+// `queuedAt` is the only ordering key (listQueuedWrites sorts on it; the
+// store's own key is a random UUID). Plain Date.now() let two writes
+// queued in the same millisecond (two quick offline task creates) tie,
+// and the tie fell back to UUID order, i.e. random replay order, which
+// breaks drainQueue's oldest-first guarantee. Strictly increasing within
+// a tab fixes that; across tabs/reloads the wall clock has moved on, so
+// an earlier session's rows still sort first.
+let lastQueuedAt = 0;
+function nextQueuedAt(): number {
+  lastQueuedAt = Math.max(Date.now(), lastQueuedAt + 1);
+  return lastQueuedAt;
+}
+
 /** Adds a write to the queue and returns its id. Throws (does not
  * degrade to a silent no-op) if IndexedDB is unavailable or the write
  * fails — unlike companyArchiveCache.ts, a caller here needs to know
@@ -105,7 +118,7 @@ export async function enqueueWrite(write: Omit<QueuedWrite, 'id' | 'queuedAt'>):
   const db = await openDb();
   if (!db) throw new Error('Offline storage is unavailable in this browser.');
 
-  const entry: QueuedWrite = { ...write, id: crypto.randomUUID(), queuedAt: Date.now() };
+  const entry: QueuedWrite = { ...write, id: crypto.randomUUID(), queuedAt: nextQueuedAt() };
   const tx = db.transaction(STORE, 'readwrite');
   tx.objectStore(STORE).put(entry);
   await new Promise<void>((resolve, reject) => {

@@ -75,6 +75,21 @@ describe('enqueueWrite / listQueuedWrites', () => {
     expect(all.map((w) => w.path)).toEqual(['/a', '/b', '/c']);
   });
 
+  it('keeps oldest-first order for writes queued within the same millisecond', async () => {
+    // Regression: the test above advances Date.now() on every call, which
+    // hid that two writes queued in the same ms (two quick offline task
+    // creates) tied on queuedAt and fell back to random-UUID key order.
+    const { enqueueWrite, listQueuedWrites } = await importFresh();
+    vi.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000);
+
+    for (const p of ['/1', '/2', '/3', '/4', '/5', '/6']) {
+      await enqueueWrite({ method: 'POST', path: p, body: {}, kind: 'k' });
+    }
+
+    const all = await listQueuedWrites();
+    expect(all.map((w) => w.path)).toEqual(['/1', '/2', '/3', '/4', '/5', '/6']);
+  });
+
   it('returns an empty array, not a throw, when IndexedDB is unavailable', async () => {
     vi.resetModules();
     (globalThis as unknown as { indexedDB: unknown }).indexedDB = undefined;

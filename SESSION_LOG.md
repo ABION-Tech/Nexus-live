@@ -4477,3 +4477,72 @@ declares.
    the recent branch handoffs.
 
 
+
+---
+
+## Session 51 — 2026-11-07 — Merge verified end to end, offline-queue ordering fix, first live run of 0026–0036
+
+Base: `nexus29-android-capacitor-1` (the merged tree + Capacitor Android
+layer, newest of the uploaded builds). Scope fixed to: machine-verify the
+merge this log's previous two entries said had never been run, fix
+whatever that surfaces, and run the post-0025 migrations live. No new
+features.
+
+### Fixed
+- **`apps/api/src/routes/meetings.test.ts`** — `MEETING_A` fixture was
+  missing the now-required `inviteeUserIds` field (Branch A/B merge
+  decision), the only `tsc` error in the workspace. Added
+  `inviteeUserIds: []`, matching the column's `'{}'` default. (Same defect
+  was already fixed once on the Windows machine; that fix wasn't in this
+  zip.)
+- **`apps/web/src/services/offlineQueue.ts`** — real ordering bug.
+  `queuedAt` is the queue's only sort key (the store key is a random
+  UUID), and it was plain `Date.now()`, so two writes queued in the same
+  millisecond (two quick offline task creates) tied and replayed in
+  random UUID order — breaking `drainQueue`'s own oldest-first guarantee.
+  Now strictly increasing within a tab (`nextQueuedAt()`). The existing
+  ordering test advanced `Date.now()` on every call, which is exactly why
+  it never caught this.
+
+### Added
+- `offlineQueue.test.ts` — regression test with a frozen clock (6 writes,
+  same ms, asserts replay order). Fails before the fix, passes after.
+- Root `.gitignore` — the repo had none. Excludes `node_modules/`,
+  `dist/`, `*.tsbuildinfo`, and every `.env` except `.env.example`, so
+  real secrets can't be pushed by accident. (The Session 50 zip carried a
+  live `apps/api/.env`; this tree doesn't, and now can't.)
+
+### Verification (all run in this session, not carried in)
+- `npm ci` → `npm run typecheck` (web, api, scheduler) — clean after the
+  fixture fix.
+- `npm run lint` — 0 errors (6 web / 4 api warnings, all pre-existing).
+- `npm run test` — web 32 (was 31; +1 regression test), api 292, **all
+  passing**. `chat.test.ts`'s SSE test passes — the Session 9 fix holds.
+- `npm run build` (shared, api, web, scheduler) — clean.
+- **Live Postgres 16, fresh database:** all 36 migrations applied in
+  order, no errors — first live run of 0026–0036.
+- `seedClickthrough.ts` and `seedAbionDemo.ts` both run to completion
+  under the RLS-restricted `nexus_app` role (17 team members, 31 tasks,
+  9 goals, 39 pending AI tasks).
+- **Live API smoke test** (real server, real sessions, `nexus_app`):
+  `/auth/session` 200; `task_assignees` routes — add 201, duplicate 409,
+  list, remove 204, no session 401, team member not on the task 403
+  (read and write), user from a different org 404 + empty `/tasks` (RLS
+  isolation holding); theme PATCH/GET round-trip persists.
+
+### Not done (left for following sessions)
+- Everything under NEXT_STEPS.md's "Genuinely still open" that isn't
+  marked closed above — notably billing/Paystack and impersonation test
+  coverage, the impersonation start UI, company branding (scoped, not
+  built), real scheduler wiring, and live browser click-throughs
+  (offline queue, impersonation banner, TaskDrawer panel). The Android
+  APK workflow wasn't run (no Android SDK here).
+- Phase 2 status per Othniel: built in the newer version — this tree is
+  that version; nothing from older zips was ported in.
+
+### Next steps
+1. Billing + impersonation test coverage, then run it against live
+   Postgres (0025/0028 behaviour, not just "applies cleanly").
+2. Company branding build (`SESSION_SCOPE_BRANDING.md` — scope locked).
+3. Browser click-throughs listed above, once a dev server + browser
+   session is available.

@@ -31,13 +31,13 @@ disk cache"/"from ServiceWorker"), Application → Cookies (more than one
 fixes don't address), Application → Service Workers (confirm v2 is
 actually controlling the page).
 
-### A1. `task_assignees` (0032) — built, not yet run against real Postgres
-Migration + API routes + service functions + web wiring all landed
-this session (`TaskDrawer.tsx`'s "People on this task" panel). Every
-import/call site traced by hand and confirmed to resolve, but this
-sandbox has no live database — same standing caveat every schema-
-bearing session in the log below carries. Fold into whatever live-
-Postgres pass happens next rather than a separate round.
+### A1. `task_assignees` (0032) — ✅ verified live (Session 51)
+Migration applied on a fresh Postgres 16; the API was run against it as
+the RLS-restricted `nexus_app` role. GET/POST/DELETE
+`/tasks/:id/assignees` all behave as designed: 201 add, 409 duplicate,
+204 remove, 401 no session, 403 for a team member not on the task
+(read and write), 404 for a user from another org (RLS hides the task).
+The `TaskDrawer.tsx` panel itself still needs a browser click-through.
 
 ### A2. UI rehaul — scoped only, build deliberately deferred
 See `SESSION_SCOPE_UI_REHAUL.md`. Direction locked (full redesign,
@@ -96,18 +96,16 @@ motion (§2.7). Not a build item until those get a real pass.
 - `automationMaintenance.ts` test coverage, `automation.ts`'s
   `GET /health` test coverage — not written (Session 46's own next
   step, no evidence since of it closing).
-- Standalone `tsc`/`vitest run` against the full workspace — no
-  `node_modules` in this environment ever, so never confirmed from
-  inside any of these sessions directly; log entries describe this as
-  run in outside environments but that can't be independently
-  re-verified from here either.
+- ~~Standalone `tsc`/`vitest run` against the full workspace~~ —
+  ✅ closed in Session 51: `npm ci`, `typecheck`, `lint` (0 errors),
+  `test` (324 passing) and `build` all run clean on this tree.
 
 **Live-Postgres / live-browser verification:**
-- `0028_impersonation.sql` — schema/RLS never run against a live
-  instance (distinct from the separate users-RLS live pass above,
-  which covered a different bug).
-- `0025_billing.sql` (full file, including the two review-queue
-  functions) — never run against a live instance.
+- `0028_impersonation.sql` and `0025_billing.sql` — Session 51: both
+  **apply cleanly** on fresh Postgres 16 (as do all 36 migrations, in
+  order), but their RLS/function *behaviour* still hasn't been exercised
+  live — that needs the impersonation and billing route tests listed
+  under Testing above, run against a real instance.
 - Offline write queue — no real browser round-trip yet (devtools
   Offline throttling → queue → reconnect → sync), same for
   `EodReport.tsx`'s file-attached case.
@@ -116,7 +114,7 @@ motion (§2.7). Not a build item until those get a real pass.
 - Paystack sandbox round-trip (`/checkout` → real test payment →
   webhook → signature verify → `org_billing`/`billing_invoices`
   update) — never done.
-- `task_assignees` (0032, this session) — see A1 above.
+- ~~`task_assignees` (0032)~~ — ✅ verified live, see A1 above.
 
 **Infrastructure not wired up:**
 - No real external scheduler (n8n Cloud / cron-job.org) hits

@@ -79,6 +79,22 @@ async function main() {
     }
 
     console.log(ranCount === 0 ? 'Already up to date.' : `Applied ${ranCount} migration(s).`);
+
+    // Production hosting (Railway): 0001_init.sql creates nexus_app with a
+    // placeholder password. When NEXUS_APP_DB_PASSWORD is set, (re)apply it
+    // here, every deploy, before the app starts, so the placeholder is
+    // never what the running app authenticates with and the real password
+    // lives only in the host's secret store. ALTER ROLE can't take bind
+    // parameters, hence format(%L) for safe literal quoting.
+    const appRolePassword = process.env.NEXUS_APP_DB_PASSWORD;
+    if (appRolePassword) {
+      const { rows } = await client.query<{ stmt: string }>(
+        `select format('alter role nexus_app with login password %L', $1::text) as stmt`,
+        [appRolePassword],
+      );
+      await client.query(rows[0]!.stmt);
+      console.log('nexus_app password applied from NEXUS_APP_DB_PASSWORD.');
+    }
   } finally {
     client.release();
     await pool.end();

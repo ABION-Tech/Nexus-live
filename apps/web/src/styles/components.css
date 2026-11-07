@@ -1,0 +1,267 @@
+/* Tier 1 primitive styles (PRD §14). One stylesheet, not per-component CSS
+   modules — deliberate v1 simplification (see SESSION_LOG). Class names are
+   scoped with an `nx-` prefix to avoid collisions with module-level styles
+   added later. */
+
+/* Button */
+.nx-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  font-family: var(--font-display); font-weight: 700; font-size: 12px;
+  border-radius: var(--radius-sm); border: 1px solid transparent; cursor: pointer;
+  padding: 9px 18px; transition: filter 0.18s, background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.nx-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.nx-btn:active:not(:disabled) { transform: scale(0.97); }
+/* Polish pass: primary/danger get a real lift + accent-tinted glow on
+   hover (index.html's .top-btn:hover scale + this file's own
+   --shadow-glow-accent token), not just a brightness filter — the flat
+   version read as an unfinished hover state next to the MVP's buttons. */
+.nx-btn--primary { background: var(--gradient-accent); color: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
+.nx-btn--primary:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); box-shadow: var(--shadow-glow-accent); }
+.nx-btn--secondary { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+.nx-btn--secondary:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
+.nx-btn--ghost { background: transparent; color: var(--text-dim); }
+.nx-btn--ghost:hover:not(:disabled) { color: var(--text); background: var(--surface); }
+.nx-btn--danger { background: var(--danger); color: #fff; }
+.nx-btn--danger:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(240, 80, 96, 0.25); }
+/* index.html's own .btn-sm — a distinct console idiom, not just a
+   smaller version of the same button: mono font, 9px, all business.
+   Used constantly there for inline row actions (task rows, chat action
+   buttons, drawer footers). --sm now matches that instead of just
+   shrinking the primary/secondary padding. */
+.nx-btn--sm {
+  padding: 3px 9px; font-size: 9px; font-family: var(--font-mono); font-weight: 700;
+  border-radius: 4px; background: var(--surface2); border-color: var(--border); color: var(--accent-bright);
+  letter-spacing: 0.02em;
+}
+.nx-btn--sm:hover:not(:disabled) { background: rgba(91, 82, 240, 0.18); border-color: rgba(91, 82, 240, 0.35); }
+
+/* Input / Select / DatePicker share this shell */
+.nx-field { display: flex; flex-direction: column; gap: 5px; }
+/* index.html's .form-group label — mono, uppercase-weight small caps
+   via letter-spacing rather than actual uppercase text (labels here
+   keep their natural casing, same as the MVP's own labels do), muted,
+   9-10px. This is the single biggest legibility signature of the
+   "console" look and the current --font-display/12px version read as
+   generic form-builder output instead. */
+.nx-field__label {
+  font-size: 10px; font-weight: 700; color: var(--muted); font-family: var(--font-mono); letter-spacing: 0.5px;
+}
+.nx-field__error { font-size: 12px; color: var(--danger); font-family: var(--font-mono); }
+.nx-input, .nx-select {
+  background: var(--bg); border: 1px solid var(--border2); color: var(--text);
+  border-radius: var(--radius-sm); padding: 9px 12px; font-size: 13px; font-family: var(--font-display);
+  width: 100%; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.nx-input:focus, .nx-select:focus { border-color: var(--accent); box-shadow: var(--shadow-focus); }
+.nx-input--error, .nx-select--error { border-color: var(--danger); }
+.nx-input::placeholder { color: var(--muted); }
+.nx-input:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Checkbox / Radio */
+.nx-checkbox, .nx-radio { display: inline-flex; align-items: center; gap: var(--space-2); cursor: pointer; font-size: 13px; }
+.nx-checkbox input, .nx-radio input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+.nx-radio-group { display: flex; flex-direction: column; gap: var(--space-2); }
+
+/* Card — index.html's .card/.card-head already matched --radius-lg (12px)
+   before this pass; adding the head/sub split that was missing so a
+   module can render a mono-label subtitle under a card title the way
+   every card in index.html does (card-head h3 + .sub). Consumers that
+   don't use these class names are unaffected — Card.tsx itself doesn't
+   need to change, this is available for any module ready to opt in. */
+.nx-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: var(--space-5); position: relative; overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.nx-card--interactive { cursor: pointer; transition: border-color 0.2s, transform 0.22s, box-shadow 0.22s; }
+.nx-card--interactive:hover { border-color: var(--border2); transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+/* Decorative accent corner — index.html's .stat-card .sc-accent: a soft
+   radial wash bleeding in from the top-right corner. Opt-in modifier
+   (doesn't fire on every card, just the ones that ask for it — e.g.
+   MetricCard) so it reads as a deliberate accent, not wallpaper. */
+.nx-card--accent-corner::after {
+  content: ''; position: absolute; top: 0; right: 0; width: 90px; height: 90px;
+  background: radial-gradient(circle at top right, var(--accent) 0%, transparent 70%);
+  opacity: 0.1; pointer-events: none;
+}
+.nx-card__head {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); flex-wrap: wrap;
+  margin: calc(var(--space-5) * -1) calc(var(--space-5) * -1) var(--space-4);
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+}
+.nx-card__head h3 { font-size: 14px; font-weight: 700; margin: 0; }
+.nx-card__sub { font-size: 10px; font-family: var(--font-mono); color: var(--muted); }
+
+/* Badge — index.html's .bp pill system: tighter (2px 8px vs the old
+   3px 9px), 9-10px not 11px, and a matching-tint border instead of no
+   border at all, which is what made these read as flat chips rather
+   than the outlined pills every badge in index.html actually is. */
+.nx-badge {
+  display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 9px;
+  font-weight: 700; letter-spacing: 0.5px; padding: 2px 8px; border-radius: var(--radius-pill);
+  text-transform: uppercase; border: 1px solid transparent; white-space: nowrap;
+}
+.nx-badge__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.nx-badge--neutral { background: var(--surface2); color: var(--text-dim); border-color: var(--border); }
+.nx-badge--info { background: var(--info-bg); color: var(--info); border-color: rgba(64, 144, 240, 0.2); }
+.nx-badge--success { background: var(--success-bg); color: var(--success); border-color: rgba(0, 212, 160, 0.18); }
+.nx-badge--warning { background: var(--warning-bg); color: var(--warning); border-color: rgba(240, 192, 64, 0.18); }
+.nx-badge--danger { background: var(--danger-bg); color: var(--danger); border-color: rgba(240, 80, 96, 0.18); }
+
+/* Avatar */
+.nx-avatar {
+  display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+  background: var(--accent); color: #fff; font-family: var(--font-mono); font-weight: 700;
+  flex-shrink: 0; overflow: hidden;
+}
+.nx-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.nx-avatar--sm { width: 24px; height: 24px; font-size: 10px; }
+.nx-avatar--md { width: 32px; height: 32px; font-size: 12px; }
+.nx-avatar--lg { width: 48px; height: 48px; font-size: 16px; }
+
+/* Tabs */
+.nx-tabs { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--border); }
+.nx-tab {
+  background: none; border: none; color: var(--muted); font-family: var(--font-display); font-weight: 700;
+  font-size: 13px; padding: 10px 4px; margin-right: var(--space-4); cursor: pointer; position: relative;
+}
+.nx-tab--active { color: var(--text); }
+.nx-tab--active::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); }
+
+/* Dropdown */
+.nx-dropdown { position: relative; display: inline-block; }
+.nx-dropdown__menu {
+  position: absolute; top: calc(100% + 6px); right: 0; min-width: 180px; z-index: 30;
+  background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius);
+  box-shadow: var(--shadow-raised); padding: var(--space-1); display: flex; flex-direction: column;
+}
+.nx-dropdown__item {
+  background: none; border: none; color: var(--text); font-family: var(--font-display); font-size: 13px;
+  text-align: left; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer;
+}
+.nx-dropdown__item:hover { background: var(--surface); }
+.nx-dropdown__item--danger { color: var(--danger); }
+
+/* Tooltip */
+.nx-tooltip-wrap { position: relative; display: inline-flex; }
+.nx-tooltip {
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: var(--surface2); border: 1px solid var(--border2); color: var(--text);
+  font-size: 11px; padding: 5px 9px; border-radius: var(--radius-sm); white-space: nowrap; z-index: 40;
+  pointer-events: none;
+}
+
+/* Modal / Drawer — index.html's overlays are near-opaque (rgba(0,0,0,.85))
+   with a backdrop blur, which is a big part of why its modals feel like
+   a deliberate focus-lock instead of a translucent SaaS sheet. */
+.nx-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(3px); z-index: 100; display: flex; }
+.nx-modal {
+  margin: auto; width: min(520px, calc(100vw - 32px)); background: var(--surface);
+  border: 1px solid var(--border2); border-radius: var(--radius-lg); box-shadow: var(--shadow-raised);
+  padding: var(--space-5); max-height: calc(100vh - 64px); overflow: auto;
+}
+.nx-drawer {
+  margin-left: auto; height: 100%; width: min(440px, 100vw); background: var(--surface);
+  border-left: 1px solid var(--border); box-shadow: var(--shadow-raised); padding: 0; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.nx-modal__header, .nx-drawer__header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: var(--space-4);
+}
+.nx-modal__close, .nx-drawer__close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; }
+
+/* Toast */
+.nx-toast-region { position: fixed; bottom: var(--space-5); right: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); z-index: 200; }
+.nx-toast {
+  background: var(--surface3); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm); padding: 11px 16px; min-width: 240px; box-shadow: var(--shadow-raised);
+  font-size: 13px; font-weight: 600; animation: nx-toast-in 0.25s var(--ease-out);
+  transition: opacity 0.2s, transform 0.2s;
+}
+/* Exit transition — see Toast.tsx's two-phase removal. Plain
+   opacity+transform transition rather than a reverse keyframe, since
+   this fires on a class toggle (React re-render), not on mount. */
+.nx-toast--leaving { opacity: 0; transform: translateY(8px); }
+.nx-toast--success { border-left-color: var(--success); color: var(--success); }
+.nx-toast--danger { border-left-color: var(--danger); color: var(--danger); }
+
+/* Table / DataGrid — index.html's .data-table is noticeably denser and
+   more "readout"-like than the old 11px/13px version here: 9px mono
+   uppercase headers with wide letter-spacing, tighter row padding, and
+   an accent-tinted (not plain-surface) hover state. */
+.nx-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.nx-table th {
+  text-align: left; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase;
+  color: var(--muted); letter-spacing: 1.2px; font-weight: 400; padding: 9px 14px; border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.nx-table th.nx-th--sortable { cursor: pointer; user-select: none; }
+.nx-table td { padding: 10px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); vertical-align: top; }
+[data-theme='light'] .nx-table td { border-bottom-color: rgba(8, 8, 16, 0.04); }
+.nx-table tr { transition: background 0.15s; }
+.nx-table tr:hover td { background: rgba(91, 82, 240, 0.05) !important; }
+/* Clickable rows had no cursor affordance at all before this pass —
+   Table.tsx has applied this class whenever onRowClick is passed since
+   it was written, but nothing consumed it. */
+.nx-table tr.nx-table__row--clickable { cursor: pointer; }
+/* Row-state tints — index.html colors a whole task row faintly by
+   status (overdue/at-risk/done) rather than relying on a badge alone to
+   carry that signal. Opt-in modifiers via Table/DataGrid's rowClassName
+   prop for any module rendering status-aware rows (Master Tasks,
+   Follow-Ups). */
+.nx-table tr.nx-table__row--overdue td { background: rgba(240, 80, 96, 0.03); }
+.nx-table tr.nx-table__row--at-risk td { background: rgba(240, 192, 64, 0.03); }
+.nx-table tr.nx-table__row--done td { opacity: 0.5; }
+/* These tints were tuned by eye against the dark surfaces (#0f0f1c-ish) —
+   3% color-on-near-black reads as an intentional subtle wash. The same
+   3% over a white light-theme surface is close to imperceptible, which
+   defeats the point of a row that's supposed to say "look at this."
+   Doubled for light mode rather than reusing the dark value as-is. */
+[data-theme='light'] .nx-table tr.nx-table__row--overdue td { background: rgba(240, 80, 96, 0.07); }
+[data-theme='light'] .nx-table tr.nx-table__row--at-risk td { background: rgba(240, 192, 64, 0.07); }
+/* Distinct from --done: an inactive org/user isn't "complete", it's
+   disabled — same dimmed visual treatment, separate class so
+   rowClassName call sites read correctly (an Organization row returning
+   "done" would be a confusing thing to read in admin module code). */
+.nx-table tr.nx-table__row--inactive td { opacity: 0.5; }
+
+/* Empty / Loading / Error states */
+.nx-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  gap: var(--space-2); padding: var(--space-8) var(--space-4); color: var(--muted);
+}
+.nx-state__title { color: var(--text-dim); font-weight: 700; font-size: 14px; }
+.nx-state--error .nx-state__title { color: var(--danger); }
+.nx-spinner {
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border2);
+  border-top-color: var(--accent); animation: nx-spin 0.7s linear infinite;
+}
+/* nx-spin/nx-fade-in/nx-pulse keyframes now live in tokens.css (shared
+   across every stylesheet, not redeclared per-file). */
+
+/* Three-dot loader — index.html's .loader-dot idiom for inline "still
+   working" states that don't warrant a full spinner (e.g. AI thinking). */
+.nx-loader-dots { display: flex; align-items: center; justify-content: center; gap: 8px; padding: var(--space-6) 0; }
+.nx-loader-dots__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: nx-loader-dot 1s ease-in-out infinite; }
+.nx-loader-dots__dot:nth-child(2) { animation-delay: 0.16s; }
+.nx-loader-dots__dot:nth-child(3) { animation-delay: 0.32s; }
+
+/* Pulse dot — status/liveness indicator (index.html's .pulse), used
+   next to badge counts or connection states to signal "this is live". */
+.nx-pulse-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; animation: nx-pulse 2s infinite; }
+.nx-pulse-dot--success { background: var(--success); }
+.nx-pulse-dot--warning { background: var(--warning); }
+.nx-pulse-dot--danger { background: var(--danger); }
+.nx-pulse-dot--info { background: var(--info); }
+.nx-pulse-dot--neutral { background: var(--muted); }
+
+/* Progress bar — index.html's .progress-track is 4px tall, thinner than
+   the 6px this shipped with, and the fill is --accent by default
+   (accent2 only once a task/step is actually complete, via a .full
+   modifier the ProgressBar component doesn't currently expose — left
+   as --accent unconditionally here rather than guessing at a "done"
+   state this component doesn't track). */
+.nx-progress { width: 100%; height: 4px; background: var(--surface2); border-radius: 999px; overflow: hidden; }
+.nx-progress__fill { height: 100%; background: var(--accent); transition: width 0.6s; }

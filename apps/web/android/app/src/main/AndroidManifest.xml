@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- PRD §13 posture: this app authenticates via session cookie and
+         renders org data, RBAC flags, HR/finance records. Android's
+         default full-data auto-backup (adb backup, cloud backup) would
+         otherwise let a rooted/compromised device or a stolen backup
+         extract the WebView's cookie store outside any of the
+         audit/revocation controls in §13.2/§13.10 — hence allowBackup
+         is explicitly off below rather than left at Android's default. -->
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:launchMode="singleTask"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- PRD §16 mobile OAuth bridge (routes/auth.ts's mobile
+                 branch of /google/callback): the system browser deep-links
+                 back here with com.abion.nexus://oauth-callback?code=...
+                 after Google's consent screen. @capacitor/app's
+                 appUrlOpen listener (LoginPage.tsx / authService.ts)
+                 picks this up. Scheme must exactly match
+                 MOBILE_CALLBACK_SCHEME in routes/auth.ts and appId in
+                 capacitor.config.ts. android:launchMode="singleTask"
+                 above is required for this to route into the already-
+                 running app instance instead of spawning a second one. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.abion.nexus" android:host="oauth-callback" />
+            </intent-filter>
+
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+        </provider>
+    </application>
+
+    <!-- Permissions -->
+
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

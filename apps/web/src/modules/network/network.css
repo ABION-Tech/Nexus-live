@@ -1,0 +1,21 @@
+/* modules/network extras — everything else draws from styles/components.css
+   (Tier 1) and styles/patterns.css (Tier 2). This file only adds what
+   neither already had: a clickable table row (Table.tsx's new onRowClick
+   prop), a textarea to match .nx-input's shell (RelationshipForm's one
+   field type Input/Select don't cover), the form's action row, and a
+   plain (undecorated) link wrapper for MetricCard-as-nav-link (Network
+   Overview). */
+
+.nx-table__row--clickable { cursor: pointer; }
+
+.nx-textarea {
+  background: var(--surface); border: 1px solid var(--border-strong); color: var(--text);
+  border-radius: var(--radius-sm); padding: 8px 12px; font-size: 13px; font-family: var(--font-display);
+  width: 100%; resize: vertical;
+}
+.nx-textarea:focus { border-color: var(--accent); }
+
+.nx-relationship-form { display: flex; flex-direction: column; gap: var(--space-4); }
+.nx-relationship-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
+
+.nx-plain-link { text-decoration: none; color: inherit; display: block; }

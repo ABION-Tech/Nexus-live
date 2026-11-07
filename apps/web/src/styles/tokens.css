@@ -1,0 +1,189 @@
+/* NEXUS design tokens. Source of identity: the MVP's own index.html
+   (dark ops-console palette, Syne + Space Mono) — not just the 404.html
+   this file used to cite. Session 11 UI restyle pass: pulled the actual
+   surface/border/radius numbers out of index.html's <style> block
+   (surface2/surface3, border2, the 5-6px button radius, the 9-10px mono
+   label scale) instead of the looser approximations this file shipped
+   with before — see PIS's Session 11 feedback: the Tier 1 system had
+   drifted into a generic "SaaS admin" look instead of the MVP's denser,
+   mono-labeled console feel. Still the single source every Tier 1
+   component draws from — PRD §14. */
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Surface — four elevation tiers now (bg / surface / surface2 / surface3),
+     matching index.html's own stack exactly rather than collapsing
+     surface2+surface3 into one "raised" tier. Components that only need
+     one elevated tier keep using --surface-raised (aliased to surface2
+     below) so this isn't a breaking rename for existing CSS. */
+  --bg: #080810;
+  --surface: #0f0f1c;
+  --surface2: #161627;
+  --surface3: #1d1d32;
+  --surface-raised: var(--surface2);
+  --border: rgba(255, 255, 255, 0.06);
+  --border2: rgba(255, 255, 255, 0.1);
+  --border-strong: var(--border2);
+
+  /* Text */
+  --text: #f5f5fb;
+  --text-dim: #a0a0c0;
+  --muted: #5a5a7a;
+
+  /* Brand */
+  --accent: #5b52f0;
+  --accent-hover: #6d64ff;
+  --accent-bright: #8880ff; /* index.html's active-nav / mono-badge text color — brighter than --accent for small text on dark chips */
+  --accent2: #00d4a0;
+  --accent3: #f0a030;
+
+  /* Semantic — index.html's own danger/warn/info triplet, kept as the
+     literal names components.css/patterns.css already reference */
+  --danger: #f05060;
+  --danger-bg: rgba(240, 80, 96, 0.12);
+  --warning: #f0c040;
+  --warning-bg: rgba(240, 192, 64, 0.12);
+  --success: var(--accent2);
+  --success-bg: rgba(0, 212, 160, 0.1);
+  --info: #4090f0;
+  --info-bg: rgba(64, 144, 240, 0.1);
+
+  /* Type */
+  --font-display: 'Syne', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+
+  /* Scale — 8px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+
+  /* index.html's own radius values: 5-6px on buttons/inputs, 8-10px on
+     cards/panels, 20px (effectively 999px at this height) on pill
+     badges. --radius/--radius-lg keep their old names so nothing that
+     already references them breaks; --radius-pill is new. */
+  --radius-sm: 5px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  --shadow-raised: 0 8px 32px rgba(0, 0, 0, 0.5);
+  /* index.html's .form-input:focus glow — 3px accent-tinted ring, not
+     just a border color swap */
+  --shadow-focus: 0 0 0 3px rgba(91, 82, 240, 0.1);
+  /* UI Rehaul polish pass — closing the fidelity gap flagged in
+     SESSION_SCOPE_UI_REHAUL.md §1 (this file had 14 shadow/gradient/motion
+     touches total vs the MVP's 66). Added here, at the token layer, so
+     every module that already consumes --shadow-raised etc. benefits
+     without a rewrite: a hover-specific shadow (softer + tighter than the
+     raised/modal one, for cards/rows lifting a few px), an accent glow
+     for primary-action hover states, and the two gradients index.html
+     actually used (its .launch-btn family + the AI/agent accent). */
+  --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-glow-accent: 0 0 0 3px rgba(91, 82, 240, 0.16), 0 8px 20px rgba(91, 82, 240, 0.25);
+  --gradient-accent: linear-gradient(135deg, var(--accent), #4038c0);
+  --gradient-ai: linear-gradient(135deg, #8880ff, #5b52f0);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Session 50 — PRD §14 light mode. Only the tier-1 surface/text/border
+   tokens actually change; --accent/--accent2/--danger/--warning/--font-*
+   stay identical to :root on purpose — brand color and type are part of
+   NEXUS's identity regardless of light/dark, the way a company's logo
+   doesn't recolor itself for a light UI. Selector is [data-theme='light']
+   on <html> (ThemeContext.tsx sets `document.documentElement.dataset.theme`),
+   not a class, to match the same attribute-based convention the MVP
+   README this migration's comment references already used. */
+[data-theme='light'] {
+  --bg: #f5f5f8;
+  --surface: #ffffff;
+  --surface2: #eeeef6;
+  --surface3: #e2e2f0;
+  --surface-raised: var(--surface2);
+  --border: rgba(8, 8, 16, 0.08);
+  --border2: rgba(8, 8, 16, 0.16);
+  --border-strong: var(--border2);
+
+  --text: #14141f;
+  --text-dim: #4a4a5e;
+  --muted: #8a8aa0;
+
+  --danger-bg: rgba(240, 80, 96, 0.1);
+  --warning-bg: rgba(240, 192, 64, 0.1);
+  --success-bg: rgba(0, 212, 160, 0.1);
+  --info-bg: rgba(64, 144, 240, 0.1);
+  --shadow-focus: 0 0 0 3px rgba(91, 82, 240, 0.12);
+
+  --shadow-raised: 0 8px 32px rgba(20, 20, 31, 0.12);
+  /* --shadow-hover didn't exist yet when Session 11 tuned light mode's
+     shadow alphas down (raised: 0.5→0.12, roughly /4) — it inherited the
+     dark-mode 0.35 black shadow unmodified, which reads muddy/heavy on a
+     white card. Scaled down the same way. */
+  --shadow-hover: 0 10px 30px rgba(20, 20, 31, 0.1);
+}
+
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--text); font-family: var(--font-display); margin: 0; }
+body { font-size: 14px; line-height: 1.5; }
+h1, h2, h3 { font-weight: 800; letter-spacing: -0.01em; margin: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* index.html's thin, near-invisible-until-hovered scrollbar — the
+   default browser scrollbar was one of the more obvious "this isn't a
+   finished product" tells sitting on every scrollable panel/table. */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.18); }
+[data-theme='light'] ::-webkit-scrollbar-thumb { background: rgba(8, 8, 16, 0.15); }
+[data-theme='light'] ::-webkit-scrollbar-thumb:hover { background: rgba(8, 8, 16, 0.24); }
+
+/* Shared motion keyframes — centralized here (not per-component) so any
+   Tier 1/2/3 piece can opt into the same handful of moves index.html
+   used everywhere (view fade-in, pulse dot, spinner, loader dots)
+   instead of each component inventing its own timing. */
+@keyframes nx-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes nx-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes nx-spin { to { transform: rotate(360deg); } }
+@keyframes nx-loader-dot { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+@keyframes nx-toast-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* Applied at the top of a module/page component so navigating between
+   sections feels like a considered transition rather than an instant
+   swap — index.html's .view.active did this on every route change. */
+.nx-view-enter { animation: nx-fade-in 0.3s var(--ease-out); }
+
+/* Generic page shell — UI Rehaul polish pass, "pad across the document"
+   follow-up. Most module pages were independently reinventing the same
+   `style={{ display: 'flex', flexDirection: 'column', gap: 16 }}` root
+   wrapper inline (dozens of near-identical one-off objects across
+   admin/goals/settings/knowledge/ai-analyst/comms-ops/people/work) —
+   one real class instead, so page-level spacing is a single token to
+   tune rather than a value copy-pasted per file. `--narrow` covers the
+   detail/edit-form pages that additionally capped width (620–820px)
+   to keep long-form content from stretching edge-to-edge. */
+.nx-page { display: flex; flex-direction: column; gap: var(--space-4); }
+.nx-page--narrow { max-width: 720px; }
+
+/* Nested-spacing pass ("pad across the document, where necessary"
+   follow-up to .nx-page above). Grepping every module for its inline
+   flex styles found 18 identical copies of a space-between header row
+   and 40+ copies of a vertical-stack column across a handful of gap
+   values — the same one-off-object-per-file problem .nx-page already
+   fixed for page roots, just one level in (card headers, form field
+   stacks, modal footers). Two small utilities plus size modifiers on
+   the --space-* scale, rather than a new bespoke object each time. */
+.nx-row { display: flex; align-items: center; gap: var(--space-2); }
+.nx-row--between { justify-content: space-between; }
+.nx-stack { display: flex; flex-direction: column; }
+.nx-stack--xs { gap: var(--space-1); }  /* 4px */
+.nx-stack--sm { gap: var(--space-2); }  /* 8px */
+.nx-stack--md { gap: var(--space-3); }  /* 12px */
+.nx-stack--lg { gap: var(--space-4); }  /* 16px */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

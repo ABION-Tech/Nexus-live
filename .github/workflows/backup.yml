@@ -1,0 +1,79 @@
+# PRD §13.12 — "Backups are a security control, not just an ops
+# concern... Backup access isolated from production application
+# credentials — a production compromise cannot delete the backups."
+#
+# This is why the workflow uses MIGRATION_DATABASE_URL (already a
+# separate, more-privileged credential from the app's own DATABASE_URL
+# — see DEPLOYMENT.md) rather than the app's runtime connection string,
+# and why the upload target is its own R2 bucket + its own scoped R2
+# API token, not the STORAGE_* bucket/creds objectStorageProvider.ts
+# uses for user-uploaded files. A leaked app credential should not be
+# able to touch backups; a leaked backup credential should not be able
+# to touch the live app's file storage. Two separate blast radii.
+#
+# Runs via `docker run postgres:16 pg_dump ...` rather than apt-installing
+# a client, so the pg_dump version always matches the server (16) this
+# repo's docker-compose.yml and Supabase both run, without tracking a
+# separate apt/pgdg version pin here.
+#
+# Retention (PRD §13.12 minimum 30 days) is enforced by an R2 lifecycle
+# rule on the backup bucket, not by logic in this workflow — one-time
+# dashboard config is less to get wrong than a prune step re-implemented
+# in YAML. See DEPLOYMENT.md's Backups section for the exact rule to set.
+#
+# This workflow proves backups are *taken*. It does not by itself prove
+# they can be *restored* — DEPLOYMENT.md's Backups section also has the
+# monthly manual restore-test runbook PRD §13.12 explicitly requires
+# ("backup integrity verified periodically — a restore test, not just a
+# backup-exists check"). Run `workflow_dispatch` manually before that
+# monthly test so you're restoring from a dump made today.
+
+name: Nightly Postgres Backup
+
+on:
+  schedule:
+    # 01:30 UTC = 02:30 WAT — after daily_task_snapshot (23:00 WAT, PRD
+    # §12) has already run and finished, so the backup captures a
+    # consistent day's data rather than racing that job.
+    - cron: '30 1 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Dump database
+        env:
+          MIGRATION_DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MIGRATION_DATABASE_URL:-}" ]; then
+            echo "MIGRATION_DATABASE_URL secret is not set — see DEPLOYMENT.md Backups section." >&2
+            exit 1
+          fi
+          # -Fc = pg_dump's custom compressed format, restorable with
+          # pg_restore directly (no separate gzip step, no plain-SQL
+          # ordering issues on restore).
+          docker run --rm postgres:16 pg_dump "$MIGRATION_DATABASE_URL" -Fc > nexus_backup.dump
+          echo "dump_size=$(du -h nexus_backup.dump | cut -f1)" >> "$GITHUB_ENV"
+
+      - name: Upload to R2 (dedicated backup bucket, not app storage)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
+          BACKUP_R2_ENDPOINT: ${{ secrets.BACKUP_R2_ENDPOINT }}
+          BACKUP_BUCKET: ${{ secrets.BACKUP_BUCKET }}
+        run: |
+          set -euo pipefail
+          for var in AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY BACKUP_R2_ENDPOINT BACKUP_BUCKET; do
+            if [ -z "${!var:-}" ]; then
+              echo "$var secret is not set — see DEPLOYMENT.md Backups section." >&2
+              exit 1
+            fi
+          done
+          date_stamp=$(date -u +%Y-%m-%d)
+          aws s3 cp nexus_backup.dump \
+            "s3://${BACKUP_BUCKET}/nexus_backup_${date_stamp}.dump" \
+            --endpoint-url "$BACKUP_R2_ENDPOINT"
+          echo "Uploaded nexus_backup_${date_stamp}.dump (${dump_size:-unknown size})"

@@ -1,0 +1,231 @@
+/* modules/work/Calendar extras — everything else draws from
+   styles/components.css (Tier 1) and styles/patterns.css (Tier 2). This
+   file only adds the two-pane sidebar/agenda layout and the event-list
+   rows Calendar needs, none of which any other module has. */
+
+.nx-cal {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+/* ── Sidebar ── */
+
+.nx-cal__sidebar {
+  width: 240px;
+  flex: none;
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.nx-cal__sidebar-head { padding: var(--space-4); border-bottom: 1px solid var(--border); }
+.nx-cal__connect-btn { width: 100%; }
+
+.nx-cal__sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.nx-cal__account-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+  padding: 0 var(--space-1);
+}
+
+.nx-cal__account-email {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.nx-cal__icon-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  padding: 2px;
+  flex-shrink: 0;
+}
+.nx-cal__icon-btn:hover { color: var(--danger); }
+.nx-cal__icon-btn--fade { opacity: 0; transition: opacity 0.15s; }
+.nx-cal__sub:hover .nx-cal__icon-btn--fade { opacity: 1; }
+
+.nx-cal__sub {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px var(--space-1);
+  border-radius: var(--radius-sm);
+}
+.nx-cal__sub:hover { background: var(--surface-raised); }
+
+.nx-cal__sub-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.nx-cal__sub-name { font-size: 13px; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.nx-cal__add-calendar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 5px var(--space-1);
+  font-size: 12px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+.nx-cal__add-calendar:hover { background: var(--info-bg); color: var(--accent-hover); }
+.nx-cal__add-icon { font-size: 14px; line-height: 1; }
+
+/* ── Main area ── */
+
+.nx-cal__main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+
+.nx-cal__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.nx-cal__nav-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+.nx-cal__nav-btn:hover { background: var(--surface-raised); color: var(--text); }
+
+.nx-cal__title { font-size: 14px; font-weight: 800; color: var(--text); }
+
+.nx-cal__today-btn {
+  margin-left: 4px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.nx-cal__today-btn:hover { border-color: var(--accent); color: var(--text); }
+
+.nx-cal__spacer { flex: 1; }
+
+/* ── Agenda ── */
+
+.nx-cal__agenda { flex: 1; overflow-y: auto; }
+
+.nx-cal__day { border-bottom: 1px solid var(--border); }
+.nx-cal__day:last-child { border-bottom: none; }
+
+.nx-cal__day-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+.nx-cal__day-head--today { border-left: 2px solid var(--accent); }
+
+.nx-cal__day-label { font-size: 13px; font-weight: 700; color: var(--text-dim); }
+.nx-cal__day-label--today { color: var(--accent); }
+.nx-cal__day-empty { font-size: 11px; color: var(--muted); margin-left: 4px; }
+
+.nx-cal__day-events { padding: 0 var(--space-5) var(--space-2); display: flex; flex-direction: column; gap: 2px; }
+
+.nx-cal__event {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.nx-cal__event:hover { background: var(--surface-raised); }
+
+.nx-cal__event-dot { margin-top: 5px; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.nx-cal__event-body { flex: 1; min-width: 0; }
+.nx-cal__event-title-row { display: flex; align-items: baseline; gap: var(--space-2); }
+.nx-cal__event-title { font-size: 13px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nx-cal__event-tentative { font-size: 11px; font-style: italic; color: var(--muted); }
+
+.nx-cal__event-meta {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+}
+.nx-cal__event-meta-trunc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nx-cal__event-meta-dim { color: var(--muted); }
+
+/* ── Modals (rendered inside Modal.tsx's .nx-modal shell) ── */
+
+.nx-cal__modal-subtitle { font-size: 12px; color: var(--text-dim); margin: -8px 0 var(--space-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.nx-cal__picker-list { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; margin: 0 -var(--space-2); }
+
+.nx-cal__picker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+.nx-cal__picker-row:hover { background: var(--surface-raised); }
+
+.nx-cal__picker-row-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.nx-cal__picker-row-tag { font-size: 11px; color: var(--muted); font-weight: 400; }
+.nx-cal__picker-row-role { font-size: 11px; color: var(--muted); text-transform: capitalize; font-family: var(--font-mono); }
+.nx-cal__picker-synced { font-size: 11px; font-style: italic; color: var(--muted); }
+.nx-cal__picker-empty { padding: var(--space-5) 0; text-align: center; font-size: 13px; color: var(--muted); }
+
+.nx-cal__event-form { display: flex; flex-direction: column; gap: var(--space-3); }
+.nx-cal__form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+
+.nx-cal__event-provenance { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+.nx-cal__event-provenance a { color: var(--accent); }
+
+.nx-cal__modal-footer { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
+.nx-cal__modal-footer--end { justify-content: flex-end; }
+.nx-cal__delete-btn { color: var(--danger); }

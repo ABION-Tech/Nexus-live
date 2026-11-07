@@ -1,0 +1,46 @@
+{
+  "name": "@nexus/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "migrate": "tsx src/scripts/migrate.ts",
+    "seed:clickthrough": "tsx src/scripts/seedClickthrough.ts",
+    "seed:dev": "tsx src/scripts/seedDev.ts",
+    "seed:abion-demo": "tsx src/scripts/seedAbionDemo.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.658.0",
+    "@aws-sdk/s3-request-presigner": "^3.658.0",
+    "@fastify/cookie": "^11.0.0",
+    "@fastify/cors": "^10.0.0",
+    "@fastify/helmet": "^13.1.1",
+    "@fastify/rate-limit": "^10.0.0",
+    "@nexus/shared": "*",
+    "dotenv": "^16.4.0",
+    "fastify": "^5.0.0",
+    "fastify-plugin": "^5.0.0",
+    "google-auth-library": "^9.14.0",
+    "pg": "^8.13.0",
+    "pino": "^9.0.0",
+    "web-push": "^3.6.7",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "@types/web-push": "^3.6.0",
+    "eslint": "^9.13.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.15.0",
+    "vitest": "^2.1.0"
+  }
+}

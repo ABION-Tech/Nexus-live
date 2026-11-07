@@ -1,0 +1,226 @@
+/* Sidebar (Tier 2 nav pattern) — driven entirely by app/ia.ts (§7.2).
+   Layout only; color/spacing draw from styles/tokens.css. */
+
+.nx-app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Session 11 follow-up — impersonation banner. Sticky at the very top
+   of the viewport, above sidebar + main both (App.tsx renders it as a
+   sibling above .nx-app-shell, not inside it), so it stays visible
+   regardless of which route is scrolled. Warning-toned border/background
+   rather than danger — the alarming color is reserved for the "write
+   mode" badge and the exit button, so a read-only impersonation doesn't
+   read as an active emergency. */
+.nx-impersonation-banner {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--space-4);
+  background: var(--warning-bg);
+  border-bottom: 1px solid var(--warning);
+  font-size: 13px;
+}
+
+.nx-impersonation-banner__message {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.nx-impersonation-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.nx-sidebar {
+  width: 232px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: var(--space-5) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* index.html's .sidebar-logo .wordmark: bold, letter-spaced, uppercase
+   identity mark rather than a plain tightened-up product name. Session
+   11 restyle pass — the previous -0.02em letter-spacing pulled the
+   letters together, the opposite direction of the console look this is
+   meant to evoke. */
+.nx-sidebar__brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: 5px;
+  padding: 0 var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: calc(var(--space-3) * -1);
+}
+
+.nx-sidebar__sections {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* index.html's .nav-item: hover slides right + lightens, active gets a
+   tinted pill background plus a left accent bar (::before). UI Rehaul
+   polish pass: swapped the bare mono numeral for a proper icon slot
+   (sectionIcons.tsx) and gave the row a touch more breathing room
+   (10px vertical vs 8px) — a numbered list reads as an internal spec
+   doc; icon + label reads as a real product nav. */
+.nx-sidebar__section-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  position: relative;
+  transition: background 0.18s, color 0.18s, transform 0.18s, border-color 0.18s;
+}
+
+.nx-sidebar__section-link:hover {
+  background: var(--surface2);
+  color: var(--text);
+  transform: translateX(3px);
+}
+
+.nx-sidebar__section-link--active {
+  background: rgba(91, 82, 240, 0.12);
+  color: var(--accent-bright);
+  border-color: rgba(91, 82, 240, 0.22);
+}
+
+.nx-sidebar__section-link--active::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 20%;
+  bottom: 20%;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.nx-sidebar__section-icon {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.nx-sidebar__section-link--active .nx-sidebar__section-icon {
+  opacity: 1;
+}
+
+.nx-sidebar__section-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nx-sidebar__subsections {
+  list-style: none;
+  margin: 2px 0 var(--space-2) 26px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-left: 1px solid var(--border);
+}
+
+.nx-sidebar__sub-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 6px var(--space-3);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.nx-sidebar__sub-link:hover {
+  color: var(--text-dim);
+  transform: translateX(2px);
+}
+
+.nx-sidebar__sub-link--active {
+  color: var(--accent2);
+  font-weight: 700;
+}
+
+.nx-sidebar__sub-link--stub {
+  font-style: italic;
+}
+
+.nx-sidebar__stub-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+.nx-app-main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-6);
+}
+
+.nx-app-main__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.nx-app-main__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+}
+
+/* Session 50 — PRD §14 theme toggle. Same tap-target sizing as the
+   ghost/sm Button beside it in App.tsx's header row, but a bare <button>
+   rather than the Button component: it's an icon-only glyph swap, not
+   label + variant styling, so the extra nx-btn machinery doesn't earn
+   its keep here. */
+.nx-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.nx-theme-toggle:hover {
+  background: var(--surface-raised);
+  border-color: var(--border-strong);
+}

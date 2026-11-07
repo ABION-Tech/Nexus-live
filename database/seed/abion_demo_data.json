@@ -1,0 +1,2554 @@
+{
+  "team_members": [
+    {
+      "name": "Ayo T. Joshua",
+      "email": "othnielemry@gmail.com",
+      "role_title": "Group CEO",
+      "department": "Executive",
+      "eod_days": "Mon/Tue/Thu/Fri",
+      "notes": "GCEO — executive decisions and investor relations,  Founder — strategy, partnerships, product lead",
+      "trusted_master_tasks": true,
+      "trusted_cos": true,
+      "trusted_partnerships": true,
+      "trusted_new_button": true,
+      "status": "Active"
+    },
+    {
+      "name": "Femi Balogun",
+      "email": "femi@abion.ng",
+      "role_title": "Deputy COO / Product Lead",
+      "department": "Product",
+      "eod_days": "Mon-Fri",
+      "notes": "Leads product roadmap and team coordination",
+      "trusted_master_tasks": true,
+      "trusted_cos": true,
+      "trusted_partnerships": true,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Mrs Adaeze Nwankwo",
+      "email": "adaeze@abion.ng",
+      "role_title": "Director of Operations",
+      "department": "Operations",
+      "eod_days": null,
+      "notes": "Operations lead",
+      "trusted_master_tasks": true,
+      "trusted_cos": false,
+      "trusted_partnerships": true,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Tobi Adeyemi",
+      "email": "tobi@abion.ng",
+      "role_title": "Tech Lead",
+      "department": "Product",
+      "eod_days": "Mon-Fri",
+      "notes": "Leads NEXUS and Agro Market engineering",
+      "trusted_master_tasks": true,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Kelechi Umeh",
+      "email": "kelechi@abion.ng",
+      "role_title": "Grants & Funding Lead",
+      "department": "Grants & Funding",
+      "eod_days": "Tue/Fri",
+      "notes": "Manages all grant applications and funding pipelines",
+      "trusted_master_tasks": true,
+      "trusted_cos": false,
+      "trusted_partnerships": true,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Amara Chukwu",
+      "email": "amara@abion.ng",
+      "role_title": "Partnerships Manager",
+      "department": "Partnerships",
+      "eod_days": "Mon/Thu",
+      "notes": "Manages external partnerships and MOU pipeline",
+      "trusted_master_tasks": true,
+      "trusted_cos": false,
+      "trusted_partnerships": true,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Yewande",
+      "email": "yewande@abion.ng",
+      "role_title": "Creative Director",
+      "department": "Content & Media",
+      "eod_days": "Tue/Fri",
+      "notes": "Brand, visual design, content strategy",
+      "trusted_master_tasks": false,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Zainab",
+      "email": "zainab@abion.ng",
+      "role_title": "Data & Research Lead",
+      "department": "Data",
+      "eod_days": "Mon-Fri",
+      "notes": "Research, market intelligence, dataset management",
+      "trusted_master_tasks": false,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Tunde",
+      "email": "tunde@abion.ng",
+      "role_title": "Outreach Lead",
+      "department": "Outreach",
+      "eod_days": "Mon-Fri",
+      "notes": "Business development and partnership outreach",
+      "trusted_master_tasks": true,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Kunle (Content)",
+      "email": "kunle.content@abion.ng",
+      "role_title": "Content Creator",
+      "department": "Content & Media",
+      "eod_days": "Mon-Fri",
+      "notes": "Social media, copywriting, content calendar",
+      "trusted_master_tasks": false,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Emeka",
+      "email": "emeka@abion.ng",
+      "role_title": "Strategic Partnerships",
+      "department": "Partnerships",
+      "eod_days": "Mon-Fri",
+      "notes": "Tech ecosystem and corporate partnerships",
+      "trusted_master_tasks": false,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Halima",
+      "email": "halima@abion.ng",
+      "role_title": "Motion & Visual Creator",
+      "department": "Content & Media",
+      "eod_days": "Mon-Fri",
+      "notes": "Video production, animation support, visual assets",
+      "trusted_master_tasks": false,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Blessing",
+      "email": "blessing@abion.ng",
+      "role_title": "Grants Analyst",
+      "department": "Grants & Funding",
+      "eod_days": "Mon-Fri",
+      "notes": "Grant research and application documentation",
+      "trusted_master_tasks": false,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Segun",
+      "email": "segun@abion.ng",
+      "role_title": "Outreach Officer",
+      "department": "Outreach",
+      "eod_days": "Mon-Fri",
+      "notes": "Prospect calls and follow-up cadence",
+      "trusted_master_tasks": false,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Ngozi",
+      "email": "ngozi@abion.ng",
+      "role_title": "Operations Lead",
+      "department": "Operations",
+      "eod_days": null,
+      "notes": "Day-to-day ops, scheduling, admin lead",
+      "trusted_master_tasks": false,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Aisha",
+      "email": "aisha@abion.ng",
+      "role_title": "Admin Assistant",
+      "department": "Operations",
+      "eod_days": null,
+      "notes": "Administrative support across the portfolio",
+      "trusted_master_tasks": false,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    },
+    {
+      "name": "Chidi",
+      "email": "chidi@abion.n",
+      "role_title": "Product / Tech",
+      "department": "Product",
+      "eod_days": "Mon-Fri",
+      "notes": "Mobile and web feature development",
+      "trusted_master_tasks": false,
+      "trusted_cos": false,
+      "trusted_partnerships": false,
+      "trusted_new_button": false,
+      "status": "Active"
+    }
+  ],
+  "master_tasks": [
+    {
+      "legacy_id": "NEXUS-001",
+      "title": "Finalise NEXUS API endpoint auth + HMAC token refresh",
+      "priority": "urgent",
+      "status": "done",
+      "assigned_to_name": "Ayo T. Joshua",
+      "assigned_to_email": "ayo@abion.ng",
+      "support_person_name": "Tobi Adeyemi",
+      "support_person_email": "tobi@abion.ng",
+      "business_dept": "Technology",
+      "start_date": "2026-07-28",
+      "deadline": "2026-08-02",
+      "notes": "Critical for demo stability",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": "Ayo T. Joshua"
+    },
+    {
+      "legacy_id": "NEXUS-002",
+      "title": "Deploy NEXUS staging environment on Vercel + configure env vars",
+      "priority": "high",
+      "status": "in_progress",
+      "assigned_to_name": "Tobi Adeyemi",
+      "assigned_to_email": "tobi@abion.ng",
+      "support_person_name": "Ayo T. Joshua",
+      "support_person_email": "ayo@abion.ng",
+      "business_dept": "Technology",
+      "start_date": "2026-07-29",
+      "deadline": "2026-08-15",
+      "notes": "Use nexus-abion project on Vercel",
+      "proof_link": null,
+      "depends_on_legacy_id": "NEXUS-001",
+      "supervisor_name": "Ayo T. Joshua"
+    },
+    {
+      "legacy_id": "NEXUS-003",
+      "title": "AI Analyst demo data seeding — all three modes (Report/Queue/Predict)",
+      "priority": "high",
+      "status": "not_started",
+      "assigned_to_name": "Ayo T. Joshua",
+      "assigned_to_email": "ayo@abion.ng",
+      "support_person_name": "Tobi Adeyemi",
+      "support_person_email": "tobi@abion.ng",
+      "business_dept": "Technology",
+      "start_date": "2026-08-01",
+      "deadline": "2026-08-06",
+      "notes": "Ensure NIM models respond in demo environment",
+      "proof_link": null,
+      "depends_on_legacy_id": "NEXUS-001",
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "NAS-001",
+      "title": "Finalise NAS mastery curriculum for Cohort 1 (10 modules)",
+      "priority": "high",
+      "status": "in_progress",
+      "assigned_to_name": "Kelechi Umeh",
+      "assigned_to_email": "kelechi@abion.ng",
+      "support_person_name": "Blessing",
+      "support_person_email": "blessing@abion.ng",
+      "business_dept": "Operations",
+      "start_date": "2026-07-20",
+      "deadline": "2026-08-10",
+      "notes": "Tied to CcHUB grant milestone",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": "Ayo T. Joshua"
+    },
+    {
+      "legacy_id": "NAS-002",
+      "title": "Submit NAS 1000-learner pilot proposal to Mastercard Foundation",
+      "priority": "urgent",
+      "status": "done",
+      "assigned_to_name": "Kelechi Umeh",
+      "assigned_to_email": "kelechi@abion.ng",
+      "support_person_name": "Ayo T. Joshua",
+      "support_person_email": "ayo@abion.ng",
+      "business_dept": "Operations",
+      "start_date": "2026-07-15",
+      "deadline": "2026-08-01",
+      "notes": "Submitted — awaiting response",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "AGRO-001",
+      "title": "Agro Market MVP — Seeds + Hire Worker category go-live",
+      "priority": "high",
+      "status": "in_progress",
+      "assigned_to_name": "Tobi Adeyemi",
+      "assigned_to_email": "tobi@abion.ng",
+      "support_person_name": "Ayo T. Joshua",
+      "support_person_email": "ayo@abion.ng",
+      "business_dept": "Technology",
+      "start_date": "2026-07-25",
+      "deadline": "2026-08-15",
+      "notes": "React Native/Expo build; Paystack integration pending",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": "Ayo T. Joshua"
+    },
+    {
+      "legacy_id": "AGRO-002",
+      "title": "Agro Market KYC flow — human-reviewed onboarding for farmers & buyers",
+      "priority": "medium",
+      "status": "not_started",
+      "assigned_to_name": "Tobi Adeyemi",
+      "assigned_to_email": "tobi@abion.ng",
+      "support_person_name": "Amara Chukwu",
+      "support_person_email": "amara@abion.ng",
+      "business_dept": "Technology",
+      "start_date": "2026-08-01",
+      "deadline": "2026-08-20",
+      "notes": "Manual ops + Supabase RLS",
+      "proof_link": null,
+      "depends_on_legacy_id": "AGRO-001",
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "NAS-001-b",
+      "title": "NAS x Ministry of Interior MOU — final review and submission",
+      "priority": "urgent",
+      "status": "in_progress",
+      "assigned_to_name": "Ayo T. Joshua",
+      "assigned_to_email": "ayo@abion.ng",
+      "support_person_name": "Femi Balogun",
+      "support_person_email": "femi@abion.ng",
+      "business_dept": "Partnerships",
+      "start_date": "2026-07-28",
+      "deadline": "2026-08-05",
+      "notes": "Deck finalised; awaiting Ministry response",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "NAS-002-b",
+      "title": "NAS investor pitch deck — Series A pre-seed round",
+      "priority": "high",
+      "status": "in_progress",
+      "assigned_to_name": "Ayo T. Joshua",
+      "assigned_to_email": "ayo@abion.ng",
+      "support_person_name": "Femi Balogun",
+      "support_person_email": "femi@abion.ng",
+      "business_dept": "Finance",
+      "start_date": "2026-07-20",
+      "deadline": "2026-08-08",
+      "notes": "Red/white branding applied; financial model pending",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "AFR-001",
+      "title": "Afromation S1E1 — storyboard finalisation and voice casting",
+      "priority": "high",
+      "status": "in_progress",
+      "assigned_to_name": "Kunle (Content)",
+      "assigned_to_email": "kunle.content@abion.ng",
+      "support_person_name": "Yewande",
+      "support_person_email": "yewande@abion.ng",
+      "business_dept": "Content & Media",
+      "start_date": "2026-07-15",
+      "deadline": "2026-08-12",
+      "notes": "First episode of animated universe — priority asset",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "AFR-002",
+      "title": "Afromation brand guide and IP asset library — first release",
+      "priority": "medium",
+      "status": "not_started",
+      "assigned_to_name": "Yewande",
+      "assigned_to_email": "yewande@abion.ng",
+      "support_person_name": "Halima",
+      "support_person_email": "halima@abion.ng",
+      "business_dept": "Content & Media",
+      "start_date": "2026-07-25",
+      "deadline": "2026-08-20",
+      "notes": "Fonts, colour palette, character sheets",
+      "proof_link": null,
+      "depends_on_legacy_id": "AFR-001",
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "AEPM-001",
+      "title": "AEPM Book Sprint — Chapter 2 and 3 drafts",
+      "priority": "high",
+      "status": "in_progress",
+      "assigned_to_name": "Ayo T. Joshua",
+      "assigned_to_email": "ayo@abion.ng",
+      "support_person_name": "Zainab",
+      "support_person_email": "zainab@abion.ng",
+      "business_dept": "Operations",
+      "start_date": "2026-08-01",
+      "deadline": "2026-08-07",
+      "notes": "4-day sprint; travel constraints apply",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "MKT-001",
+      "title": "ABION Industries brand refresh — website hero section copy",
+      "priority": "medium",
+      "status": "not_started",
+      "assigned_to_name": "Yewande",
+      "assigned_to_email": "yewande@abion.ng",
+      "support_person_name": "Kunle (Content)",
+      "support_person_email": "kunle.content@abion.ng",
+      "business_dept": "Marketing",
+      "start_date": "2026-07-28",
+      "deadline": "2026-08-09",
+      "notes": "Align with NEXUS launch narrative",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "MKT-002",
+      "title": "August social media calendar — ABION Industries multi-vertical",
+      "priority": "medium",
+      "status": "done",
+      "assigned_to_name": "Kunle (Content)",
+      "assigned_to_email": "kunle.content@abion.ng",
+      "support_person_name": "Yewande",
+      "support_person_email": "yewande@abion.ng",
+      "business_dept": "Marketing",
+      "start_date": "2026-08-01",
+      "deadline": "2026-08-03",
+      "notes": "Scheduled on Buffer through Aug 31",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "MKT-003",
+      "title": "NEXUS product demo video — 90-second explainer (LinkedIn + X)",
+      "priority": "high",
+      "status": "in_progress",
+      "assigned_to_name": "Halima",
+      "assigned_to_email": "halima@abion.ng",
+      "support_person_name": "Kunle (Content)",
+      "support_person_email": "kunle.content@abion.ng",
+      "business_dept": "Marketing",
+      "start_date": "2026-08-01",
+      "deadline": "2026-08-10",
+      "notes": "Script draft approved; motion graphics in progress",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "OPS-001",
+      "title": "Subsidiaries quarterly review — P&L summary for 6 active units",
+      "priority": "high",
+      "status": "in_progress",
+      "assigned_to_name": "Femi Balogun",
+      "assigned_to_email": "femi@abion.ng",
+      "support_person_name": "Ayo T. Joshua",
+      "support_person_email": "ayo@abion.ng",
+      "business_dept": "Finance",
+      "start_date": "2026-07-21",
+      "deadline": "2026-08-07",
+      "notes": "Focus on NAS, NEXUS, Agro Market, Afromation",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "OPS-002",
+      "title": "Recruit Senior Product Designer — NEXUS and Agro Market",
+      "priority": "medium",
+      "status": "in_progress",
+      "assigned_to_name": "Femi Balogun",
+      "assigned_to_email": "femi@abion.ng",
+      "support_person_name": "Ngozi",
+      "support_person_email": "ngozi@abion.ng",
+      "business_dept": "HR",
+      "start_date": "2026-07-28",
+      "deadline": "2026-08-15",
+      "notes": "JD published; screening applications",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "OPS-003",
+      "title": "ABION City NODE 1 — feasibility report Phase 1",
+      "priority": "medium",
+      "status": "not_started",
+      "assigned_to_name": "Femi Balogun",
+      "assigned_to_email": "femi@abion.ng",
+      "support_person_name": "Ayo T. Joshua",
+      "support_person_email": "ayo@abion.ng",
+      "business_dept": "Operations",
+      "start_date": "2026-08-01",
+      "deadline": "2026-08-31",
+      "notes": "Land acquisition scan + infrastructure cost model",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "GRANT-001",
+      "title": "Apply to Tony Elumelu Foundation 2026 — TEF Entrepreneurship Programme",
+      "priority": "high",
+      "status": "in_progress",
+      "assigned_to_name": "Kelechi Umeh",
+      "assigned_to_email": "kelechi@abion.ng",
+      "support_person_name": "Blessing",
+      "support_person_email": "blessing@abion.ng",
+      "business_dept": "Finance",
+      "start_date": "2026-07-20",
+      "deadline": "2026-08-06",
+      "notes": "Strong fit for NAS and Agro Market",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": "Ayo T. Joshua"
+    },
+    {
+      "legacy_id": "GRANT-002",
+      "title": "NITDA Innovation Grant — Phase 2 expression of interest",
+      "priority": "medium",
+      "status": "not_started",
+      "assigned_to_name": "Kelechi Umeh",
+      "assigned_to_email": "kelechi@abion.ng",
+      "support_person_name": "Ayo T. Joshua",
+      "support_person_email": "ayo@abion.ng",
+      "business_dept": "Finance",
+      "start_date": "2026-07-25",
+      "deadline": "2026-08-12",
+      "notes": "Follow up with Mr Bello Kazaure",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "INTR-001",
+      "title": "Onboard 3 August interns — orientation and role briefing",
+      "priority": "medium",
+      "status": "not_started",
+      "assigned_to_name": "Ngozi",
+      "assigned_to_email": "ngozi@abion.ng",
+      "support_person_name": "Aisha",
+      "support_person_email": "aisha@abion.ng",
+      "business_dept": "HR",
+      "start_date": "2026-08-04",
+      "deadline": "2026-08-05",
+      "notes": "Tech, Content, and Research tracks",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "1-1786436599043",
+      "title": "Pull a list of 30-40 potential client leads from CRM, LinkedIn, or prospecting database with name, company, role, and contact info",
+      "priority": "urgent",
+      "status": "in_progress",
+      "assigned_to_name": "Ayo T. Joshua",
+      "assigned_to_email": "othnielemry@gmail.com",
+      "support_person_name": null,
+      "support_person_email": null,
+      "business_dept": null,
+      "start_date": null,
+      "deadline": null,
+      "notes": null,
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "1-1786823899429",
+      "title": "Draft a concise outreach message template tailored for cold prospects, including a clear value proposition and a direct ask for a 15-30 minute meeting this week",
+      "priority": "urgent",
+      "status": "not_started",
+      "assigned_to_name": "Femi Balogun",
+      "assigned_to_email": null,
+      "support_person_name": null,
+      "support_person_email": null,
+      "business_dept": null,
+      "start_date": null,
+      "deadline": null,
+      "notes": null,
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "1-1786823902084",
+      "title": "Draft a concise outreach message template tailored for cold prospects, including a clear value proposition and a direct ask for a 15-30 minute meeting this week",
+      "priority": "urgent",
+      "status": "not_started",
+      "assigned_to_name": "Femi Balogun",
+      "assigned_to_email": null,
+      "support_person_name": null,
+      "support_person_email": null,
+      "business_dept": null,
+      "start_date": null,
+      "deadline": null,
+      "notes": null,
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    },
+    {
+      "legacy_id": "T001",
+      "title": "Prepare weekly operations report",
+      "priority": "high",
+      "status": "not_started",
+      "assigned_to_name": "Daniel",
+      "assigned_to_email": "daniel@example.com",
+      "support_person_name": "Sarah",
+      "support_person_email": "sarah@example.com",
+      "business_dept": "Operations",
+      "start_date": "2026-08-15",
+      "deadline": "2026-08-17",
+      "notes": "Compile updates from all departments",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": "Ayo"
+    },
+    {
+      "legacy_id": "T002",
+      "title": "Design social media campaign for August",
+      "priority": "medium",
+      "status": "in_progress",
+      "assigned_to_name": "Grace",
+      "assigned_to_email": "grace@example.com",
+      "support_person_name": "Daniel",
+      "support_person_email": "daniel@example.com",
+      "business_dept": "Marketing",
+      "start_date": "2026-08-15",
+      "deadline": "2026-08-20",
+      "notes": "Create campaign concepts and content schedule",
+      "proof_link": null,
+      "depends_on_legacy_id": "T001",
+      "supervisor_name": "Ayo"
+    },
+    {
+      "legacy_id": "T003",
+      "title": "Review customer feedback from July",
+      "priority": "low",
+      "status": "not_started",
+      "assigned_to_name": "Sarah",
+      "assigned_to_email": "sarah@example.com",
+      "support_person_name": null,
+      "support_person_email": null,
+      "business_dept": "Customer Success",
+      "start_date": "2026-08-16",
+      "deadline": "2026-08-19",
+      "notes": "Categorize complaints and recommendations",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": "Ayo"
+    },
+    {
+      "legacy_id": "T004",
+      "title": "Update company partnership database",
+      "priority": "high",
+      "status": "blocked",
+      "assigned_to_name": "Daniel",
+      "assigned_to_email": "daniel@example.com",
+      "support_person_name": "Grace",
+      "support_person_email": "grace@example.com",
+      "business_dept": "Business Development",
+      "start_date": "2026-08-15",
+      "deadline": "2026-08-18",
+      "notes": "Waiting for latest partnership records",
+      "proof_link": null,
+      "depends_on_legacy_id": "T001",
+      "supervisor_name": "Ayo"
+    },
+    {
+      "legacy_id": "T005",
+      "title": "Conduct QA testing on latest platform update",
+      "priority": "urgent",
+      "status": "not_started",
+      "assigned_to_name": "Michael",
+      "assigned_to_email": "michael@example.com",
+      "support_person_name": "Sarah",
+      "support_person_email": "sarah@example.com",
+      "business_dept": "Product / Technology",
+      "start_date": "2026-08-17",
+      "deadline": "2026-08-18",
+      "notes": "Test login, notifications and reporting",
+      "proof_link": null,
+      "depends_on_legacy_id": "T004",
+      "supervisor_name": "Ayo"
+    },
+    {
+      "legacy_id": "T006",
+      "title": "Prepare presentation for stakeholder meeting",
+      "priority": "high",
+      "status": "done",
+      "assigned_to_name": "Grace",
+      "assigned_to_email": "grace@example.com",
+      "support_person_name": "Michael",
+      "support_person_email": "michael@example.com",
+      "business_dept": "Strategy",
+      "start_date": "2026-08-14",
+      "deadline": "2026-08-15",
+      "notes": "Final presentation delivered to management",
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": "Ayo"
+    },
+    {
+      "legacy_id": "TASK-1787398482381",
+      "title": "Onboarding: Nife",
+      "priority": "high",
+      "status": "not_started",
+      "assigned_to_name": "Ayo T. Joshua",
+      "assigned_to_email": "othnielemry@gmail.com",
+      "support_person_name": null,
+      "support_person_email": null,
+      "business_dept": "HR",
+      "start_date": "2026-08-22",
+      "deadline": null,
+      "notes": null,
+      "proof_link": null,
+      "depends_on_legacy_id": null,
+      "supervisor_name": null
+    }
+  ],
+  "goals": [
+    {
+      "legacy_id": "GOAL-1786436415870",
+      "title": "Get 1o meeting from potetial clients this wwek",
+      "created_by_name": "Ayo T. Joshua",
+      "created_at": "2026-08-11T08:20:16.865Z",
+      "status": "Active",
+      "task_ids": [
+        "1-1786436599043",
+        "1-1786823902084",
+        "1-1786823899429"
+      ],
+      "reasoning_by_task": null,
+      "notes": null,
+      "reasoning": null,
+      "proposed_tasks": [
+        {
+          "legacy_id": "PAT-1786436467645-0-36ac",
+          "title": "Pull a list of 30-40 potential client leads from CRM, LinkedIn, or prospecting database with name, company, role, and contact info",
+          "priority": "urgent",
+          "suggested_assignee_name": "Ayo T. Joshua",
+          "status": "Approved",
+          "depends_on_index": null,
+          "reviewed_by_name": "Ayo T. Joshua",
+          "reviewed_at": "2026-08-11T08:23:23.257Z",
+          "created_at": "2026-08-11T08:21:07.645Z"
+        },
+        {
+          "legacy_id": "PAT-1786436467912-1-q87n",
+          "title": "Draft a concise outreach message template tailored for cold prospects, including a clear value proposition and a direct ask for a 15-30 minute meeting this week",
+          "priority": "urgent",
+          "suggested_assignee_name": "Femi Balogun",
+          "status": "Approved",
+          "depends_on_index": null,
+          "reviewed_by_name": "Ayo T. Joshua",
+          "reviewed_at": "2026-08-15T19:58:28.678Z",
+          "created_at": "2026-08-11T08:21:07.912Z"
+        },
+        {
+          "legacy_id": "PAT-1786436468208-2-6tb8",
+          "title": "Send personalized outreach messages (email or LinkedIn) to the lead list, using the approved template, with the goal of booking 10 meetings this week",
+          "priority": "urgent",
+          "suggested_assignee_name": "Tobi Adeyemi",
+          "status": "Pending",
+          "depends_on_index": 0,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-11T08:21:08.208Z"
+        },
+        {
+          "legacy_id": "PAT-1786436468484-3-kzoz",
+          "title": "Make follow-up phone calls to warm leads and prospects who have previously shown interest but have not yet booked a meeting, aiming to secure commitments this week",
+          "priority": "high",
+          "suggested_assignee_name": "Mrs Adaeze Nwankwo",
+          "status": "Pending",
+          "depends_on_index": null,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-11T08:21:08.484Z"
+        },
+        {
+          "legacy_id": "PAT-1786436468829-4-3695",
+          "title": "Prepare and send follow-up messages to any leads who do not respond to the initial outreach within 24 hours",
+          "priority": "high",
+          "suggested_assignee_name": "Kelechi Umeh",
+          "status": "Pending",
+          "depends_on_index": 2,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-11T08:21:08.829Z"
+        },
+        {
+          "legacy_id": "PAT-1786436469091-5-o2jg",
+          "title": "Set up a shared calendar or booking link (e.g., Calendly) with available time slots for this week and share it with the outreach team to include in messages",
+          "priority": "high",
+          "suggested_assignee_name": "Yewande",
+          "status": "Pending",
+          "depends_on_index": null,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-11T08:21:09.091Z"
+        },
+        {
+          "legacy_id": "PAT-1786436469371-6-azqx",
+          "title": "Track all booked meetings in a shared spreadsheet or CRM, including date, time, client name, and assigned team member, and monitor progress toward the target of 10 meetings",
+          "priority": "medium",
+          "suggested_assignee_name": "Amara Chukwu",
+          "status": "Pending",
+          "depends_on_index": null,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-11T08:21:09.371Z"
+        }
+      ]
+    },
+    {
+      "legacy_id": "GOAL-1786529022169",
+      "title": "Find a buyer",
+      "created_by_name": "Ayo T. Joshua",
+      "created_at": "2026-08-12T10:03:42.171Z",
+      "status": "Drafting",
+      "task_ids": [],
+      "reasoning_by_task": null,
+      "notes": null,
+      "reasoning": null,
+      "proposed_tasks": []
+    },
+    {
+      "legacy_id": "GOAL-1786537825940",
+      "title": "Get 1 customer",
+      "created_by_name": "Ayo T. Joshua",
+      "created_at": "2026-08-12T12:30:25.943Z",
+      "status": "Drafting",
+      "task_ids": [],
+      "reasoning_by_task": null,
+      "notes": null,
+      "reasoning": "Getting a first customer requires identifying a target audience, preparing a basic offer or product to sell, doing direct outreach, and closing the deal. I split this into sequential steps so the team isn't doing outreach before something is ready to sell, but kept the tasks broad enough that a human leader can fill in the specific product or market details. I left out scaling, marketing campaigns, and retention since the goal is strictly to land one customer.",
+      "proposed_tasks": [
+        {
+          "legacy_id": "PAT-1786537869025-0-eht3",
+          "title": "Define the specific target customer profile (who they are, what problem they have, and what they'd pay for) and write a one-page summary the team can use for outreach.",
+          "priority": "high",
+          "suggested_assignee_name": "Ayo T. Joshua",
+          "status": "Pending",
+          "depends_on_index": null,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:31:09.025Z"
+        },
+        {
+          "legacy_id": "PAT-1786537869218-1-dglu",
+          "title": "Prepare a minimal viable offer or product package that can be delivered to a first customer, including pricing and what's included.",
+          "priority": "high",
+          "suggested_assignee_name": "Femi Balogun",
+          "status": "Pending",
+          "depends_on_index": 0,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:31:09.218Z"
+        },
+        {
+          "legacy_id": "PAT-1786537869434-2-4gi2",
+          "title": "Build a list of 20-30 potential customers that match the target profile, including names, contact info, and a one-line reason why they'd be interested.",
+          "priority": "high",
+          "suggested_assignee_name": "Tobi Adeyemi",
+          "status": "Pending",
+          "depends_on_index": 0,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:31:09.434Z"
+        },
+        {
+          "legacy_id": "PAT-1786537869917-3-fa89",
+          "title": "Draft a short outreach message and follow-up template tailored to the target profile, ready to be sent via email, WhatsApp, or LinkedIn.",
+          "priority": "medium",
+          "suggested_assignee_name": "Yewande",
+          "status": "Pending",
+          "depends_on_index": 0,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:31:09.917Z"
+        },
+        {
+          "legacy_id": "PAT-1786537870212-4-sy01",
+          "title": "Send outreach messages to the prospect list and track responses in a simple spreadsheet (sent, opened, replied, interested).",
+          "priority": "high",
+          "suggested_assignee_name": "Halima",
+          "status": "Pending",
+          "depends_on_index": 3,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:31:10.212Z"
+        },
+        {
+          "legacy_id": "PAT-1786537870419-5-g5be",
+          "title": "Follow up with interested prospects, answer their questions, and negotiate terms until at least one customer agrees to buy.",
+          "priority": "urgent",
+          "suggested_assignee_name": "Mrs Adaeze Nwankwo",
+          "status": "Pending",
+          "depends_on_index": 4,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:31:10.419Z"
+        },
+        {
+          "legacy_id": "PAT-1786537870639-6-re47",
+          "title": "Onboard the first customer: send any welcome materials, collect payment, and confirm delivery details so the sale is completed.",
+          "priority": "urgent",
+          "suggested_assignee_name": "Amara Chukwu",
+          "status": "Pending",
+          "depends_on_index": 5,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:31:10.639Z"
+        }
+      ]
+    },
+    {
+      "legacy_id": "GOAL-1786539173836",
+      "title": "get 1 customer",
+      "created_by_name": "Ayo T. Joshua",
+      "created_at": "2026-08-12T12:52:53.837Z",
+      "status": "Drafting",
+      "task_ids": [],
+      "reasoning_by_task": null,
+      "notes": null,
+      "reasoning": "Getting one customer requires a clear value proposition, a defined target, an outreach channel, and a way to close and onboard them. I split this into five sequential tasks so the team can move from positioning to outreach to closing without ambiguity, keeping the scope tight to landing just one customer rather than scaling the process.",
+      "proposed_tasks": [
+        {
+          "legacy_id": "PAT-1786539217838-0-fsdn",
+          "title": "Write a one-page value proposition and offer document that clearly states what we sell, who it is for, and the single biggest reason a customer should buy now.",
+          "priority": "high",
+          "suggested_assignee_name": "Kunle (Content)",
+          "status": "Pending",
+          "depends_on_index": null,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:53:37.839Z"
+        },
+        {
+          "legacy_id": "PAT-1786539217956-1-wfql",
+          "title": "Build a list of 10-20 specific prospective customers (names, contact info, and a one-line reason they fit) so the outreach team has concrete targets to contact.",
+          "priority": "high",
+          "suggested_assignee_name": "Kelechi Umeh",
+          "status": "Pending",
+          "depends_on_index": 0,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:53:37.956Z"
+        },
+        {
+          "legacy_id": "PAT-1786539218124-2-j7yk",
+          "title": "Draft and send personalized outreach messages (email or direct message) to every prospect on the list, offering a quick call or demo and tracking responses in a shared sheet.",
+          "priority": "high",
+          "suggested_assignee_name": "Femi Balogun",
+          "status": "Pending",
+          "depends_on_index": 1,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:53:38.124Z"
+        },
+        {
+          "legacy_id": "PAT-1786539218296-3-gn1p",
+          "title": "Conduct a discovery or demo call with interested prospects, confirm their needs, and present the offer using the value proposition document as a guide.",
+          "priority": "high",
+          "suggested_assignee_name": "Tobi Adeyemi",
+          "status": "Pending",
+          "depends_on_index": 2,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:53:38.296Z"
+        },
+        {
+          "legacy_id": "PAT-1786539218466-4-t05s",
+          "title": "Close the first customer by agreeing on terms, collecting payment or signed confirmation, and sending a welcome message with next steps for onboarding.",
+          "priority": "urgent",
+          "suggested_assignee_name": "Ayo T. Joshua",
+          "status": "Pending",
+          "depends_on_index": 3,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:53:38.466Z"
+        }
+      ]
+    },
+    {
+      "legacy_id": "GOAL-1786539289095",
+      "title": "get 1 customer",
+      "created_by_name": "Ayo T. Joshua",
+      "created_at": "2026-08-12T12:54:49.097Z",
+      "status": "Drafting",
+      "task_ids": [],
+      "reasoning_by_task": null,
+      "notes": null,
+      "reasoning": "The goal of getting 1 customer is broad, so I split it into the logical sequence of acquiring a first customer: defining the target and offer, identifying a specific prospect, doing direct outreach, and closing the deal. I kept tasks independent enough to be assigned separately while reflecting their natural dependency order. I deliberately left out product scaling and onboarding infrastructure since the goal is only to land one customer, not to retain or serve many.",
+      "proposed_tasks": [
+        {
+          "legacy_id": "PAT-1786539510467-0-ngy2",
+          "title": "Define the ideal first-customer profile and craft a clear value proposition / offer that can be presented to prospects. Document who the target customer is, what pain point we solve, and what the first-customer deal or pricing looks like.",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": null,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:58:30.467Z"
+        },
+        {
+          "legacy_id": "PAT-1786539510622-1-b9f7",
+          "title": "Build a list of 10-20 specific prospective customers (individuals or businesses) that fit the first-customer profile, including names, contact info, and a brief note on why each is a good fit.",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 0,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:58:30.622Z"
+        },
+        {
+          "legacy_id": "PAT-1786539510814-2-z0gz",
+          "title": "Create a simple outreach script and one-page sales sheet or deck that can be sent to prospects, clearly explaining the product, the offer, and a call to action.",
+          "priority": "medium",
+          "suggested_assignee_name": "Kunle (Content)",
+          "status": "Pending",
+          "depends_on_index": 0,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:58:30.814Z"
+        },
+        {
+          "legacy_id": "PAT-1786539511009-3-fczj",
+          "title": "Conduct direct outreach (calls, emails, DMs) to the prospect list using the outreach script and sales sheet. Track responses and log follow-up dates for each prospect.",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 2,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:58:31.009Z"
+        },
+        {
+          "legacy_id": "PAT-1786539511191-4-bisj",
+          "title": "Follow up with warm prospects, answer their questions, handle objections, and negotiate terms until at least one prospect agrees to become a paying customer.",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 3,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:58:31.191Z"
+        },
+        {
+          "legacy_id": "PAT-1786539511390-5-t35l",
+          "title": "Finalize onboarding paperwork, payment, and any setup needed to officially activate the first customer.",
+          "priority": "urgent",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 4,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-12T12:58:31.390Z"
+        }
+      ]
+    },
+    {
+      "legacy_id": "GOAL-1786710514602",
+      "title": "Lets build 10,000 units of ABION node City",
+      "created_by_name": "Ayo T. Joshua",
+      "created_at": "2026-08-14T12:28:34.603Z",
+      "status": "Drafting",
+      "task_ids": [],
+      "reasoning_by_task": null,
+      "notes": null,
+      "reasoning": "Building 10,000 ABION node City units is a large-scale production goal, so I split it into a logical production pipeline: sourcing materials, finalizing the unit design/spec, setting up the manufacturing line, executing production in batches, implementing quality control, and coordinating logistics/distribution. I left out sales and post-deployment support since the goal is specifically about building the units, not selling or maintaining them. No specific person was named in the goal, so all assignees are left blank for the leader to assign based on capacity.",
+      "proposed_tasks": [
+        {
+          "legacy_id": "PAT-1786710591742-0-jhzt",
+          "title": "Source and secure all raw materials, components, and parts needed to manufacture 10,000 ABION node City units, including negotiating bulk pricing and confirming supplier delivery timelines.",
+          "priority": "urgent",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": null,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T12:29:51.742Z"
+        },
+        {
+          "legacy_id": "PAT-1786710592012-1-ksja",
+          "title": "Finalize the technical design and manufacturing spec for each ABION node City unit — including assembly diagrams, bill of materials, and step-by-step build instructions for the production team.",
+          "priority": "urgent",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": null,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T12:29:52.012Z"
+        },
+        {
+          "legacy_id": "PAT-1786710592217-2-diy7",
+          "title": "Set up the physical manufacturing line or assembly workspace: tools, workstations, staging areas for components, and any jigs or molds needed for efficient unit production.",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 1,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T12:29:52.217Z"
+        },
+        {
+          "legacy_id": "PAT-1786710592424-3-x5vk",
+          "title": "Recruit, brief, and train the assembly workforce on the ABION node City build process, safety protocols, and daily production targets to ensure throughput of approximately 500 units per day.",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 2,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T12:29:52.424Z"
+        },
+        {
+          "legacy_id": "PAT-1786710592632-4-de34",
+          "title": "Execute the full production run of 10,000 ABION node City units in managed batches, tracking daily output against the target and reporting any bottlenecks or material shortages immediately.",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 3,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T12:29:52.632Z"
+        },
+        {
+          "legacy_id": "PAT-1786710592844-5-hs2v",
+          "title": "Establish and run a quality control checkpoint that tests each completed unit for functionality, firmware loading, and physical integrity before it leaves the production line; reject and route defective units for rework.",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 4,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T12:29:52.844Z"
+        },
+        {
+          "legacy_id": "PAT-1786710593114-6-k1uo",
+          "title": "Coordinate storage, packaging, and distribution logistics for the finished 10,000 units — including warehouse space, packing materials, shipping manifests, and handoff to deployment or delivery teams.",
+          "priority": "medium",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 5,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T12:29:53.114Z"
+        }
+      ]
+    },
+    {
+      "legacy_id": "GOAL-1786710568217",
+      "title": "Lets build 10,000 units of ABION node City",
+      "created_by_name": "Ayo T. Joshua",
+      "created_at": "2026-08-14T12:29:28.221Z",
+      "status": "Drafting",
+      "task_ids": [],
+      "reasoning_by_task": null,
+      "notes": null,
+      "reasoning": null,
+      "proposed_tasks": []
+    },
+    {
+      "legacy_id": "GOAL-1786711967572",
+      "title": "Lets build 10,000 units of ABION node City",
+      "created_by_name": "Ayo T. Joshua",
+      "created_at": "2026-08-14T12:52:47.573Z",
+      "status": "Archived",
+      "task_ids": [],
+      "reasoning_by_task": null,
+      "notes": null,
+      "reasoning": null,
+      "proposed_tasks": []
+    },
+    {
+      "legacy_id": "GOAL-1786737875643",
+      "title": "lets build 10 abion city node",
+      "created_by_name": "Ayo T. Joshua",
+      "created_at": "2026-08-14T20:04:35.645Z",
+      "status": "Drafting",
+      "task_ids": [],
+      "reasoning_by_task": null,
+      "notes": null,
+      "reasoning": "I split this into 7 tasks covering the full lifecycle: planning and site selection, procurement, infrastructure setup, software configuration, testing, deployment, and monitoring. The ordering follows a natural dependency chain since you can't configure nodes before procuring hardware or install before configuring. I left staffing assignments blank since the goal doesn't name specific people and I shouldn't guess who has which expertise among the roster.",
+      "proposed_tasks": [
+        {
+          "legacy_id": "PAT-1786737908758-0-ximj",
+          "title": "Define specifications and site selection criteria for 10 Abion City nodes, including hardware requirements, network needs, physical location/security requirements, and a site shortlist with approval timelines",
+          "priority": "urgent",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": null,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T20:05:08.758Z"
+        },
+        {
+          "legacy_id": "PAT-1786737909013-1-qcnd",
+          "title": "Procure all required hardware, networking equipment, and peripherals for 10 nodes based on the approved specifications, including vendor negotiation, purchase orders, and delivery scheduling",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 0,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T20:05:09.013Z"
+        },
+        {
+          "legacy_id": "PAT-1786737909329-2-2i7j",
+          "title": "Prepare all 10 physical sites for installation — secure locations, arrange power and internet connectivity, complete any required construction or mounting work, and ensure environmental controls are in place",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 0,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T20:05:09.329Z"
+        },
+        {
+          "legacy_id": "PAT-1786737909620-3-zf19",
+          "title": "Install and physically rack/mount the procured hardware at all 10 sites, connect networking, power up, and verify basic hardware health and connectivity at each location",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 1,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T20:05:09.620Z"
+        },
+        {
+          "legacy_id": "PAT-1786737909969-4-3k9p",
+          "title": "Configure the Abion City node software stack on all 10 nodes — install OS, node software, security hardening, monitoring agents, and network configuration; document the standard build process used",
+          "priority": "high",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 3,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T20:05:09.969Z"
+        },
+        {
+          "legacy_id": "PAT-1786737910353-5-nokg",
+          "title": "Run integration and load tests across all 10 nodes — verify node-to-node communication, sync status, failover behavior, and performance under expected traffic; document any issues found and fixes applied",
+          "priority": "medium",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 4,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T20:05:10.353Z"
+        },
+        {
+          "legacy_id": "PAT-1786737910661-6-q8mu",
+          "title": "Officially bring all 10 nodes into production, set up ongoing monitoring dashboards and alerting, establish a maintenance and incident-response runbook, and hand off to the operations team for day-to-day management",
+          "priority": "medium",
+          "suggested_assignee_name": null,
+          "status": "Pending",
+          "depends_on_index": 5,
+          "reviewed_by_name": null,
+          "reviewed_at": null,
+          "created_at": "2026-08-14T20:05:10.661Z"
+        }
+      ]
+    }
+  ],
+  "network_cos": [
+    {
+      "state": "Abuja HQ (FCT)",
+      "admin_name": "Ayo T. Joshua",
+      "admin_phone": "+234-803-000-0001",
+      "admin_email": "ayo@abion.ng",
+      "whatsapp_group_created": true,
+      "members_count": "12",
+      "status": "Active",
+      "last_report_date": "2026-08-05",
+      "notes": "Central HQ — all core verticals operate from here"
+    },
+    {
+      "state": "Lagos Office",
+      "admin_name": "Femi Balogun",
+      "admin_phone": "+234-803-000-0002",
+      "admin_email": "femi@abion.ng",
+      "whatsapp_group_created": true,
+      "members_count": "8",
+      "status": "Active",
+      "last_report_date": "2026-08-04",
+      "notes": "Product, Marketing, and Partnerships hub"
+    },
+    {
+      "state": "Port Harcourt",
+      "admin_name": "Kelechi Umeh",
+      "admin_phone": "+234-803-000-0003",
+      "admin_email": "kelechi@abion.ng",
+      "whatsapp_group_created": true,
+      "members_count": "4",
+      "status": "Active",
+      "last_report_date": "2026-08-03",
+      "notes": "Grants and Field Operations coordination"
+    },
+    {
+      "state": "Kano",
+      "admin_name": "Amara Chukwu",
+      "admin_phone": "+234-803-000-0004",
+      "admin_email": "amara@abion.ng",
+      "whatsapp_group_created": true,
+      "members_count": "3",
+      "status": "In Progress",
+      "last_report_date": "2026-07-30",
+      "notes": "Agro Market northern expansion pilot"
+    },
+    {
+      "state": "Virtual / Remote",
+      "admin_name": "Femi Balogun",
+      "admin_phone": "+234-803-000-0005",
+      "admin_email": "femi@abion.ng",
+      "whatsapp_group_created": true,
+      "members_count": "15",
+      "status": "Active",
+      "last_report_date": "2026-08-05",
+      "notes": "Deputy COO and 3 remote leads — all async ops"
+    },
+    {
+      "state": "International (UK)",
+      "admin_name": "Mrs Adaeze Nwankwo",
+      "admin_phone": "+44-7700-000-001",
+      "admin_email": "adaeze@abion.ng",
+      "whatsapp_group_created": true,
+      "members_count": "2",
+      "status": "Active",
+      "last_report_date": "2026-08-01",
+      "notes": "GCEO + diaspora investor relations"
+    }
+  ],
+  "partnerships": [
+    {
+      "assigned_to_name": "Kelechi Umeh",
+      "organisation": "CcHUB (Co-creation Hub)",
+      "contact_name": "Programme Lead",
+      "contact_email": "programmes@cchubnigeria.com",
+      "category": "NGO / Accelerator",
+      "current_status": "active",
+      "last_contact_date": "2026-07-20",
+      "follow_up_date": "2026-08-12",
+      "document_status": "under_review",
+      "remarks": "NAS 1000-learner pilot grant proposal submitted"
+    },
+    {
+      "assigned_to_name": "Kelechi Umeh",
+      "organisation": "Mastercard Foundation",
+      "contact_name": "Grants Officer",
+      "contact_email": "grants@mastercardfdn.org",
+      "category": "Foundation",
+      "current_status": "active",
+      "last_contact_date": "2026-07-15",
+      "follow_up_date": "2026-08-15",
+      "document_status": "under_review",
+      "remarks": "Co-submitted with CcHUB for NAS pilot funding"
+    },
+    {
+      "assigned_to_name": "Femi Balogun",
+      "organisation": "MTN Foundation Nigeria",
+      "contact_name": "CSR Manager",
+      "contact_email": "csr@mtnfoundation.org",
+      "category": "Corporate",
+      "current_status": "cold",
+      "last_contact_date": "2026-06-10",
+      "follow_up_date": "2026-08-20",
+      "document_status": "not_started",
+      "remarks": "Exploratory — NEXUS for MTN SME customers"
+    },
+    {
+      "assigned_to_name": "Ayo T. Joshua",
+      "organisation": "Ministry of Interior (Nigeria)",
+      "contact_name": "Director, Internal Affairs",
+      "contact_email": "interior@gov.ng",
+      "category": "Government",
+      "current_status": "active",
+      "last_contact_date": "2026-07-28",
+      "follow_up_date": "2026-08-06",
+      "document_status": "draft_sent",
+      "remarks": "NAS — Ministry-wide personnel protection and command infrastructure MOU"
+    },
+    {
+      "assigned_to_name": "Kelechi Umeh",
+      "organisation": "Tony Elumelu Foundation",
+      "contact_name": "Programme Officer",
+      "contact_email": "tef@tonyelumelufoundation.org",
+      "category": "Foundation",
+      "current_status": "negotiating",
+      "last_contact_date": "2026-07-20",
+      "follow_up_date": "2026-08-06",
+      "document_status": "under_review",
+      "remarks": "TEF 2026 — NAS + Agro Market dual application"
+    },
+    {
+      "assigned_to_name": "Amara Chukwu",
+      "organisation": "USAID Nigeria",
+      "contact_name": "Director of Programmes",
+      "contact_email": "h.musa@usaid.gov",
+      "category": "International",
+      "current_status": "cold",
+      "last_contact_date": "2026-07-10",
+      "follow_up_date": "2026-08-25",
+      "document_status": "not_started",
+      "remarks": "AEPM framework and community resilience alignment"
+    },
+    {
+      "assigned_to_name": "Emeka",
+      "organisation": "Pan-African AI Alliance",
+      "contact_name": "Head of Partnerships",
+      "contact_email": "partnerships@panafrica.ai",
+      "category": "Tech Ecosystem",
+      "current_status": "in_discussion",
+      "last_contact_date": "2026-07-25",
+      "follow_up_date": "2026-08-08",
+      "document_status": "draft_sent",
+      "remarks": "NEXUS AI Analyst — co-marketing and integration opportunity"
+    }
+  ],
+  "org_contacts": [
+    {
+      "visitor_name": "Engr. Adewale Bakare",
+      "position": "Head of Digital Transformation",
+      "company_org": "Access Bank Nigeria",
+      "email": "a.bakare@accessbankplc.com",
+      "phone": "+234-803-100-0001",
+      "state": "Lagos",
+      "staff_size": "5400",
+      "date_visited": "2026-07-10",
+      "contact_owner_name": "Femi Balogun",
+      "letter_status": "sent",
+      "onboarding_status": "in_progress",
+      "follow_up_date": "2026-08-10",
+      "notes": "Interest in NEXUS for internal SME ops management across branches"
+    },
+    {
+      "visitor_name": "Dr. Amina Garba",
+      "position": "Director, Innovation & Research",
+      "company_org": "NCC (Nigerian Comms Commission)",
+      "email": "a.garba@ncc.gov.ng",
+      "phone": "+234-803-100-0002",
+      "state": "Abuja (FCT)",
+      "staff_size": "720",
+      "date_visited": "2026-07-15",
+      "contact_owner_name": "Ayo T. Joshua",
+      "letter_status": "not_sent",
+      "onboarding_status": "pending",
+      "follow_up_date": "2026-08-15",
+      "notes": "NEXUS + NAS dual pitch — regulatory sandbox interest"
+    },
+    {
+      "visitor_name": "Mr Chukwuemeka Obi",
+      "position": "CEO",
+      "company_org": "Farmcrowdy Nigeria",
+      "email": "c.obi@farmcrowdy.com",
+      "phone": "+234-803-100-0003",
+      "state": "Lagos",
+      "staff_size": "85",
+      "date_visited": "2026-07-20",
+      "contact_owner_name": "Kelechi Umeh",
+      "letter_status": "not_sent",
+      "onboarding_status": "pending",
+      "follow_up_date": "2026-08-20",
+      "notes": "Agro Market potential integration partner — agri-fintech alignment"
+    },
+    {
+      "visitor_name": "Hajiya Fati Abdullahi",
+      "position": "Executive Secretary",
+      "company_org": "SMEDAN",
+      "email": "f.abdullahi@smedan.gov.ng",
+      "phone": "+234-803-100-0004",
+      "state": "Abuja (FCT)",
+      "staff_size": "340",
+      "date_visited": "2026-07-22",
+      "contact_owner_name": "Ayo T. Joshua",
+      "letter_status": "sent",
+      "onboarding_status": "pending",
+      "follow_up_date": "2026-08-08",
+      "notes": "NEXUS for SMEDAN SME directory — 1M+ registered businesses target"
+    },
+    {
+      "visitor_name": "Prof. Adisa Ogundimu",
+      "position": "VC for Programmes",
+      "company_org": "University of Lagos",
+      "email": "a.ogundimu@unilag.edu.ng",
+      "phone": "+234-803-100-0005",
+      "state": "Lagos",
+      "staff_size": "4200",
+      "date_visited": "2026-07-25",
+      "contact_owner_name": "Kelechi Umeh",
+      "letter_status": "not_sent",
+      "onboarding_status": "pending",
+      "follow_up_date": "2026-08-25",
+      "notes": "NAS curriculum partnership — accredited skills certification track"
+    },
+    {
+      "visitor_name": "Ms. Zara Bello",
+      "position": "Country Director",
+      "company_org": "GIZ Nigeria",
+      "email": "z.bello@giz.de",
+      "phone": "+234-803-100-0006",
+      "state": "Abuja (FCT)",
+      "staff_size": "180",
+      "date_visited": "2026-07-28",
+      "contact_owner_name": "Ayo T. Joshua",
+      "letter_status": "not_sent",
+      "onboarding_status": "pending",
+      "follow_up_date": "2026-08-12",
+      "notes": "AEPM economic model — GIZ development finance alignment discussion"
+    }
+  ],
+  "eod_logs": [
+    {
+      "date": "2026-08-04",
+      "user_name": "Ayo T. Joshua",
+      "summary": "Completed: Finalised NEXUS demo sheet seeding; reviewed RCT-MoI MOU draft with Shina | Moved forward: NEXUS demo stack at 80%; MOU ready for Ministry submission | Blockers: NEXUS-003 not yet seeded — needs AI test data | Tomorrow: Prep full demo run-through; AEPM Chapter 2 draft"
+    },
+    {
+      "date": "2026-08-04",
+      "user_name": "Tobi Adeyemi",
+      "summary": "Completed: Deployed NEXUS staging to Vercel; resolved HMAC token refresh edge case | Moved forward: Auth flow now stable on all endpoints; staging env live | Blockers: ENV vars for AI Analyst (NIM) not yet configured on Vercel | Tomorrow: Configure NIM keys on staging; test Llama 4 Maverick call"
+    },
+    {
+      "date": "2026-08-04",
+      "user_name": "Femi Balogun",
+      "summary": "Completed: Reviewed MoI deck with Ayo | Moved forward: MoI deck in final state | Blockers: None | Tomorrow: Finalize OPS-002 JD and post to LinkedIn"
+    },
+    {
+      "date": "2026-08-04",
+      "user_name": "Kelechi Umeh",
+      "summary": "Completed: Submitted TEF 2026 application; progressed NITDA EOI research | Moved forward: TEF application live; NITDA pipeline at 65% | Blockers: Awaiting Ayo approval on GRANT-001 final page | Tomorrow: Follow up with CcHUB programme lead on NAS grant timeline"
+    },
+    {
+      "date": "2026-08-04",
+      "user_name": "Yewande",
+      "summary": "Completed: Completed August content calendar; drafted 4 post captions for NEXUS launch | Moved forward: Calendar shared on team channel; captions queued on Buffer | Blockers: Need Halima to finish motion graphics for NEXUS demo video | Tomorrow: Brief Halima on video deadline; start AFR-002 brand guide outline"
+    },
+    {
+      "date": "2026-08-03",
+      "user_name": "Kunle (Content)",
+      "summary": "Completed: Published Sunday recap reel; 9AM Monday reshare scheduled | Moved forward: Reel at 340 views in 6 hours; engagement up 14% | Blockers: None | Tomorrow: Coordinate with Halima on NEXUS explainer video script review"
+    },
+    {
+      "date": "2026-08-01",
+      "user_name": "Zainab",
+      "summary": "Completed: Compiled Pan-African SME market research — 40-page report uploaded to Drive | Moved forward: NEXUS market sizing dataset complete; shared with Shina and Ayo | Blockers: Secondary data sources for East Africa thin | Tomorrow: Cross-check East Africa figures with World Bank dataset"
+    },
+    {
+      "date": "2026-07-31",
+      "user_name": "Tunde",
+      "summary": "Completed: Called 12 prospects from partner referral list; 4 expressed interest in NEXUS demo | Moved forward: Outreach pipeline grown by 4 warm leads | Blockers: None | Tomorrow: Schedule NEXUS discovery calls with the 4 warm leads next week"
+    },
+    {
+      "date": "2026-07-30",
+      "user_name": "Amara Chukwu",
+      "summary": "Completed: Had discovery call with GIZ Nigeria Country Director; sent follow-up brief | Moved forward: ORG-006 status moved to Pending | Blockers: Decision-maker on leave until Aug 12 | Tomorrow: Resume outreach with Zara Bello on Aug 12"
+    }
+  ],
+  "marketing": [
+    {
+      "content_type": "Reel",
+      "caption": "NEXUS — the pan-African operations platform your team needs. [Demo preview]",
+      "platform": "LinkedIn,Twitter/X",
+      "assigned_to_name": "Halima",
+      "due_date": "2026-08-10",
+      "status": "In Progress",
+      "post_link": null,
+      "notes_not_persisted": "Hero launch asset; motion graphics WIP"
+    },
+    {
+      "content_type": "Thread",
+      "caption": "How ABION Industries is building Africa's operating system — a 7-tweet thread",
+      "platform": "Twitter/X",
+      "assigned_to_name": "Kunle (Content)",
+      "due_date": "2026-08-07",
+      "status": "Done",
+      "post_link": "https://x.com/abionfounding/thread1",
+      "notes_not_persisted": "Strong organic reach"
+    },
+    {
+      "content_type": "Graphic",
+      "caption": "AEPM — \"A Blueprint for African National Transformation\" teaser card",
+      "platform": "LinkedIn,Instagram",
+      "assigned_to_name": "Yewande",
+      "due_date": "2026-08-09",
+      "status": "In Progress",
+      "post_link": null,
+      "notes_not_persisted": "Pre-launch hype for book; Ayo reviewing copy"
+    },
+    {
+      "content_type": "Reel",
+      "caption": "Agro Market — Trading Commodities on the Nigerian market, safely and simply",
+      "platform": "TikTok,Instagram",
+      "assigned_to_name": "Halima",
+      "due_date": "2026-08-12",
+      "status": "Not Started",
+      "post_link": null,
+      "notes_not_persisted": "Target: agri-SME audience; farm footage needed"
+    },
+    {
+      "content_type": "Story",
+      "caption": "9AM daily reshare — NEXUS early access waitlist CTA",
+      "platform": "Instagram,WhatsApp",
+      "assigned_to_name": "Kunle (Content)",
+      "due_date": "2026-08-05",
+      "status": "Done",
+      "post_link": null,
+      "notes_not_persisted": "Recurring daily; automated via Buffer"
+    },
+    {
+      "content_type": "Article",
+      "caption": "ABION Industries: how a 21-subsidiary conglomerate is built from zero",
+      "platform": "LinkedIn Newsletter",
+      "assigned_to_name": "Ayo T. Joshua",
+      "due_date": "2026-08-15",
+      "status": "Not Started",
+      "post_link": null,
+      "notes_not_persisted": "Founder story; long-form personal brand piece"
+    },
+    {
+      "content_type": "Graphic",
+      "caption": "NAS x Ministry of Interior — announcing the partnership",
+      "platform": "LinkedIn,Twitter/X",
+      "assigned_to_name": "Yewande",
+      "due_date": "2026-08-08",
+      "status": "Not Started",
+      "post_link": null,
+      "notes_not_persisted": "Hold until MOU is signed; draft ready"
+    },
+    {
+      "content_type": "Reel",
+      "caption": "Afromation: the animated universe rooted in Yoruba mythology — first look",
+      "platform": "YouTube,Instagram,TikTok",
+      "assigned_to_name": "Kunle (Content)",
+      "due_date": "2026-08-20",
+      "status": "Not Started",
+      "post_link": null,
+      "notes_not_persisted": "Coordinate with animation team for teaser clip"
+    }
+  ],
+  "meetings": [
+    {
+      "legacy_id": "MTG-ABION-001",
+      "title": "NEXUS Weekly Ops Sync",
+      "date": "2026-08-05",
+      "duration_mins": "60",
+      "location_type_raw": "Google Meet",
+      "zoom_link": "meet.google.com/abion-nexus-ops",
+      "agenda": "NEXUS staging review; demo prep checklist; task blocker clear",
+      "team_invitees": "Ayo T. Joshua, Tobi Adeyemi, Femi Balogun",
+      "external_emails": null,
+      "organiser_name": "Ayo T. Joshua",
+      "created_at": "2026-08-04T10:00:00.000Z",
+      "time": "09:00",
+      "location_type": "google_meet"
+    },
+    {
+      "legacy_id": "MTG-ABION-002",
+      "title": "Agro Market Sprint Review — MVP Scope",
+      "date": "2026-08-06",
+      "duration_mins": "90",
+      "location_type_raw": "Google Meet",
+      "zoom_link": "meet.google.com/abion-agro-sprint",
+      "agenda": "Seeds and Hire Worker category demo; Paystack integration walkthrough; KYC flow design",
+      "team_invitees": "Tobi Adeyemi, Ayo T. Joshua, Femi Balogun",
+      "external_emails": null,
+      "organiser_name": "Tobi Adeyemi",
+      "created_at": "2026-08-04T10:00:00.000Z",
+      "time": "14:00",
+      "location_type": "google_meet"
+    },
+    {
+      "legacy_id": "MTG-ABION-003",
+      "title": "NAS x Ministry of Interior — Follow-Up Strategy Call",
+      "date": "2026-08-07",
+      "duration_mins": "60",
+      "location_type_raw": "Google Meet",
+      "zoom_link": "meet.google.com/abion-nas-moi",
+      "agenda": "MOU status update; next steps for submission; Ministry liaison engagement",
+      "team_invitees": "Ayo T. Joshua, Femi Balogun",
+      "external_emails": "interior@gov.ng",
+      "organiser_name": "Ayo T. Joshua",
+      "created_at": "2026-08-04T09:00:00.000Z",
+      "time": "10:00",
+      "location_type": "google_meet"
+    },
+    {
+      "legacy_id": "MTG-ABION-005",
+      "title": "NAS Curriculum Review — Cohort 1 Modules",
+      "date": "2026-08-11",
+      "duration_mins": "60",
+      "location_type_raw": "Google Meet",
+      "zoom_link": "meet.google.com/abion-nas-review",
+      "agenda": "Review 10-module curriculum; align with CcHUB grant requirements; assign content leads",
+      "team_invitees": "Kelechi Umeh, Ayo T. Joshua, Blessing",
+      "external_emails": "programmes@cchubnigeria.com",
+      "organiser_name": "Kelechi Umeh",
+      "created_at": "2026-08-04T11:00:00.000Z",
+      "time": "14:00",
+      "location_type": "google_meet"
+    },
+    {
+      "legacy_id": "MTG-ABION-006",
+      "title": "Monthly All-Hands — August",
+      "date": "2026-08-14",
+      "duration_mins": "90",
+      "location_type_raw": "Google Meet",
+      "zoom_link": "meet.google.com/abion-all-hands",
+      "agenda": "OKR review; subsidiary P&L summary; team announcements; Q3 priorities",
+      "team_invitees": "Ayo T. Joshua, Femi Balogun, Tobi Adeyemi, Kelechi Umeh, Amara Chukwu, Yewande, Zainab, Tunde, Kunle (Content), Emeka, Halima, Blessing, Segun, Ngozi, Aisha",
+      "external_emails": null,
+      "organiser_name": "Ayo T. Joshua",
+      "created_at": "2026-08-04T10:00:00.000Z",
+      "time": "10:00",
+      "location_type": "google_meet"
+    },
+    {
+      "legacy_id": "MTG-ABION-007",
+      "title": "Afromation Production Kick-Off",
+      "date": "2026-08-12",
+      "duration_mins": "60",
+      "location_type_raw": "Google Meet",
+      "zoom_link": "meet.google.com/abion-afro-prod",
+      "agenda": "S1E1 storyboard review; voice casting brief; animation pipeline setup",
+      "team_invitees": "Kunle (Content), Yewande, Halima",
+      "external_emails": null,
+      "organiser_name": "Yewande",
+      "created_at": "2026-08-04T09:00:00.000Z",
+      "time": "15:00",
+      "location_type": "google_meet"
+    }
+  ],
+  "automation_controls": [
+    {
+      "key": "email_assignments",
+      "enabled": true,
+      "toggled_by_name": "Ayo T. Joshua"
+    },
+    {
+      "key": "overdue_reminders",
+      "enabled": true,
+      "toggled_by_name": "Ayo T. Joshua"
+    },
+    {
+      "key": "eod_nudges",
+      "enabled": true,
+      "toggled_by_name": "Ayo T. Joshua"
+    },
+    {
+      "key": "n8n_webhooks",
+      "enabled": false,
+      "toggled_by_name": "Ayo T. Joshua"
+    },
+    {
+      "key": "morning_digest",
+      "enabled": true,
+      "toggled_by_name": "Ayo T. Joshua"
+    },
+    {
+      "key": "cob_reminders",
+      "enabled": true,
+      "toggled_by_name": "Ayo T. Joshua"
+    },
+    {
+      "key": "deadline_reminders",
+      "enabled": true,
+      "toggled_by_name": "Ayo T. Joshua"
+    },
+    {
+      "key": "calendar_sync",
+      "enabled": true,
+      "toggled_by_name": "Ayo T. Joshua"
+    },
+    {
+      "key": "dependency_checks",
+      "enabled": false,
+      "toggled_by_name": "Ayo T. Joshua"
+    },
+    {
+      "key": "recurring_tasks",
+      "enabled": false,
+      "toggled_by_name": "Ayo T. Joshua"
+    },
+    {
+      "key": "meeting_notetaker",
+      "enabled": true,
+      "toggled_by_name": "Ayo T. Joshua"
+    }
+  ],
+  "automation_log": [
+    {
+      "timestamp": "2026-08-01T08:00:00.000Z",
+      "control_key": "email_assignments",
+      "new_value": true,
+      "changed_by_name": "Ayo T. Joshua"
+    },
+    {
+      "timestamp": "2026-08-01T08:01:00.000Z",
+      "control_key": "overdue_reminders",
+      "new_value": true,
+      "changed_by_name": "Ayo T. Joshua"
+    },
+    {
+      "timestamp": "2026-08-04T08:00:00.000Z",
+      "control_key": "morning_digest",
+      "new_value": true,
+      "changed_by_name": "Ayo T. Joshua"
+    },
+    {
+      "timestamp": "2026-08-04T08:01:00.000Z",
+      "control_key": "eod_nudges",
+      "new_value": true,
+      "changed_by_name": "Ayo T. Joshua"
+    },
+    {
+      "timestamp": "2026-08-04T08:02:00.000Z",
+      "control_key": "meeting_notetaker",
+      "new_value": true,
+      "changed_by_name": "Ayo T. Joshua"
+    },
+    {
+      "timestamp": "2026-08-09T15:57:20.081Z",
+      "control_key": "n8n_webhooks",
+      "new_value": true,
+      "changed_by_name": "Ayo T. Joshua"
+    },
+    {
+      "timestamp": "2026-08-09T15:57:21.746Z",
+      "control_key": "n8n_webhooks",
+      "new_value": false,
+      "changed_by_name": "Ayo T. Joshua"
+    }
+  ],
+  "knowledge_base": [
+    {
+      "title": "ABION Industries",
+      "content": "ABION Industries is the parent organization within the ABION ecosystem. It develops and operates businesses, products and initiatives across technology, business services and other sectors.",
+      "category": "Organization",
+      "updated_by_name": "Ayo T. Joshua"
+    },
+    {
+      "title": "NEXUS Outreach Agent",
+      "content": "The Outreach Agent is responsible for creating personalized communication based on prospect research, organizational knowledge and approved outreach rules. It should not send communication without the required approval.",
+      "category": "NEXUS Agents",
+      "updated_by_name": "Ayo T. Joshua"
+    },
+    {
+      "title": "ABION City Node",
+      "content": "An ABION City Node is a planned physical mini-city consisting of five buildings arranged as the ABION architectural symbol represented in the ABION Industries logo.\n\nThe standard ABION City Node contains 100 total floors distributed across five buildings:\n\nCentral Tower — 30 floors\nInner Tower 2 — 20 floors\nInner Tower 3 — 20 floors\nOuter Tower 4 — 15 floors\nOuter Tower 5 — 15 floors\n\nTotal: 5 buildings / 100 floors.\n\nThe five-building arrangement follows the visual composition of the ABION Industries logo: a dominant central tower surrounded by four progressively shorter towers. The logo therefore serves as the architectural identity and visual representation of the ABION City Node.\n\nAn ABION City Node is intended to function as a compact vertical mini-city, with its 100 floors potentially accommodating multiple functions and activities within a single integrated development. Specific floor-by-floor uses are to be defined separately.\n\nStructure:\n5 buildings · 100 floors · 30 + 20 + 20 + 15 + 15\n\nArchitectural Identity:\nThe five-building configuration is derived from the ABION Industries logo.",
+      "category": "ABION City",
+      "updated_by_name": "Ayo T. Joshua"
+    }
+  ],
+  "notifications": [
+    {
+      "recipient_name": "Ayo T. Joshua",
+      "type": "assignment",
+      "title": "NEXUS · New Task Assigned",
+      "body": "Pull a list of 30-40 potential client leads from CRM, LinkedIn, or prospecting database with name, c",
+      "task_legacy_id": "1-1786436599043",
+      "created_at": "2026-08-11T08:23:21.981Z",
+      "read": true
+    },
+    {
+      "recipient_name": "Tobi Adeyemi",
+      "type": "chat_task",
+      "title": "NEXUS · Task Reply · Finalise NEXUS API endpoint auth + HMAC token refresh",
+      "body": "Ayo T. Joshua: Done",
+      "task_legacy_id": "NEXUS-001",
+      "created_at": "2026-08-11T22:33:39.134Z",
+      "read": false
+    },
+    {
+      "recipient_name": "NEXUS Automation",
+      "type": "chat_task",
+      "title": "NEXUS · Task Reply · Finalise NEXUS API endpoint auth + HMAC token refresh",
+      "body": "Ayo T. Joshua: Done",
+      "task_legacy_id": "NEXUS-001",
+      "created_at": "2026-08-11T22:33:39.549Z",
+      "read": false
+    },
+    {
+      "recipient_name": "Tobi Adeyemi",
+      "type": "chat_task",
+      "title": "NEXUS · Task Reply · Finalise NEXUS API endpoint auth + HMAC token refresh",
+      "body": "Ayo T. Joshua: Done",
+      "task_legacy_id": "NEXUS-001",
+      "created_at": "2026-08-11T22:34:15.620Z",
+      "read": false
+    },
+    {
+      "recipient_name": "NEXUS Automation",
+      "type": "chat_task",
+      "title": "NEXUS · Task Reply · Finalise NEXUS API endpoint auth + HMAC token refresh",
+      "body": "Ayo T. Joshua: Done",
+      "task_legacy_id": "NEXUS-001",
+      "created_at": "2026-08-11T22:34:16.557Z",
+      "read": false
+    },
+    {
+      "recipient_name": "Tobi Adeyemi",
+      "type": "chat_task",
+      "title": "NEXUS · Task Reply · Finalise NEXUS API endpoint auth + HMAC token refresh",
+      "body": "Ayo T. Joshua: Done",
+      "task_legacy_id": "NEXUS-001",
+      "created_at": "2026-08-11T22:34:45.297Z",
+      "read": false
+    },
+    {
+      "recipient_name": "NEXUS Automation",
+      "type": "chat_task",
+      "title": "NEXUS · Task Reply · Finalise NEXUS API endpoint auth + HMAC token refresh",
+      "body": "Ayo T. Joshua: Done",
+      "task_legacy_id": "NEXUS-001",
+      "created_at": "2026-08-11T22:34:46.387Z",
+      "read": false
+    },
+    {
+      "recipient_name": "Femi Balogun",
+      "type": "assignment",
+      "title": "NEXUS · New Task Assigned",
+      "body": "Draft a concise outreach message template tailored for cold prospects, including a clear value propo",
+      "task_legacy_id": "1-1786823899429",
+      "created_at": "2026-08-15T19:58:26.408Z",
+      "read": false
+    },
+    {
+      "recipient_name": "Femi Balogun",
+      "type": "assignment",
+      "title": "NEXUS · New Task Assigned",
+      "body": "Draft a concise outreach message template tailored for cold prospects, including a clear value propo",
+      "task_legacy_id": "1-1786823902084",
+      "created_at": "2026-08-15T19:58:26.451Z",
+      "read": false
+    },
+    {
+      "recipient_name": "Tobi Adeyemi",
+      "type": "deadline_reminder",
+      "title": "NEXUS · Deadline Reminder",
+      "body": "Deploy NEXUS staging environment on Vercel + configure env vars — due Sat Aug 15 2026 (no time set — calendar defaults to 9:00 AM)",
+      "task_legacy_id": "NEXUS-002",
+      "created_at": "2026-08-16T10:50:09.684Z",
+      "read": false
+    },
+    {
+      "recipient_name": "Ayo T. Joshua",
+      "type": "general",
+      "title": "New leave request — Ayo T. Joshua",
+      "body": "Ayo T. Joshua requested Sick leave, 2026-08-24 → 2026-08-28.",
+      "task_legacy_id": null,
+      "created_at": "2026-08-22T11:33:01.287Z",
+      "read": false
+    },
+    {
+      "recipient_name": "Femi Balogun",
+      "type": "general",
+      "title": "New leave request — Ayo T. Joshua",
+      "body": "Ayo T. Joshua requested Sick leave, 2026-08-24 → 2026-08-28.",
+      "task_legacy_id": null,
+      "created_at": "2026-08-22T11:33:02.483Z",
+      "read": false
+    },
+    {
+      "recipient_name": "Ayo T. Joshua",
+      "type": "general",
+      "title": "Leave request approved",
+      "body": "Your Sick leave (Mon Aug 24 2026 08:00:00 GMT+0100 (West Africa Time) → Fri Aug 28 2026 08:00:00 GMT+0100 (West Africa Time)) was approved by Ayo T. Joshua.",
+      "task_legacy_id": null,
+      "created_at": "2026-08-22T21:32:21.994Z",
+      "read": false
+    },
+    {
+      "recipient_name": "Ayo T. Joshua",
+      "type": "assignment",
+      "title": "NEXUS · New Task Assigned",
+      "body": "Pull a list of 30-40 potential client leads from CRM, LinkedIn, or prospecting database with name, c",
+      "task_legacy_id": "1-1786436599043",
+      "created_at": "2026-08-22T21:42:59.872Z",
+      "read": false
+    }
+  ],
+  "task_checklists": [
+    {
+      "task_legacy_id": "TASK-1787398457038",
+      "item_text": "Create accounts (email, chat, core tools)",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:18.168Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398457038",
+      "item_text": "Assign onboarding buddy",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:18.398Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398457038",
+      "item_text": "Share employee handbook & policies",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:18.622Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398457038",
+      "item_text": "Set up workstation / equipment",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:18.859Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398457038",
+      "item_text": "Assign first task(s)",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:19.077Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398457038",
+      "item_text": "Schedule 30-day check-in",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:19.481Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398457038",
+      "item_text": "Schedule 60-day check-in",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:19.691Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398457038",
+      "item_text": "Schedule 90-day check-in",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:19.924Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398482381",
+      "item_text": "Create accounts (email, chat, core tools)",
+      "is_done": true,
+      "created_at": "2026-08-22T11:34:43.143Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398482381",
+      "item_text": "Assign onboarding buddy",
+      "is_done": true,
+      "created_at": "2026-08-22T11:34:43.305Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398482381",
+      "item_text": "Share employee handbook & policies",
+      "is_done": true,
+      "created_at": "2026-08-22T11:34:43.576Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398482381",
+      "item_text": "Set up workstation / equipment",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:43.854Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398482381",
+      "item_text": "Assign first task(s)",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:44.133Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398482381",
+      "item_text": "Schedule 30-day check-in",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:44.413Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398482381",
+      "item_text": "Schedule 60-day check-in",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:44.684Z",
+      "created_by_name": "Ayo T. Joshua"
+    },
+    {
+      "task_legacy_id": "TASK-1787398482381",
+      "item_text": "Schedule 90-day check-in",
+      "is_done": false,
+      "created_at": "2026-08-22T11:34:44.969Z",
+      "created_by_name": "Ayo T. Joshua"
+    }
+  ],
+  "chat_messages": [
+    {
+      "channel": "team",
+      "task_legacy_id": null,
+      "author_name": "Ayo T. Joshua",
+      "body": "Good morning team — big day. Let's make sure the NEXUS demo stack is solid by 10am.",
+      "created_at": "2026-08-04T09:00:00.000Z"
+    },
+    {
+      "channel": "team",
+      "task_legacy_id": null,
+      "author_name": "Tobi Adeyemi",
+      "body": "Morning! Staging is live. Auth and task sync both green. AI Analyst endpoint is next.",
+      "created_at": "2026-08-04T09:15:00.000Z"
+    },
+    {
+      "channel": "team",
+      "task_legacy_id": null,
+      "author_name": "Femi Balogun",
+      "body": "Confirmed. MoI deck is finalized — going to Ayo for one last read before the presentation.",
+      "created_at": "2026-08-04T09:30:00.000Z"
+    },
+    {
+      "channel": "team",
+      "task_legacy_id": null,
+      "author_name": "Kelechi Umeh",
+      "body": "TEF application submitted last night ✅. Confirmation email received. Moving on to NITDA EOI.",
+      "created_at": "2026-08-04T10:00:00.000Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "NEXUS-001",
+      "author_name": "Tobi Adeyemi",
+      "body": "HMAC token refresh edge case fixed. Pushed to staging. @Ayo T. Joshua please verify on your end.",
+      "created_at": "2026-08-04T10:20:00.000Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "NEXUS-001",
+      "author_name": "NEXUS Automation",
+      "body": "Task updated: NEXUS-001 — Finalise NEXUS API endpoint auth + HMAC token refresh. Status: In Progress → 80%",
+      "created_at": "2026-08-04T10:21:00.000Z"
+    },
+    {
+      "channel": "team",
+      "task_legacy_id": null,
+      "author_name": "Yewande",
+      "body": "August content calendar is done and scheduled on Buffer through Aug 31. NEXUS launch assets queued for Aug 10 🚀",
+      "created_at": "2026-08-04T11:00:00.000Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "NAS-002",
+      "author_name": "NEXUS Automation",
+      "body": "Task marked Done: NAS-002 — Submit NAS 1000-learner pilot proposal to Mastercard Foundation.",
+      "created_at": "2026-08-04T11:05:00.000Z"
+    },
+    {
+      "channel": "team",
+      "task_legacy_id": null,
+      "author_name": "Ayo T. Joshua",
+      "body": "@Tobi Adeyemi — once AI Analyst is confirmed working, let's do a full demo run. I'll invite Dan.",
+      "created_at": "2026-08-04T11:30:00.000Z"
+    },
+    {
+      "channel": "team",
+      "task_legacy_id": null,
+      "author_name": "Halima",
+      "body": "NEXUS explainer video: script approved, motion work at 20%. Should hit the Aug 10 deadline comfortably.",
+      "created_at": "2026-08-04T12:00:00.000Z"
+    },
+    {
+      "channel": "team",
+      "task_legacy_id": null,
+      "author_name": "Tunde",
+      "body": "4 warm leads from the partner referral list. Scheduling discovery calls for next week.",
+      "created_at": "2026-08-04T12:30:00.000Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786436599043",
+      "author_name": "NEXUS Automation",
+      "body": "Task assigned to Ayo T. Joshua: Pull a list of 30-40 potential client leads from CRM, LinkedIn, or prospecting database with name, company, role, and contact info",
+      "created_at": "2026-08-11T08:23:22.642Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "NEXUS-001",
+      "author_name": "Ayo T. Joshua",
+      "body": "Done",
+      "created_at": "2026-08-11T22:33:37.392Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "NEXUS-001",
+      "author_name": "Ayo T. Joshua",
+      "body": "Done",
+      "created_at": "2026-08-11T22:34:13.469Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "NEXUS-001",
+      "author_name": "Ayo T. Joshua",
+      "body": "Done",
+      "created_at": "2026-08-11T22:34:42.738Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786823902084",
+      "author_name": "NEXUS Automation",
+      "body": "Task assigned to Femi Balogun: Draft a concise outreach message template tailored for cold prospects, including a clear value proposition and a direct ask for a 15-30 minute meeting this week",
+      "created_at": "2026-08-15T19:58:27.066Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786823899429",
+      "author_name": "NEXUS Automation",
+      "body": "Task assigned to Femi Balogun: Draft a concise outreach message template tailored for cold prospects, including a clear value proposition and a direct ask for a 15-30 minute meeting this week",
+      "created_at": "2026-08-15T19:58:27.356Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786823899429",
+      "author_name": "NEXUS Automation",
+      "body": "Handed off to agent by Ayo T. Joshua: Task assigned to Femi Balogun: Draft a concise outreach message template tailored for cold prospects, including a clear value proposition and a direct ask for a 15-30 minute meeting this week",
+      "created_at": "2026-08-15T20:00:11.922Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786823899429",
+      "author_name": "NEXUS Agent",
+      "body": "Here is the outreach message template:\n\n---\n\nSubject: Quick idea for [Company Name]\n\nHi [First Name],\n\nI came across [Company Name] and noticed [specific observation about their business, recent news, or challenge]. It got me thinking about how we might help.\n\nWe help companies like yours [specific value proposition — e.g., reduce customer acquisition costs by 30%, streamline operations with automation, scale revenue without scaling headcount]. Recently, we worked with [similar company or industry example] and achieved [brief, credible result].\n\nI'd like to share a few ideas specific to [Company Name] — no pitch, just a practical conversation about what might work for you.\n\nDo you have 15-30 minutes this week? I'm flexible on days and times. If this week is tight, I'm happy to find a slot that works better for you.\n\nBest,\n[Your Name]\n[Your Title]\n[Your Company]\n[Contact Information]\n\n---\n\nUsage notes for Femi:\n\n- Keep the subject line under 50 characters when possible for better open rates.\n- Replace every bracketed placeholder with prospect-specific details before sending. Generic templates get ignored.\n- The observation line should reference something real — a recent hire, product launch, funding round, LinkedIn post, or industry trend. This proves the message is not batch-sent.\n- The value proposition should be one sentence maximum. Focus on the outcome, not the process.\n- The example result should be specific and verifiable. If you cannot share a real number, use a qualitative result instead.\n- Send Tuesday through Thursday between 9-11 AM recipient local time for best response rates.\n- Follow up once after 3 business days if no response. Do not send more than two follow-ups.\n\nThis is a ready-to-use draft. No real-world sending action has been taken.",
+      "created_at": "2026-08-15T20:01:01.804Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786823899429",
+      "author_name": "NEXUS AI",
+      "body": "Task #1-1786823899429 is at 0% progress despite an URGENT priority and no deadline set. Femi Balogun has not started it. The NEXUS Agent already produced a draft template in the discussion thread, but it appears incomplete — the message cuts off mid-sentence at \"recent news,\" and there is no confirmation it was finalized or delivered.\n\nTwo immediate actions needed:\n\n1. Confirm whether the agent's draft was completed and sent. If it cuts off as shown, Femi needs to finalize the template with the full value proposition and the explicit 15-30 minute meeting ask, which is missing from the visible draft.\n\n2. Set a deadline. This task is marked URGENT but has no due date, which undermines accountability. Recommend assigning a same-day or next-day deadline given the urgency flag.\n\nNo escalations have been recorded. If Femi is unresponsive, this should be escalated to Ayo T. Joshua, who handed off the task originally.",
+      "created_at": "2026-08-15T20:04:00.353Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786823899429",
+      "author_name": "NEXUS Automation",
+      "body": "Handed off to agent by Ayo T. Joshua: send the emails after researching fro them",
+      "created_at": "2026-08-15T20:04:12.070Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786823899429",
+      "author_name": "NEXUS Agent",
+      "body": "Here is the outreach message template:\n\n---\n\nSubject: Quick idea for [Company Name]\n\nHi [First Name],\n\nI came across [Company Name] and noticed [specific observation about their business, recent news, or challenge they likely face]. I work with companies like yours on [your area of expertise], and I noticed a potential opportunity to [specific benefit — e.g., reduce costs, streamline operations, increase conversions].\n\nWe recently helped [similar company or brief example] achieve [specific result or outcome], and I believe we could do something similar for [Company Name].\n\nWould you be open to a quick 15-30 minute call this week to explore whether this makes sense for you? I have availability on [Day, Date] and [Day, Date] — let me know what works best, or feel free to suggest another time.\n\nBest regards,\n[Your Name]\n[Your Title]\n[Your Company]\n[Your Contact Information]\n\n---\n\nRegarding the instruction to send the emails after researching prospects: I cannot send real emails or conduct live outreach on your behalf. What I can do is help you build a list of target prospects and customize this template for each one with researched, personalized details. If you share the prospect names or companies you want to target, I can draft individualized versions of this message for each one, ready for you to send manually.",
+      "created_at": "2026-08-15T20:05:03.346Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "TASK-1787398457038",
+      "author_name": "NEXUS Automation",
+      "body": "Onboarding started for Nife by Ayo T. Joshua. Owner: Ayo T. Joshua",
+      "created_at": "2026-08-22T11:34:20.917Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "TASK-1787398482381",
+      "author_name": "NEXUS Automation",
+      "body": "Onboarding started for Nife by Ayo T. Joshua. Owner: Ayo T. Joshua",
+      "created_at": "2026-08-22T11:34:45.791Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786436599043",
+      "author_name": "NEXUS Automation",
+      "body": "Handed off to agent by Ayo T. Joshua: pull",
+      "created_at": "2026-08-22T21:44:09.204Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786436599043",
+      "author_name": "NEXUS Agent",
+      "body": "Sorry — I couldn't reach the agent service just now. Please try again in a moment.",
+      "created_at": "2026-08-22T21:44:12.050Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786436599043",
+      "author_name": "NEXUS Automation",
+      "body": "Handed off to agent by Ayo T. Joshua: lets go",
+      "created_at": "2026-08-22T21:44:39.231Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786436599043",
+      "author_name": "NEXUS Agent",
+      "body": "Sorry — I couldn't reach the agent service just now. Please try again in a moment.",
+      "created_at": "2026-08-22T21:44:41.878Z"
+    },
+    {
+      "channel": "task",
+      "task_legacy_id": "1-1786436599043",
+      "author_name": "NEXUS AI",
+      "body": "Sorry — I couldn't reach the AI service just now. Please try again in a moment.",
+      "created_at": "2026-08-22T21:45:38.876Z"
+    }
+  ],
+  "chat_read_state": [
+    {
+      "user_name": "Ayo T. Joshua",
+      "channel_raw": "team",
+      "last_read_at": "2026-08-22T21:43:40.939Z",
+      "channel": "team",
+      "task_legacy_id": null
+    },
+    {
+      "user_name": "Tobi Adeyemi",
+      "channel_raw": "team",
+      "last_read_at": "2026-08-04T09:21:00.000Z",
+      "channel": "team",
+      "task_legacy_id": null
+    },
+    {
+      "user_name": "Femi Balogun",
+      "channel_raw": "team",
+      "last_read_at": "2026-08-04T09:31:00.000Z",
+      "channel": "team",
+      "task_legacy_id": null
+    },
+    {
+      "user_name": "Ayo T. Joshua",
+      "channel_raw": "NEXUS-001",
+      "last_read_at": "2026-08-11T22:36:10.126Z",
+      "channel": "task",
+      "task_legacy_id": "NEXUS-001"
+    },
+    {
+      "user_name": "Tobi Adeyemi",
+      "channel_raw": "NEXUS-001",
+      "last_read_at": "2026-08-04T09:22:00.000Z",
+      "channel": "task",
+      "task_legacy_id": "NEXUS-001"
+    },
+    {
+      "user_name": "Ayo T. Joshua",
+      "channel_raw": "NAS-002",
+      "last_read_at": "2026-08-09T15:54:19.912Z",
+      "channel": "task",
+      "task_legacy_id": "NAS-002"
+    },
+    {
+      "user_name": "Ayo T. Joshua",
+      "channel_raw": "1-1786436599043",
+      "last_read_at": "2026-08-22T21:43:56.559Z",
+      "channel": "task",
+      "task_legacy_id": "1-1786436599043"
+    },
+    {
+      "user_name": "Ayo T. Joshua",
+      "channel_raw": "1-1786823899429",
+      "last_read_at": "2026-08-15T19:59:43.249Z",
+      "channel": "task",
+      "task_legacy_id": "1-1786823899429"
+    },
+    {
+      "user_name": "Ayo T. Joshua",
+      "channel_raw": "NEXUS-002",
+      "last_read_at": "2026-08-16T10:50:44.845Z",
+      "channel": "task",
+      "task_legacy_id": "NEXUS-002"
+    },
+    {
+      "user_name": "Ayo T. Joshua",
+      "channel_raw": "ID",
+      "last_read_at": "2026-08-17T17:35:06.584Z",
+      "channel": "task",
+      "task_legacy_id": "ID"
+    },
+    {
+      "user_name": "Ayo T. Joshua",
+      "channel_raw": "TASK-1787398457038",
+      "last_read_at": "2026-08-22T21:29:50.095Z",
+      "channel": "task",
+      "task_legacy_id": "TASK-1787398457038"
+    },
+    {
+      "user_name": "Ayo T. Joshua",
+      "channel_raw": "TASK-1787398482381",
+      "last_read_at": "2026-08-22T21:43:35.926Z",
+      "channel": "task",
+      "task_legacy_id": "TASK-1787398482381"
+    },
+    {
+      "user_name": "Ayo T. Joshua",
+      "channel_raw": "T004",
+      "last_read_at": "2026-08-22T21:38:41.932Z",
+      "channel": "task",
+      "task_legacy_id": "T004"
+    }
+  ],
+  "leave_requests": [
+    {
+      "user_name": "Ayo T. Joshua",
+      "start_date": "2026-08-24",
+      "end_date": "2026-08-28",
+      "reason": null,
+      "status": "approved",
+      "approved_by_name": "Ayo T. Joshua",
+      "decided_at": "2026-08-22T21:32:21.990Z"
+    }
+  ],
+  "permission_log": [
+    {
+      "changed_at": "2026-08-22T21:31:36.495Z",
+      "changed_by_name": "Ayo T. Joshua",
+      "target_name": "Chidi",
+      "resource": "Fields: Email",
+      "action": "update",
+      "granted": true
+    }
+  ],
+  "activity_log": [
+    {
+      "changed_at": "2026-08-11T22:34:29.847Z",
+      "actor_name": "Ayo T. Joshua",
+      "task_legacy_id": "NEXUS-001",
+      "field": "Status",
+      "old_value": "In Progress",
+      "new_value": "Done"
+    },
+    {
+      "changed_at": "2026-08-11T22:34:30.048Z",
+      "actor_name": "Ayo T. Joshua",
+      "task_legacy_id": "NEXUS-001",
+      "field": "% Progress",
+      "old_value": "80",
+      "new_value": "100"
+    },
+    {
+      "changed_at": "2026-08-16T10:50:02.432Z",
+      "actor_name": "Ayo T. Joshua",
+      "task_legacy_id": "NEXUS-002",
+      "field": "% Progress",
+      "old_value": "60",
+      "new_value": "40"
+    },
+    {
+      "changed_at": "2026-08-22T21:30:44.747Z",
+      "actor_name": "Ayo T. Joshua",
+      "task_legacy_id": "TASK-1787398482381",
+      "field": "Status",
+      "old_value": null,
+      "new_value": "Not Started"
+    },
+    {
+      "changed_at": "2026-08-22T21:30:45.019Z",
+      "actor_name": "Ayo T. Joshua",
+      "task_legacy_id": "TASK-1787398482381",
+      "field": "% Progress",
+      "old_value": null,
+      "new_value": "4"
+    },
+    {
+      "changed_at": "2026-08-22T21:42:56.201Z",
+      "actor_name": "Ayo T. Joshua",
+      "task_legacy_id": "1-1786436599043",
+      "field": "Status",
+      "old_value": "Not Started",
+      "new_value": "In Progress"
+    },
+    {
+      "changed_at": "2026-08-22T21:42:56.459Z",
+      "actor_name": "Ayo T. Joshua",
+      "task_legacy_id": "1-1786436599043",
+      "field": "% Progress",
+      "old_value": "0",
+      "new_value": "40"
+    }
+  ],
+  "email_accounts": [
+    {
+      "priority": "1",
+      "email_address": "NEXUS · ABION <nexus@mail.abion.ng>",
+      "daily_limit": "100",
+      "used_today": "0",
+      "last_reset_date": "2026-08-22",
+      "enabled": true
+    }
+  ],
+  "interns": [
+    {
+      "date": "2026-07-25",
+      "intern_name": "Amara Osei",
+      "activity": "Competitive analysis: top 10 African SaaS operations platforms — 15-page report",
+      "status": "Done",
+      "proof_link": "https://drive.google.com/file/d/intern_amara_research",
+      "supervisor_notes": "Excellent depth and structure. Shared with Shina and Israel for NEXUS positioning."
+    },
+    {
+      "date": "2026-07-28",
+      "intern_name": "Khalil Yusuf",
+      "activity": "Data entry: update ABION Org Database — 45 new stakeholder contacts from July outreach",
+      "status": "Done",
+      "proof_link": "https://drive.google.com/file/d/intern_khalil_orgdb",
+      "supervisor_notes": "Completed on time. Minor duplicates corrected by Zainab."
+    },
+    {
+      "date": "2026-08-01",
+      "intern_name": "Amara Osei",
+      "activity": "Draft NEXUS product explainer copy — 300-word version for LinkedIn launch post",
+      "status": "In Progress",
+      "proof_link": null,
+      "supervisor_notes": "Handoff to Kunle (Content) for final editing by Aug 8."
+    },
+    {
+      "date": "2026-08-04",
+      "intern_name": "Emeka Nwosu",
+      "activity": "Transcribe and summarise July All-Hands meeting notes — action item extraction",
+      "status": "Done",
+      "proof_link": "https://drive.google.com/file/d/intern_emeka_notes",
+      "supervisor_notes": "Clean summary. Action items matched to task IDs in NEXUS. Well done."
+    }
+  ]
+}

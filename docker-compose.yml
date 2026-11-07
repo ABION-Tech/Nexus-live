@@ -1,0 +1,39 @@
+# $0 Postgres, no account required. Two uses:
+#
+# 1. Local dev — `docker compose up -d`, point DATABASE_URL at
+#    localhost:5432, run `npm run migrate -w apps/api`. Nobody needs a
+#    Supabase account just to run NEXUS on their laptop.
+#
+# 2. Self-hosting NEXUS itself for real (see DEPLOYMENT.md) — the same
+#    file, run on a VPS (Hetzner/Oracle Free Tier/Railway), with a
+#    stronger POSTGRES_PASSWORD and the volume backed up on a schedule
+#    (PRD §13.12 requires this before production cutover regardless of
+#    who hosts the database).
+#
+# This is plain Postgres, not the full Supabase stack (no GoTrue/
+# PostgREST/Realtime/Storage containers) — NEXUS doesn't depend on those;
+# apps/api talks to Postgres directly via `pg` (see src/db.ts) and rolls
+# its own Auth (PRD §10.1). That's deliberate: it's the reason switching
+# between Supabase-hosted Postgres, this container, or any other Postgres
+# is a DATABASE_URL change, never a code change.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nexus
+      POSTGRES_PASSWORD: nexus_dev_only_change_me
+      POSTGRES_DB: nexus
+    ports:
+      - '5432:5432'
+    volumes:
+      - nexus_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nexus -d nexus']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  nexus_pg_data:

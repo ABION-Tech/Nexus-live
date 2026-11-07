@@ -1,0 +1,29 @@
+/* modules/people extras — everything else draws from styles/components.css
+   (Tier 1) and styles/patterns.css (Tier 2). This file only adds the
+   toolbar row (search + role filter + count) and the name-cell layout
+   DataGrid's render() needs, matching network.css's "only what nothing
+   else already had" scope. */
+
+.nx-people { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.nx-people__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.nx-people__search { flex: 1; max-width: 320px; }
+
+.nx-people__count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.nx-people__name-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}

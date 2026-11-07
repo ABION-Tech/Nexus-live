@@ -1,0 +1,23 @@
+{
+  "name": "@nexus/scheduler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Phase H (PRD §17.1 / §12) external scheduler — the caller automationMaintenance.ts, calendarMaintenance.ts, and billingMaintenance.ts were all built for but never got, per Session 46/47's own 'Next steps'. See README.md.",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "node-cron": "^4.6.0",
+    "pino": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

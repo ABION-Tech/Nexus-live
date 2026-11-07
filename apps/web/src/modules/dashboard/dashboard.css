@@ -1,0 +1,15 @@
+/* modules/dashboard layout only — component-level styling lives in
+   styles/patterns.css (Tier 2) and styles/components.css (Tier 1). */
+.nx-dashboard-overview {
+  display: flex; flex-direction: column; gap: var(--space-5); max-width: 960px;
+  /* UI Rehaul polish pass — this class already doubles as the generic
+     page shell for 12 module pages beyond Dashboard itself (Analytics,
+     Network, Work/TaskSection, Network/CrudSection, People Leave/
+     Onboarding, admin overviews); baking the fade-in in here means
+     every one of them gets it with no per-file change. */
+  animation: nx-fade-in 0.3s var(--ease-out);
+}
+.nx-dashboard-overview__head { display: flex; align-items: center; justify-content: space-between; }
+.nx-dashboard-overview__metrics {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4);
+}

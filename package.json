@@ -1,0 +1,21 @@
+{
+  "name": "nexus",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w apps/web",
+    "dev:api": "npm run dev -w apps/api",
+    "dev:scheduler": "npm run dev -w apps/scheduler",
+    "build": "npm run build -w packages/shared && npm run build -w apps/api && npm run build -w apps/web && npm run build -w apps/scheduler",
+    "lint": "npm run lint -w apps/web && npm run lint -w apps/api",
+    "typecheck": "npm run typecheck -w apps/web && npm run typecheck -w apps/api && npm run typecheck -w apps/scheduler",
+    "test": "npm run test -w apps/web && npm run test -w apps/api"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

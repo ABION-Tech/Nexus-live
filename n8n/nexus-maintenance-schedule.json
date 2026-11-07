@@ -1,0 +1,585 @@
+{
+  "name": "NEXUS \u2014 Maintenance Schedule (PRD \u00a712)",
+  "nodes": [
+    {
+      "id": "trigger_daily_overdue_check",
+      "name": "Schedule: daily_overdue_check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "request_daily_overdue_check",
+      "name": "Run: daily_overdue_check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$vars.NEXUS_API_BASE_URL}}/api/v1/automation/maintenance/run/daily_overdue_check",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Nexus-Maintenance-Secret",
+              "value": "={{$vars.AUTOMATION_MAINTENANCE_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      }
+    },
+    {
+      "id": "trigger_daily_morning_digest",
+      "name": "Schedule: daily_morning_digest",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        160
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "request_daily_morning_digest",
+      "name": "Run: daily_morning_digest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$vars.NEXUS_API_BASE_URL}}/api/v1/automation/maintenance/run/daily_morning_digest",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Nexus-Maintenance-Secret",
+              "value": "={{$vars.AUTOMATION_MAINTENANCE_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      }
+    },
+    {
+      "id": "trigger_daily_dependency_sweep",
+      "name": "Schedule: daily_dependency_sweep",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        320
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "request_daily_dependency_sweep",
+      "name": "Run: daily_dependency_sweep",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        320
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$vars.NEXUS_API_BASE_URL}}/api/v1/automation/maintenance/run/daily_dependency_sweep",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Nexus-Maintenance-Secret",
+              "value": "={{$vars.AUTOMATION_MAINTENANCE_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      }
+    },
+    {
+      "id": "trigger_daily_cob_reminders",
+      "name": "Schedule: daily_cob_reminders",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        480
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 16 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "request_daily_cob_reminders",
+      "name": "Run: daily_cob_reminders",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        480
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$vars.NEXUS_API_BASE_URL}}/api/v1/automation/maintenance/run/daily_cob_reminders",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Nexus-Maintenance-Secret",
+              "value": "={{$vars.AUTOMATION_MAINTENANCE_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      }
+    },
+    {
+      "id": "trigger_daily_follow_up_escalation",
+      "name": "Schedule: daily_follow_up_escalation",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        640
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 18 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "request_daily_follow_up_escalation",
+      "name": "Run: daily_follow_up_escalation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        640
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$vars.NEXUS_API_BASE_URL}}/api/v1/automation/maintenance/run/daily_follow_up_escalation",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Nexus-Maintenance-Secret",
+              "value": "={{$vars.AUTOMATION_MAINTENANCE_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      }
+    },
+    {
+      "id": "trigger_daily_eod_nudge",
+      "name": "Schedule: daily_eod_nudge",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        800
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 18 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "request_daily_eod_nudge",
+      "name": "Run: daily_eod_nudge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        800
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$vars.NEXUS_API_BASE_URL}}/api/v1/automation/maintenance/run/daily_eod_nudge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Nexus-Maintenance-Secret",
+              "value": "={{$vars.AUTOMATION_MAINTENANCE_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      }
+    },
+    {
+      "id": "trigger_daily_task_snapshot",
+      "name": "Schedule: daily_task_snapshot",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        960
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 23 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "request_daily_task_snapshot",
+      "name": "Run: daily_task_snapshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        960
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$vars.NEXUS_API_BASE_URL}}/api/v1/automation/maintenance/run/daily_task_snapshot",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Nexus-Maintenance-Secret",
+              "value": "={{$vars.AUTOMATION_MAINTENANCE_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      }
+    },
+    {
+      "id": "trigger_calendar_sweep",
+      "name": "Schedule: calendar_sweep",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        1120
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/30 * * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "request_calendar_sweep",
+      "name": "Run: calendar_sweep",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        1120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$vars.NEXUS_API_BASE_URL}}/api/v1/calendar/maintenance/sweep",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Nexus-Maintenance-Secret",
+              "value": "={{$vars.CALENDAR_MAINTENANCE_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      }
+    },
+    {
+      "id": "trigger_calendar_channel_renewal",
+      "name": "Schedule: calendar_channel_renewal",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        1280
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 2 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "request_calendar_channel_renewal",
+      "name": "Run: calendar_channel_renewal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        1280
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$vars.NEXUS_API_BASE_URL}}/api/v1/calendar/maintenance/renew-channels",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Nexus-Maintenance-Secret",
+              "value": "={{$vars.CALENDAR_MAINTENANCE_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      }
+    },
+    {
+      "id": "trigger_billing_grace_check",
+      "name": "Schedule: billing_grace_check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        1440
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "request_billing_grace_check",
+      "name": "Run: billing_grace_check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        1440
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{$vars.NEXUS_API_BASE_URL}}/api/v1/billing/maintenance/run",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Nexus-Maintenance-Secret",
+              "value": "={{$vars.BILLING_MAINTENANCE_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule: daily_overdue_check": {
+      "main": [
+        [
+          {
+            "node": "Run: daily_overdue_check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: daily_morning_digest": {
+      "main": [
+        [
+          {
+            "node": "Run: daily_morning_digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: daily_dependency_sweep": {
+      "main": [
+        [
+          {
+            "node": "Run: daily_dependency_sweep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: daily_cob_reminders": {
+      "main": [
+        [
+          {
+            "node": "Run: daily_cob_reminders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: daily_follow_up_escalation": {
+      "main": [
+        [
+          {
+            "node": "Run: daily_follow_up_escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: daily_eod_nudge": {
+      "main": [
+        [
+          {
+            "node": "Run: daily_eod_nudge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: daily_task_snapshot": {
+      "main": [
+        [
+          {
+            "node": "Run: daily_task_snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: calendar_sweep": {
+      "main": [
+        [
+          {
+            "node": "Run: calendar_sweep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: calendar_channel_renewal": {
+      "main": [
+        [
+          {
+            "node": "Run: calendar_channel_renewal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: billing_grace_check": {
+      "main": [
+        [
+          {
+            "node": "Run: billing_grace_check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "timezone": "Africa/Lagos",
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": "nexus29"
+  }
+}

@@ -4546,3 +4546,59 @@ features.
 2. Company branding build (`SESSION_SCOPE_BRANDING.md` — scope locked).
 3. Browser click-throughs listed above, once a dev server + browser
    session is available.
+
+---
+
+## Session 52 — 2026-11-07 — Production deployment: Vercel (web) + Railway (API, scheduler, Postgres, storage)
+
+Scope: get the Session 51 tree running in production, wired end to end.
+Live addresses and the operating notes are in DEPLOYMENT.md's new
+"Production — live setup" section.
+
+### Deployed
+- **Railway project `nexus`:** `Postgres` (template), `api`
+  (`apps/api/Dockerfile`, pre-deploy runs migrations then bucket CORS,
+  healthcheck `/api/v1/system/health`), `scheduler`
+  (`apps/scheduler/Dockerfile`, private network to the API), bucket
+  `nexus-files`.
+- **Vercel project `nexus-live`** (root `apps/web`) — `vercel.json`
+  rewrites `/api/*` to the Railway API so the session cookie is
+  first-party; SPA fallback; preview-only Vercel login protection
+  (production was initially behind it — fixed).
+
+### Code changes needed to deploy (all small)
+- `apps/api/Dockerfile` (new): Node 22, needed because
+  `@nexus/shared`'s `main` is `src/index.ts`, which only Node >= 22.18
+  can import at runtime. `apps/scheduler/Dockerfile` moved 20 -> 22 for
+  the same reason (it would have crashed on its first shared import).
+- `migrate.ts`: applies `NEXUS_APP_DB_PASSWORD` to the `nexus_app` role
+  after migrations (0001's placeholder password is never live).
+- `scripts/ensureStorageCors.ts` (new): presigned browser uploads need
+  bucket CORS for the web origin and the Android WebView origin.
+- `server.ts`: listen host from `HOST` (`::` on Railway's private
+  network); default unchanged.
+
+### Verified live
+- All 36 migrations applied on the production database; app connects as
+  `nexus_app` (RLS), never the superuser.
+- API: health 200; `/auth/session` 401 without a cookie; dev-login route
+  absent (404); maintenance routes 401 without the secret and 200 with
+  it (calendar sweep, billing grace check); CORS allows only the web
+  origin, with credentials.
+- Web: `/` and deep links (`/work/tasks`) serve the app; `/api/v1/*`
+  through the Vercel proxy reaches the Railway API.
+- Scheduler: started, 10 jobs registered on Africa/Lagos time (the two
+  unimplemented jobs correctly skipped).
+- Bucket CORS applied on deploy.
+- ABION demo data seeded once via a pinned one-off `seed-once` service.
+
+### Not yet live (needs Othniel)
+- Google OAuth client ID/secret — nobody can sign in until set (steps in
+  DEPLOYMENT.md).
+- Email: `newageskills.com.ng` isn't in the connected Resend account;
+  emails are logged, not sent, until a domain + `RESEND_API_KEY` +
+  `EMAIL_FROM` are set.
+- Paystack keys.
+- Postgres public TCP proxy (`acela.proxy.rlwy.net`) was created for the
+  seed attempt and left in place (removal not approved) —
+  password-protected, but remove it if it isn't needed.

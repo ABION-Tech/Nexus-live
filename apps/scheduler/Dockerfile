@@ -3,7 +3,7 @@
 # reachable at build time), e.g.:
 #   docker build -f apps/scheduler/Dockerfile -t nexus-scheduler .
 #   docker run --env-file apps/scheduler/.env nexus-scheduler
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /repo
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY packages/shared/package.json packages/shared/
@@ -13,7 +13,7 @@ COPY packages/shared packages/shared
 COPY apps/scheduler apps/scheduler
 RUN npm run build -w packages/shared && npm run build -w apps/scheduler
 
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /repo
 ENV NODE_ENV=production
 COPY --from=build /repo/node_modules node_modules

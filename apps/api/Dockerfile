@@ -26,6 +26,8 @@ COPY --from=build /repo/apps/api/package.json apps/api/
 COPY --from=build /repo/apps/api/dist apps/api/dist
 # migrate.js resolves ../../../../database/migrations from dist/scripts
 COPY database/migrations database/migrations
+# seedAbionDemo.js reads ../../../../database/seed (one-off bootstrap only)
+COPY database/seed database/seed
 WORKDIR /repo/apps/api
 EXPOSE 3001
 CMD ["node", "dist/server.js"]

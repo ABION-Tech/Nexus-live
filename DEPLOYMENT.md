@@ -1,3 +1,56 @@
+# Production — live setup (Session 52)
+
+| Piece | Where | Address |
+|---|---|---|
+| Web app (PWA) | Vercel project `nexus-live` (root `apps/web`) | https://nexus-live-neon.vercel.app |
+| API | Railway project `nexus`, service `api` (`apps/api/Dockerfile`) | https://api-production-6e64.up.railway.app |
+| Scheduler | Railway service `scheduler` (`apps/scheduler/Dockerfile`) | private only — calls `api.railway.internal:3001` |
+| Database | Railway `Postgres` (PG 17, volume in `iad`) | private only |
+| File storage | Railway bucket `nexus-files` (S3-compatible, `iad`) | presigned URLs only |
+
+**How the pieces talk.** The browser only ever talks to the Vercel
+address. `apps/web/vercel.json` rewrites `/api/*` to the Railway API, so
+the session cookie is first-party. Cross-site cookies between
+`*.vercel.app` and `*.up.railway.app` are blocked by Safari and other
+browsers, which is why the web app does not call Railway directly. The
+Android app does call the Railway API directly (`SameSite=None`, see
+`routes/auth.ts`).
+
+**Deploys.** Pushing to `main` on `ABION-Tech/Nexus-live` deploys all
+three. On every API deploy, Railway runs, before the new version starts:
+`migrate.js` (applies new migrations, then sets the `nexus_app` role's
+password from `NEXUS_APP_DB_PASSWORD`), then `ensureStorageCors.js`
+(applies the bucket CORS rule for `WEB_ORIGIN` + `CORS_EXTRA_ORIGINS`).
+The app connects as the RLS-restricted `nexus_app` role. Only the
+migration step uses the Postgres superuser (`MIGRATION_DATABASE_URL`).
+
+**Secrets** live only in Railway/Vercel variables, never in the repo.
+`COOKIE_SECRET`, `NEXUS_APP_DB_PASSWORD`, the calendar/automation/billing
+maintenance secrets and the VAPID keys were generated for production.
+The scheduler references the API's maintenance secrets
+(`${{api.…}}`) rather than holding copies.
+
+## Still to switch on
+
+1. **Google sign-in (required to log in).** In Google Cloud Console →
+   APIs & Services → Credentials → *Create OAuth client ID* → Web
+   application:
+   - Authorised JavaScript origin: `https://nexus-live-neon.vercel.app`
+   - Authorised redirect URIs:
+     `https://nexus-live-neon.vercel.app/api/v1/auth/google/callback` and
+     `https://nexus-live-neon.vercel.app/api/v1/calendar/oauth/callback`
+   - Put the client ID and secret into the Railway `api` service as
+     `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET`.
+2. **Email.** Verify the sending domain in Resend, then set
+   `RESEND_API_KEY` and `EMAIL_FROM` on the `api` service. Until then
+   emails are logged, not sent (`integrations/emailProvider.ts`).
+3. **Paystack** (`PAYSTACK_SECRET_KEY`, plan codes) when billing goes live.
+4. **First platform admin.** After the first Google sign-in, that user
+   still has to be granted platform-admin and an org; see the seed
+   scripts (`seedAbionDemo.ts`) for the shape.
+
+---
+
 # Deployment — Database
 
 NEXUS talks to Postgres directly (`apps/api/src/db.ts`, plain `pg`, no

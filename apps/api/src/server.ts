@@ -231,7 +231,10 @@ export function buildServer(opts: { logger?: boolean } = {}) {
 
 if (process.env.NODE_ENV !== 'test') {
   const app = buildServer();
-  app.listen({ port: PORT, host: '0.0.0.0' }).catch((err) => {
+  // HOST=:: on Railway: its private network (scheduler -> api) can be
+  // IPv6-only, and '::' binds both IPv6 and IPv4 on Linux. Local dev and
+  // docker-compose keep the IPv4 default.
+  app.listen({ port: PORT, host: process.env.HOST || '0.0.0.0' }).catch((err) => {
     app.log.error(err);
     process.exit(1);
   });

@@ -4728,3 +4728,27 @@ Phone (Pixel 7 viewport) screenshots of Dashboard, My Tasks, Goals, Organization
 
 ### Landing page (ABION-Tech/Nexus-landing)
 Rebuilt as a light, product-led page with a live clickable demo, photography generated for it (Higgsfield z_image, fetched into the repo by a GitHub Action), a WAT timeline and a pricing calculator. Then: the real NEX/US logo, a full dark theme (`prefers-color-scheme`, so phones in dark mode get a designed page rather than a force-darkened one), captions and status cards moved off the photos, white-on-white button text in dark mode fixed.
+
+---
+
+## Session 56 — 2026-11-08 — Personal API keys; Synergia connected
+
+### Asked
+"Nexus needs a personal key before Synergia can pull your work tasks into the planner." → "Create the keys and connect them both."
+
+### Built
+- `0039_personal_api_keys.sql`: `personal_api_keys` (id, user, org, name, prefix, SHA-256 `key_hash`, scopes default `{tasks:read}`, created/last-used/revoked). No RLS, like `sessions`: looked up by hash only.
+- `services/personalKeyService.ts`: create (≤ 10 active per person; key `nxk_` + 32 random bytes, shown once), list (never the key), revoke (own keys only), verify (hash lookup; still a member of the org — checked inside that org's RLS context; last-used stamped at most once a minute).
+- `routes/personalKeys.ts`:
+  - `/api/v1/me/keys` GET/POST/DELETE — session cookie only, so a leaked key can't mint or revoke keys; creation refused while impersonating.
+  - `/api/v1/integrations/my-tasks` — key only (`Authorization: Bearer nxk_…`), 60/min. Returns the key owner's tasks in that org (owner / support / supervisor), open only unless `?includeDone=true`. A key can't reach any other route.
+- Settings → Account: "Personal keys" card (create, copy once, list with last use, revoke). The account card's sign-in text corrected (it still said Google-only) and a "Change my password" button that emails the one-time link.
+- `routes/personalKeys.test.ts`: 7 tests.
+
+### Synergia (ABION-Tech/Synergia, Supabase `synergia`)
+- `user_secrets.nexus_key` (+ synced-at, status); `set_nexus_key()` (signed-in only), `get_connections()` reports NEXUS, `upsert_nexus_task()` (service role only).
+- Edge function `nexus`: every 15 minutes (pg_cron) and on "Sync now". NEXUS tasks become ordinary Synergia tasks (source NEXUS, extId `nexus:<id>`), so Plan my day uses them. A field is only overwritten when NEXUS's own value changed since the last sync; tasks that leave your NEXUS list are marked Deferred, never deleted.
+- Connections → "NEXUS work tasks": paste the key, Connect, Sync now, Disconnect.
+
+### Verified
+Locally: no key → 401; a session cookie doesn't open the feed; a key can't list/create keys or reach `/tasks`; stored value is the SHA-256 only; revoke → 401 immediately. Typecheck, lint (pre-existing warnings only), 369 tests, build.

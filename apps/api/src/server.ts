@@ -51,6 +51,7 @@ import { registerCompanyAdminRoutes } from './routes/admin/companyAdmin.js';
 import { registerBillingRoutes } from './routes/billing.js';
 import { registerBillingWebhookRoutes } from './routes/billingWebhook.js';
 import { registerBillingMaintenanceRoutes } from './routes/billingMaintenance.js';
+import { registerPersonalKeyRoutes, registerIntegrationRoutes } from './routes/personalKeys.js';
 
 const PORT = Number(process.env.PORT ?? 3001);
 
@@ -186,6 +187,10 @@ export function buildServer(opts: { logger?: boolean } = {}) {
   // own header note); own prefix rather than nested under /auth since
   // this is user settings, not session/identity.
   app.register(registerUserPreferencesRoutes, { prefix: '/api/v1/preferences' });
+  // Session 56 — personal API keys (session-managed) and the read-only
+  // integration feed those keys unlock (key-only; see routes/personalKeys.ts).
+  app.register(registerPersonalKeyRoutes, { prefix: '/api/v1/me/keys' });
+  app.register(registerIntegrationRoutes, { prefix: '/api/v1/integrations' });
   app.register(registerNotificationRoutes, { prefix: '/api/v1/notifications' });
   // ADMIN_BUILD_GUIDE.md §1 (Session 37) — guest credential provisioning.
   app.register(registerGuestRoutes, { prefix: '/api/v1/guests' });

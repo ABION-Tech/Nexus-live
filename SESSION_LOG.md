@@ -4703,3 +4703,28 @@ Live against Postgres: unknown email sends nothing; link points at app.nexusabio
 - Sample content on the landing page (company names, people, prices) to confirm.
 - Production ABION org still on Free — set to Pro before inviting more than 5 people.
 - Google OAuth client (now optional).
+
+---
+
+## Session 55 — 2026-11-08 — Phone layout, readable text, the real logo
+
+### Asked
+"The UI of the app on mobile is bad, the HTML (original) did it better." "Use the right logo as it is on the app. Make the text read properly on dark screen, make the cards not overlay text, on both landing and app."
+
+### Found
+- No phone layout at all: the 232px sidebar stayed on screen at every width, leaving ~150px for content, so headings broke one word per line and tables and cards ran off the right edge.
+- `--muted` (#5a5a7a) was ≈3.0:1 on the dark background — every nav item and table label used it. Light theme's `--muted` was ≈3.4:1.
+- The sidebar showed a plain "NEXUS" wordmark, not the logo on the app icon (NEX + US in --accent2).
+
+### Built (web only — no API or database change)
+- Phones (≤ 700px), modelled on the original HTML app (`nexus-abion/index.html`, its `@media (max-width: 700px)` block): the sidebar becomes a slide-in drawer opened from a ☰ button; a compact sticky top bar (☰, logo, theme); account controls (name, theme, log out) move into the drawer footer; the drawer closes on navigation, on Escape and on tapping outside; content gets the full width with 14px padding.
+- Tables (Table, DataGrid and everything built on them) become stacked cards on phones: title first, then "LABEL · value" lines from the column headers (`data-label`). Overdue / at-risk rows keep a coloured edge. Badges no longer stretch.
+- Page headers wrap instead of squeezing (`.nx-app-main__header`).
+- Contrast: dark `--muted` #5a5a7a → #8a8aac (6.0:1), `--text-dim` #a0a0c0 → #b6b6d2; light `--muted` #8a8aa0 → #66667c (5.6:1). Sidebar links use `--text-dim`.
+- `components/navigation/Logo.tsx`: NEX + US (Syne 800; US in --accent2, a darker teal on light theme). Used in the sidebar, the phone top bar and the sign-in page.
+
+### Verified
+Phone (Pixel 7 viewport) screenshots of Dashboard, My Tasks, Goals, Organizations, the open drawer, light theme; desktop unchanged apart from logo and contrast. Typecheck, lint (4 pre-existing warnings), 362 tests, production build.
+
+### Landing page (ABION-Tech/Nexus-landing)
+Rebuilt as a light, product-led page with a live clickable demo, photography generated for it (Higgsfield z_image, fetched into the repo by a GitHub Action), a WAT timeline and a pricing calculator. Then: the real NEX/US logo, a full dark theme (`prefers-color-scheme`, so phones in dark mode get a designed page rather than a force-darkened one), captions and status cards moved off the photos, white-on-white button text in dark mode fixed.

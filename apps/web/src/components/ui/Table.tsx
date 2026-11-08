@@ -34,7 +34,7 @@ export function Table<T>({ columns, rows, rowKey, onRowClick, rowClassName }: Ta
             className={[onRowClick ? 'nx-table__row--clickable' : '', rowClassName?.(row) ?? ''].filter(Boolean).join(' ') || undefined}
             onClick={onRowClick ? () => onRowClick(row) : undefined}
           >
-            {columns.map((c) => <td key={c.key}>{c.render(row)}</td>)}
+            {columns.map((c) => <td key={c.key} data-label={typeof c.header === 'string' ? c.header : undefined}>{c.render(row)}</td>)}
           </tr>
         ))}
       </tbody>

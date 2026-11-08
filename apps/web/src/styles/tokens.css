@@ -27,8 +27,8 @@
 
   /* Text */
   --text: #f5f5fb;
-  --text-dim: #a0a0c0;
-  --muted: #5a5a7a;
+  --text-dim: #b6b6d2; /* Session 55: was #a0a0c0 — raised for reading on phones */
+  --muted: #8a8aac;    /* Session 55: was #5a5a7a (≈3.0:1 on --bg, too faint); now ≈6.0:1 */
 
   /* Brand */
   --accent: #5b52f0;
@@ -108,8 +108,8 @@
   --border-strong: var(--border2);
 
   --text: #14141f;
-  --text-dim: #4a4a5e;
-  --muted: #8a8aa0;
+  --text-dim: #44445a;
+  --muted: #66667c;    /* Session 55: was #8a8aa0 (≈3.3:1 on white); now ≈5.6:1 */
 
   --danger-bg: rgba(240, 80, 96, 0.1);
   --warning-bg: rgba(240, 192, 64, 0.1);

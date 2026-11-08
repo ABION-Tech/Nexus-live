@@ -60,7 +60,7 @@ export function DataGrid<T>({ columns, rows, rowKey, emptyLabel = 'No records ye
       <tbody>
         {sorted.map((row) => (
           <tr key={rowKey(row)} className={rowClassName?.(row)}>
-            {columns.map((c) => <td key={c.key}>{c.render(row)}</td>)}
+            {columns.map((c) => <td key={c.key} data-label={typeof c.header === 'string' ? c.header : undefined}>{c.render(row)}</td>)}
           </tr>
         ))}
       </tbody>

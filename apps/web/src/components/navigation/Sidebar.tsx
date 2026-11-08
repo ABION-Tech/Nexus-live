@@ -1,31 +1,42 @@
+import type { ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { IA } from '../../app/ia';
 import type { CurrentUser } from '../../services/authService';
 import { sectionIcon } from './sectionIcons';
+import { Logo } from './Logo';
 
 export interface SidebarProps {
   user: CurrentUser;
+  /** Phone layout only: whether the drawer is showing. Ignored on wider
+   * screens, where the sidebar is always in place. */
+  open?: boolean;
+  onClose?: () => void;
+  /** Phone layout only: account controls (theme, sign out) that live in the
+   * top bar on wider screens — same idea as the original HTML app's
+   * #sidebar-utils strip. */
+  footer?: ReactNode;
 }
 
-// Real §7.2 sidebar — one <NavLink> tree per IA section/subsection,
-// replacing App.tsx's previous manual dashboard/analytics/kitchen-sink
-// toggle. permissionGated sections are hidden from non-leaders as a UX
+// Real §7.2 sidebar — one <NavLink> tree per IA section/subsection.
+// permissionGated sections are hidden from non-leaders as a UX
 // convenience only (see app/ia.ts's note on why this isn't the real
 // authorization boundary).
 //
-// UI Rehaul polish pass: dropped the "01"/"02" PRD-numeral badge each
-// section link used to render — internally useful for cross-referencing
-// this file against §7.2 while building it, but reads as an unfinished
-// spec doc rather than a product to anyone actually using the app. An
-// icon per section (sectionIcons.tsx) replaces it as the at-a-glance
-// anchor instead.
-export function Sidebar({ user }: SidebarProps) {
+// Session 55: on phones (≤ 700px) this becomes a slide-in drawer opened
+// from the ☰ button in the top bar, the way the original HTML app worked,
+// instead of permanently taking half the screen.
+export function Sidebar({ user, open = false, onClose, footer }: SidebarProps) {
   const { pathname } = useLocation();
   const isLeader = user.role === 'leader';
 
   return (
-    <nav className="nx-sidebar" aria-label="Primary">
-      <div className="nx-sidebar__brand">NEXUS</div>
+    <nav className={'nx-sidebar' + (open ? ' nx-sidebar--open' : '')} aria-label="Primary" id="nx-sidebar">
+      <div className="nx-sidebar__brand">
+        <Logo size={19} />
+        <button type="button" className="nx-sidebar__close" onClick={onClose} aria-label="Close menu">
+          ✕
+        </button>
+      </div>
       <ul className="nx-sidebar__sections">
         {IA.filter((section) => !section.permissionGated || isLeader).map((section) => {
           const sectionActive = pathname === section.path || pathname.startsWith(section.path + '/');
@@ -61,6 +72,7 @@ export function Sidebar({ user }: SidebarProps) {
           );
         })}
       </ul>
+      {footer && <div className="nx-sidebar__footer">{footer}</div>}
     </nav>
   );
 }

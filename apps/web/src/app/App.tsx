@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import {
   ToastProvider, useToast, Button, Card, Badge, StatusBadge, PriorityBadge,
   Avatar, Tabs, ProgressBar, EmptyState, Input, Modal,
 } from '../components/ui';
 import { LoadingState, ErrorState } from '../components/ui';
-import { Sidebar, ComingSoon, ImpersonationBanner } from '../components/navigation';
+import { Sidebar, ComingSoon, ImpersonationBanner, Logo } from '../components/navigation';
 import { IA } from './ia';
 import type { IaSection, IaSubsection } from './ia';
 import { Overview as DashboardOverview } from '../modules/dashboard/Overview';
@@ -238,6 +238,17 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
     return true;
   });
   const firstPath = visibleSections[0]?.path ?? '/dashboard';
+  // Session 55 — phone drawer. Closes whenever the route changes, so
+  // tapping a menu item takes you there and gets the menu out of the way.
+  const [navOpen, setNavOpen] = useState(false);
+  const { pathname } = useLocation();
+  useEffect(() => setNavOpen(false), [pathname]);
+  useEffect(() => {
+    if (!navOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setNavOpen(false);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [navOpen]);
 
   return (
     <>
@@ -250,18 +261,50 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
           GET /session comes back anonymous and the actor lands on
           LoginPage to sign back in for real. */}
       {user.impersonatedBy && <ImpersonationBanner info={user.impersonatedBy} onEnded={onLoggedOut} />}
-      <div className="nx-app-shell">
-        <Sidebar user={user} />
+      <div className={'nx-app-shell' + (navOpen ? ' nx-app-shell--nav-open' : '')}>
+        <Sidebar
+          user={user}
+          open={navOpen}
+          onClose={() => setNavOpen(false)}
+          footer={
+            <>
+              <div className="nx-sidebar__me">
+                <Avatar name={user.name} size="sm" />
+                <span>{user.name}</span>
+              </div>
+              <div className="nx-sidebar__utils">
+                <ThemeToggle />
+                <Button size="sm" variant="ghost" onClick={() => logout().finally(onLoggedOut)}>
+                  Log out
+                </Button>
+              </div>
+            </>
+          }
+        />
+        <div className="nx-scrim" onClick={() => setNavOpen(false)} aria-hidden="true" />
       <main className="nx-app-main">
-        <div className="nx-app-main__header">
-          <div />
+        <header className="nx-topbar">
+          <button
+            type="button"
+            className="nx-topbar__menu"
+            aria-label="Open menu"
+            aria-controls="nx-sidebar"
+            aria-expanded={navOpen}
+            onClick={() => setNavOpen(true)}
+          >
+            <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <span className="nx-topbar__logo"><Logo size={17} /></span>
           <div className="nx-app-main__user">
             <ThemeToggle />
             <Avatar name={user.name} size="sm" />
-            <span>{user.name}</span>
+            <span className="nx-app-main__username">{user.name}</span>
             <Button
               size="sm"
               variant="ghost"
+              className="nx-app-main__logout"
               onClick={() => {
                 logout().finally(onLoggedOut);
               }}
@@ -269,7 +312,7 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
               Log out
             </Button>
           </div>
-        </div>
+        </header>
 
         <Routes>
           {visibleSections.map((section) =>

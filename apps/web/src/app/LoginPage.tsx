@@ -14,6 +14,7 @@ import {
   type DevRosterUser,
 } from '../services/authService';
 import { ApiError } from '../services/apiClient';
+import { Logo } from '../components/navigation/Logo';
 
 // App-shell level, outside the IA. Session 54: email + password is now a
 // sign-in path for members alongside Google (routes/auth.ts /password/*).
@@ -50,7 +51,9 @@ export function LoginPage() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <Card style={{ maxWidth: 400, width: '100%' }}>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <h1 style={{ margin: 0, letterSpacing: '0.18em', fontSize: 26 }}>NEXUS</h1>
+          <h1 style={{ margin: 0 }}>
+            <Logo size={28} />
+          </h1>
         </div>
         {setPasswordToken ? <SetPasswordForm token={setPasswordToken} /> : <SignIn />}
       </Card>

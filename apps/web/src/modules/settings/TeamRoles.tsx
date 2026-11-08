@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Avatar, Badge, Button, Drawer, Select, Table, LoadingState, ErrorState, EmptyState, useToast } from '../../components/ui';
+import { Avatar, Badge, Button, Card, Drawer, Select, Table, LoadingState, ErrorState, EmptyState, useToast } from '../../components/ui';
+import { InviteMemberModal, PendingInvitesList, RoleSelect } from '../../components/admin/PeopleAccess';
+import { MEMBER_ROLE_HELP } from '../../components/admin/memberRoles';
 import type { TableColumn } from '../../components/ui';
-import { fetchPeople } from '../../services/peopleService';
+import { changeMemberRole, fetchPeople } from '../../services/peopleService';
+import { cancelInvite, fetchPendingInvites, sendInvite } from '../../services/inviteService';
 import { fetchPermissionsForUser, grantPermission, revokePermission } from '../../services/permissionService';
 import type { CurrentUser } from '../../services/authService';
-import type { Permission, PermissionAction, Person } from '@nexus/shared';
+import type { MemberRole, PendingInvite, Permission, PermissionAction, Person } from '@nexus/shared';
 import { PERMISSION_RESOURCE_ACTIONS } from '@nexus/shared';
 
 const ROLE_LABELS: Record<Person['role'], string> = {
@@ -42,8 +45,14 @@ type ListState = { status: 'loading' } | { status: 'error'; message: string } | 
 // its own state once one caller needed something CrudSection had no
 // concept of.
 export function TeamRoles({ user }: { user: CurrentUser }) {
+  const { show } = useToast();
   const [state, setState] = useState<ListState>({ status: 'loading' });
   const [drawerPerson, setDrawerPerson] = useState<Person | null>(null);
+  // Session 53: invites + role changes live here too, so a leader can
+  // bring people in and set what they are without leaving this screen.
+  const [invites, setInvites] = useState<PendingInvite[]>([]);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   function load() {
     setState({ status: 'loading' });
@@ -54,7 +63,38 @@ export function TeamRoles({ user }: { user: CurrentUser }) {
       });
   }
 
-  useEffect(load, []);
+  function loadInvites() {
+    if (user.role !== 'leader') return;
+    fetchPendingInvites()
+      .then(setInvites)
+      .catch(() => setInvites([]));
+  }
+
+  useEffect(() => {
+    load();
+    loadInvites();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleInvite(email: string, role: MemberRole) {
+    await sendInvite(email, role);
+    show(`Invite sent to ${email}.`, 'success');
+    setInviteOpen(false);
+    loadInvites();
+  }
+
+  async function handleCancelInvite(invite: PendingInvite) {
+    setCancellingId(invite.id);
+    try {
+      await cancelInvite(invite.id);
+      show(`Invite to ${invite.email} cancelled.`, 'success');
+      loadInvites();
+    } catch (err: unknown) {
+      show(err instanceof Error ? err.message : 'Could not cancel the invite.', 'danger');
+    } finally {
+      setCancellingId(null);
+    }
+  }
 
   // Convenience gate only — same posture as every other `role ===
   // 'leader'` client-side check in this codebase (Chat.tsx's export
@@ -85,7 +125,14 @@ export function TeamRoles({ user }: { user: CurrentUser }) {
     {
       key: 'access',
       header: 'Access',
-      render: (p) => (p.role === 'leader' ? <span style={{ color: 'var(--text-dim)' }}>Full access (role)</span> : <span style={{ color: 'var(--accent)' }}>Manage →</span>),
+      render: (p) =>
+        canManage ? (
+          <span style={{ color: 'var(--accent)' }}>{p.role === 'leader' ? 'Full access · Change role →' : 'Manage →'}</span>
+        ) : p.role === 'leader' ? (
+          <span style={{ color: 'var(--text-dim)' }}>Full access (role)</span>
+        ) : (
+          <span style={{ color: 'var(--accent)' }}>View →</span>
+        ),
     },
   ];
 
@@ -94,26 +141,49 @@ export function TeamRoles({ user }: { user: CurrentUser }) {
 
   return (
     <div className="nx-page nx-view-enter">
-      <div>
-        <h2>Team &amp; Roles</h2>
-        <p style={{ color: 'var(--text-dim)', fontSize: 13, marginTop: 4 }}>
-          {canManage
-            ? "Leaders always have full access. Click anyone else to grant or revoke specific permissions."
-            : 'Leaders always have full access to every resource; everyone else needs an explicit grant per resource.'}
-        </p>
+      <div className="nx-row nx-row--between" style={{ alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h2>Team &amp; Roles</h2>
+          <p style={{ color: 'var(--text-dim)', fontSize: 13, marginTop: 4 }}>
+            {canManage
+              ? 'Invite people, set their role, and grant extra permissions. Leaders always have full access.'
+              : 'Leaders always have full access to every resource; everyone else needs an explicit grant per resource.'}
+          </p>
+        </div>
+        {canManage && <Button onClick={() => setInviteOpen(true)}>Invite member</Button>}
       </div>
+
+      {canManage && invites.length > 0 && (
+        <Card>
+          <div className="nx-stack nx-stack--sm">
+            <h4 style={{ margin: 0 }}>Pending invites</h4>
+            <PendingInvitesList invites={invites} cancellingId={cancellingId} onCancel={handleCancelInvite} />
+          </div>
+        </Card>
+      )}
 
       <Table
         columns={columns}
         rows={state.people}
         rowKey={(p) => p.id}
-        onRowClick={(p) => (p.role !== 'leader' ? setDrawerPerson(p) : undefined)}
+        onRowClick={(p) => (p.role === 'guest' ? undefined : canManage || p.role !== 'leader' ? setDrawerPerson(p) : undefined)}
       />
 
       <PermissionsDrawer
         person={drawerPerson}
         onClose={() => setDrawerPerson(null)}
         canManage={canManage}
+        onRoleChanged={(updated) => {
+          setDrawerPerson(updated);
+          load();
+        }}
+      />
+
+      <InviteMemberModal
+        open={inviteOpen}
+        title="Invite a team member"
+        onClose={() => setInviteOpen(false)}
+        onSubmit={handleInvite}
       />
     </div>
   );
@@ -123,10 +193,12 @@ function PermissionsDrawer({
   person,
   onClose,
   canManage,
+  onRoleChanged,
 }: {
   person: Person | null;
   onClose: () => void;
   canManage: boolean;
+  onRoleChanged: (person: Person) => void;
 }) {
   const { show } = useToast();
   const [state, setState] = useState<
@@ -199,6 +271,33 @@ function PermissionsDrawer({
             <div style={{ fontSize: 13, color: 'var(--text-dim)' }}>{person.email}</div>
           </div>
 
+          {canManage && person.role !== 'guest' && (
+            <div className="nx-stack nx-stack--sm">
+              <h4 style={{ margin: 0 }}>Role</h4>
+              <RoleSelect
+                value={person.role as MemberRole}
+                onChange={async (role) => {
+                  try {
+                    await changeMemberRole(person.id, role);
+                    show(`${person.name}'s role is now ${ROLE_LABELS[role]}.`, 'success');
+                    onRoleChanged({ ...person, role });
+                  } catch (err: unknown) {
+                    show(err instanceof Error ? err.message : 'Could not change the role.', 'danger');
+                    throw err;
+                  }
+                }}
+              />
+              <p style={{ margin: 0, color: 'var(--text-dim)', fontSize: 12 }}>{MEMBER_ROLE_HELP[person.role as MemberRole]}</p>
+            </div>
+          )}
+
+          {person.role === 'leader' ? (
+            <p style={{ margin: 0, color: 'var(--text-dim)', fontSize: 13 }}>
+              Leaders have full access to everything, so there are no individual permissions to manage.
+            </p>
+          ) : (
+          <>
+
           <div className="nx-stack nx-stack--sm">
             <h4 style={{ margin: 0 }}>Current grants</h4>
             {state.status === 'loading' && <LoadingState label="Loading grants…" />}
@@ -259,6 +358,8 @@ function PermissionsDrawer({
                 {granting ? 'Granting…' : 'Grant'}
               </Button>
             </div>
+          )}
+          </>
           )}
         </div>
       )}

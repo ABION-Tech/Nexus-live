@@ -7,7 +7,7 @@
 // over what already exists.
 import type { FastifyInstance } from 'fastify';
 import { requirePermission } from '../plugins/rbac.js';
-import { createInvite, revokeInvite, InviteError } from '../services/inviteService.js';
+import { createInvite, revokeInvite, listPendingInvites, InviteError } from '../services/inviteService.js';
 import { checkSeatLimit, BillingLimitError } from '../services/billingService.js';
 import { sendInviteEmail, getUserDisplayName } from '../services/emailService.js';
 import type { Role } from '@nexus/shared';
@@ -38,6 +38,14 @@ export async function registerInviteRoutes(app: FastifyInstance) {
     }
     if (!body.role || !VALID_ROLES.includes(body.role as Role)) {
       reply.status(400).send({ error: 'invalid_body', message: `role must be one of ${VALID_ROLES.join(', ')}` });
+      return;
+    }
+    // Session 53: closes a privilege-escalation path. `users:create` can be
+    // granted to a non-leader, and without this check that person could
+    // invite a brand-new account straight in as a leader. Only a leader
+    // may create another leader.
+    if (body.role === 'leader' && user.role !== 'leader') {
+      reply.status(403).send({ error: 'forbidden', message: 'Only a leader can invite someone as a leader.' });
       return;
     }
 
@@ -83,6 +91,13 @@ export async function registerInviteRoutes(app: FastifyInstance) {
       }
       throw err;
     }
+  });
+
+  // Session 53 — pending invites for this org (Settings > Team & Roles).
+  app.get('/', { preHandler: requirePermission('users', 'create') }, async (req, reply) => {
+    const user = req.sessionUser!;
+    const invites = await listPendingInvites(user.orgId);
+    reply.send({ invites });
   });
 
   app.delete('/:id', { preHandler: requirePermission('users', 'delete') }, async (req, reply) => {

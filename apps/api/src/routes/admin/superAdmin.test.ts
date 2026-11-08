@@ -91,6 +91,13 @@ const fakeResolvedReview = {
 };
 
 vi.mock('../../services/billingService.js', () => ({
+  checkSeatLimit: vi.fn(async () => undefined),
+  getBillingSummary: vi.fn(async () => ({ tier: 'free' })),
+  setOrgBillingTierManually: vi.fn(async () => ({ tier: 'pro' })),
+  BillingLimitError: class BillingLimitError extends Error {
+    statusCode = 402;
+    code = 'seat_limit';
+  },
   listBillingPendingReview: vi.fn(async () => fakeReviewQueue),
   resolveBillingReviewEntry: vi.fn(async (orgId: string) => (orgId === 'org-missing' ? null : fakeResolvedReview)),
 }));
@@ -127,7 +134,17 @@ describe('routes/admin/superAdmin â€” Super Admin gating (ADMIN_BUILD_GUIDE.md Â
   });
 
   describe('403s a non-platform-admin session on every route (no silent pass-through)', () => {
-    const cases: Array<{ method: 'GET' | 'POST' | 'PATCH'; url: string }> = [
+    const cases: Array<{ method: 'GET' | 'POST' | 'PATCH' | 'DELETE'; url: string }> = [
+      // Session 53
+      { method: 'GET', url: '/api/v1/admin/super/organizations/some-id/members' },
+      { method: 'POST', url: '/api/v1/admin/super/organizations/some-id/invites' },
+      { method: 'DELETE', url: '/api/v1/admin/super/organizations/some-id/invites/inv-1' },
+      { method: 'PATCH', url: '/api/v1/admin/super/organizations/some-id/members/u-1/role' },
+      { method: 'GET', url: '/api/v1/admin/super/platform-admins' },
+      { method: 'GET', url: '/api/v1/admin/super/organizations/some-id/billing' },
+      { method: 'PATCH', url: '/api/v1/admin/super/organizations/some-id/billing' },
+      { method: 'POST', url: '/api/v1/admin/super/platform-admins' },
+      { method: 'DELETE', url: '/api/v1/admin/super/platform-admins/u-1' },
       { method: 'POST', url: '/api/v1/admin/super/organizations' },
       { method: 'PATCH', url: '/api/v1/admin/super/organizations/some-id' },
       { method: 'POST', url: '/api/v1/admin/super/organizations/some-id/deactivate' },
@@ -158,14 +175,20 @@ describe('routes/admin/superAdmin â€” Super Admin gating (ADMIN_BUILD_GUIDE.md Â
     });
 
     it('investigate: GET /investigate/organizations returns 200 with results', async () => {
-      poolQuery.mockResolvedValueOnce({ rows: [{ id: 'org-new', name: 'New Co' }] });
+      poolQuery.mockResolvedValueOnce({
+        rows: [{ id: 'org-new', name: 'New Co', org_type: 'company', parent_org_id: null, plan: 'free', active: true, created_at: new Date('2026-08-30T00:00:00.000Z') }],
+      });
       const res = await app.inject({
         method: 'GET',
         url: '/api/v1/admin/super/investigate/organizations?q=New',
         headers: { cookie: `nexus_session=${ADMIN_TOKEN}` },
       });
       expect(res.statusCode).toBe(200);
-      expect(res.json().organizations).toEqual([{ id: 'org-new', name: 'New Co' }]);
+      // Session 53 regression: raw snake_case rows used to be passed
+      // straight through, so the web app's orgType/createdAt were undefined.
+      expect(res.json().organizations).toEqual([
+        { id: 'org-new', name: 'New Co', orgType: 'company', plan: 'free', active: true, createdAt: '2026-08-30T00:00:00.000Z' },
+      ]);
     });
 
     it('analytics: GET /analytics/overview merges the three counts into one 200', async () => {

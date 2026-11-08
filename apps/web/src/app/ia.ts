@@ -341,6 +341,8 @@ export const IA: IaSection[] = [
       { id: 'overview', label: 'Overview', path: '/admin/platform', built: true },
       { id: 'organizations', label: 'Organizations', path: '/admin/platform/organizations', built: true },
       { id: 'users', label: 'Users', path: '/admin/platform/users', built: true },
+      // Session 53 — who runs NEXUS itself (platform_admins).
+      { id: 'super-admins', label: 'Super Admins', path: '/admin/platform/super-admins', built: true },
       // Billing Review Queue — the UI half of superAdmin.ts's own
       // "Billing review queue (Session 47)" block (GET .../review-queue,
       // POST .../review-queue/:orgId/resolve), named alongside Settings

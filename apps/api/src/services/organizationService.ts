@@ -25,7 +25,7 @@ interface OrgRow {
   created_at: Date;
 }
 
-function toOrganization(row: OrgRow): Organization {
+export function toOrganization(row: OrgRow): Organization {
   return {
     id: row.id,
     name: row.name,

@@ -42,6 +42,7 @@ const invite: Invite = {
   invitedBy: 'user-1',
   createdAt: new Date().toISOString(),
   expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(),
+  grantPlatformAdmin: false,
 };
 
 const guestCredential: GuestCredential = {
@@ -70,6 +71,42 @@ describe('sendInviteEmail', () => {
     expect(message.subject).toContain('ABION Industries');
     expect(message.text).toContain('Team Member');
     expect(message.html).toContain('ABION Industries');
+  });
+
+  it('looks the org name up in the organizations table (regression: it queried a non-existent `orgs` table)', async () => {
+    await sendInviteEmail(invite, 'Ayo Joshua');
+    const sql = fakeClient.query.mock.calls.map((c: unknown[]) => String(c[0])).join('\n');
+    expect(sql).toMatch(/from organizations where id = \$1/);
+    expect(sql).not.toMatch(/from orgs\b/);
+  });
+
+  it('links to the web app and names the address to sign in with (regression: no link was ever sent)', async () => {
+    const prev = process.env.WEB_ORIGIN;
+    process.env.WEB_ORIGIN = 'https://nexusabion.com/';
+    try {
+      await sendInviteEmail(invite, 'Ayo Joshua');
+      const message = sendMock.mock.calls[0]![0];
+      expect(message.text).toContain('https://nexusabion.com');
+      expect(message.text).toContain(invite.email);
+      expect(message.html).toContain('href="https://nexusabion.com"');
+      expect(message.text).not.toContain('invite link you were given');
+    } finally {
+      process.env.WEB_ORIGIN = prev;
+    }
+  });
+
+  it('mentions Super Admin access only on a Super Admin invite', async () => {
+    await sendInviteEmail(invite, 'Ayo Joshua');
+    expect(sendMock.mock.calls[0]![0].text).not.toContain('Super Admin');
+    await sendInviteEmail({ ...invite, grantPlatformAdmin: true }, 'Ayo Joshua');
+    expect(sendMock.mock.calls[1]![0].text).toContain('Super Admin');
+  });
+
+  it('escapes names in the HTML body', async () => {
+    await sendInviteEmail(invite, '<script>x</script>');
+    const message = sendMock.mock.calls[0]![0];
+    expect(message.html).not.toContain('<script>');
+    expect(message.html).toContain('&lt;script&gt;');
   });
 
   it('falls back to a generic org label when the org lookup fails', async () => {

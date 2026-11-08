@@ -5,6 +5,12 @@
 // logic here.
 import { apiClient } from './apiClient';
 import type {
+  BillingSummary,
+  BillingTierKey,
+  MemberRole,
+  PendingInvite,
+  Person,
+  PlatformAdminEntry,
   AuditLogEntry,
   AuditLogQuery,
   BillingReviewQueueEntry,
@@ -95,4 +101,46 @@ export function fetchAuditLog(query: AuditLogQuery = {}): Promise<AuditLogEntry[
   if (query.limit !== undefined) params.set('limit', String(query.limit));
   const qs = params.toString();
   return apiClient.get<{ entries: AuditLogEntry[] }>(`/admin/super/audit-log${qs ? `?${qs}` : ''}`).then((r) => r.entries);
+}
+
+// ---- Session 53: people, invites and Super Admins ------------------------
+
+export function fetchOrgMembers(orgId: string): Promise<{ people: Person[]; invites: PendingInvite[] }> {
+  return apiClient.get<{ people: Person[]; invites: PendingInvite[] }>(`/admin/super/organizations/${orgId}/members`);
+}
+
+export function inviteToOrganization(orgId: string, email: string, role: MemberRole): Promise<PendingInvite> {
+  return apiClient.post<PendingInvite>(`/admin/super/organizations/${orgId}/invites`, { email, role });
+}
+
+export function cancelOrganizationInvite(orgId: string, inviteId: string): Promise<void> {
+  return apiClient.delete<void>(`/admin/super/organizations/${orgId}/invites/${inviteId}`);
+}
+
+export function changeOrganizationMemberRole(orgId: string, userId: string, role: MemberRole): Promise<{ userId: string; role: MemberRole }> {
+  return apiClient.patch<{ userId: string; role: MemberRole }>(`/admin/super/organizations/${orgId}/members/${userId}/role`, { role });
+}
+
+export function fetchPlatformAdmins(): Promise<PlatformAdminEntry[]> {
+  return apiClient.get<{ admins: PlatformAdminEntry[] }>('/admin/super/platform-admins').then((r) => r.admins);
+}
+
+export type AddPlatformAdminResult =
+  | { status: 'granted'; admin: PlatformAdminEntry }
+  | { status: 'invited'; invite: PendingInvite };
+
+export function addPlatformAdmin(input: { email: string; homeOrgId?: string; role?: MemberRole }): Promise<AddPlatformAdminResult> {
+  return apiClient.post<AddPlatformAdminResult>('/admin/super/platform-admins', input);
+}
+
+export function removePlatformAdmin(userId: string): Promise<void> {
+  return apiClient.delete<void>(`/admin/super/platform-admins/${userId}`);
+}
+
+export function fetchOrganizationBilling(orgId: string): Promise<BillingSummary> {
+  return apiClient.get<BillingSummary>(`/admin/super/organizations/${orgId}/billing`);
+}
+
+export function setOrganizationBillingTier(orgId: string, tier: BillingTierKey): Promise<BillingSummary> {
+  return apiClient.patch<BillingSummary>(`/admin/super/organizations/${orgId}/billing`, { tier });
 }

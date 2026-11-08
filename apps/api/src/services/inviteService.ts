@@ -15,6 +15,8 @@ export interface Invite {
   invitedBy: string;
   createdAt: string;
   expiresAt: string;
+  /** Session 53: accepting this invite also makes the person a Super Admin. */
+  grantPlatformAdmin: boolean;
 }
 
 export interface AcceptedInvite {
@@ -45,6 +47,7 @@ function mapInviteRow(row: {
   invited_by: string;
   created_at: string;
   expires_at: string;
+  grant_platform_admin?: boolean;
 }): Invite {
   return {
     id: row.id,
@@ -54,6 +57,7 @@ function mapInviteRow(row: {
     invitedBy: row.invited_by,
     createdAt: row.created_at,
     expiresAt: row.expires_at,
+    grantPlatformAdmin: row.grant_platform_admin ?? false,
   };
 }
 
@@ -73,6 +77,8 @@ export async function createInvite(params: {
   email: string;
   role: Role;
   invitedBy: string;
+  /** Session 53 — set only by the Super Admin "Add Super Admin" flow. */
+  grantPlatformAdmin?: boolean;
 }): Promise<Invite> {
   const email = params.email.trim().toLowerCase();
 
@@ -112,10 +118,10 @@ export async function createInvite(params: {
       );
 
       const { rows } = await client.query(
-        `insert into invites (org_id, email, role, invited_by)
-         values ($1, $2, $3, $4)
-         returning id, org_id, email, role, invited_by, created_at, expires_at`,
-        [params.orgId, email, params.role, params.invitedBy]
+        `insert into invites (org_id, email, role, invited_by, grant_platform_admin)
+         values ($1, $2, $3, $4, $5)
+         returning id, org_id, email, role, invited_by, created_at, expires_at, grant_platform_admin`,
+        [params.orgId, email, params.role, params.invitedBy, params.grantPlatformAdmin ?? false]
       );
 
       return mapInviteRow(rows[0]);
@@ -222,10 +228,10 @@ export async function acceptInvite(params: {
   const name = params.googleDisplayName?.trim() || email.split('@')[0];
 
   return withOrgContext(invite.orgId, async (client) => {
-    const claim = await client.query(
+    const claim = await client.query<{ id: string; invited_by: string; grant_platform_admin: boolean }>(
       `update invites set accepted_at = now()
         where id = $1 and accepted_at is null and revoked_at is null
-        returning id`,
+        returning id, invited_by, grant_platform_admin`,
       [invite.id]
     );
 
@@ -256,6 +262,33 @@ export async function acceptInvite(params: {
 
     await client.query(`update invites set accepted_user_id = $1 where id = $2`, [user.id, invite.id]);
 
+    // Session 53: a Super Admin invite grants platform access in the same
+    // transaction that creates the account, so there's never a window
+    // where the person exists but the grant silently didn't apply.
+    if (claim.rows[0]?.grant_platform_admin) {
+      await client.query(
+        `insert into platform_admins (user_id, granted_by) values ($1, $2)
+         on conflict (user_id) do nothing`,
+        [user.id, claim.rows[0].invited_by]
+      );
+    }
+
     return { userId: user.id, orgId: invite.orgId, role: invite.role };
+  });
+}
+
+/** Session 53. Pending (unaccepted, unrevoked, unexpired) invites for one
+ * org, newest first — backs Settings > Team & Roles' "Pending invites"
+ * list and the Super Admin organization drawer. */
+export async function listPendingInvites(orgId: string): Promise<Invite[]> {
+  return withOrgContext(orgId, async (client) => {
+    const { rows } = await client.query(
+      `select id, org_id, email, role, invited_by, created_at, expires_at, grant_platform_admin
+         from invites
+        where org_id = $1 and accepted_at is null and revoked_at is null and expires_at > now()
+        order by created_at desc`,
+      [orgId]
+    );
+    return rows.map(mapInviteRow);
   });
 }

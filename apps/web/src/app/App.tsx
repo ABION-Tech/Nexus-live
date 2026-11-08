@@ -58,7 +58,7 @@ import { drainQueue, subscribeToQueueEvents } from '../services/offlineQueue';
 import {
   GroupOverview, GroupCompanies, GroupPeople, GroupOperations, GroupGoals, GroupAnalytics, GroupActivity,
   CompanyOverview, CompanyAnalytics, CompanyAutomation, CompanyActivity, CompanySettings,
-  SuperOverview, SuperOrganizations, SuperUsers, SuperAudit, SuperBilling,
+  SuperOverview, SuperOrganizations, SuperUsers, SuperAudit, SuperBilling, SuperAdmins,
 } from '../modules/admin';
 
 // Root app shell. PRD §10.1: Google OAuth is the only production login
@@ -428,6 +428,7 @@ function renderSubsection(section: IaSection, sub: IaSubsection, user: CurrentUs
     if (sub.id === 'overview') return <SuperOverview />;
     if (sub.id === 'organizations') return <SuperOrganizations />;
     if (sub.id === 'users') return <SuperUsers />;
+    if (sub.id === 'super-admins') return <SuperAdmins user={user} />;
     if (sub.id === 'billing') return <SuperBilling />;
     if (sub.id === 'audit') return <SuperAudit />;
   }

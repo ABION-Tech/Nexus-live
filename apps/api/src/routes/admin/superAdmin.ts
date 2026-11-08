@@ -19,11 +19,25 @@ import {
   assignCompanyToGroup,
   listCompaniesInGroup,
   OrganizationError,
+  toOrganization,
 } from '../../services/organizationService.js';
 import { logPlatformActionSafely, searchAuditLog } from '../../services/auditLogService.js';
 import { getSystemHealth } from '../../services/systemMetricsService.js';
 import { listBillingPendingReview, resolveBillingReviewEntry } from '../../services/billingService.js';
 import { pool } from '../../db.js';
+import { listOrgPeople } from '../../services/peopleService.js';
+import { createInvite, listPendingInvites, revokeInvite, InviteError } from '../../services/inviteService.js';
+import { checkSeatLimit, BillingLimitError, getBillingSummary, setOrgBillingTierManually } from '../../services/billingService.js';
+import { sendInviteEmail, getUserDisplayName } from '../../services/emailService.js';
+import {
+  addPlatformAdmin,
+  changeMemberRole,
+  listPlatformAdmins,
+  removePlatformAdmin,
+  MEMBER_ROLES,
+  TeamAdminError,
+} from '../../services/teamAdminService.js';
+import type { MemberRole } from '@nexus/shared';
 import type { OrgType, PlatformUserSummary, PlatformAnalyticsSummary, BillingTierKey, BillingStatusKey } from '@nexus/shared';
 
 async function requirePlatformAdmin(req: any, reply: any): Promise<boolean> {
@@ -180,7 +194,10 @@ export async function registerSuperAdminRoutes(app: FastifyInstance) {
     if (!(await requirePlatformAdmin(req, reply))) return;
     const q = req.query as { q?: string };
     const { rows } = await pool.query(`select * from search_organizations($1)`, [q.q ?? null]);
-    reply.send({ organizations: rows });
+    // Session 53: map to the camelCase Organization shape the web app
+    // reads. Raw rows (org_type, created_at, parent_org_id) left the
+    // Organizations table's Type column blank and its dates invalid.
+    reply.send({ organizations: rows.map(toOrganization) });
   });
 
   app.get('/investigate/users', async (req, reply) => {
@@ -341,5 +358,228 @@ export async function registerSuperAdminRoutes(app: FastifyInstance) {
     });
 
     reply.send(resolved);
+  });
+
+  // ---- Session 53: people, invites and Super Admins -----------------------
+  // A Super Admin can manage any organization's people directly. This is
+  // how a new company gets its first admin: create the company, then
+  // invite its leader from here (ordinary org invites only ever go into
+  // the inviter's own org).
+
+  function teamAdminErrorStatus(err: TeamAdminError): number {
+    if (err.code === 'not_found') return 404;
+    if (err.code === 'invalid') return 400;
+    if (err.code === 'self') return 403;
+    return 409;
+  }
+
+  app.get('/organizations/:id/members', async (req, reply) => {
+    if (!(await requirePlatformAdmin(req, reply))) return;
+    const { id } = req.params as { id: string };
+    const [people, invites] = await Promise.all([listOrgPeople(id), listPendingInvites(id)]);
+    reply.send({ people: people.filter((p) => p.role !== 'guest'), invites });
+  });
+
+  app.post('/organizations/:id/invites', async (req, reply) => {
+    if (!(await requirePlatformAdmin(req, reply))) return;
+    const user = req.sessionUser!;
+    const { id } = req.params as { id: string };
+    const body = req.body as { email?: string; role?: string };
+    const email = body?.email?.trim() ?? '';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      reply.status(400).send({ error: 'invalid_body', message: 'A valid email is required.' });
+      return;
+    }
+    if (!MEMBER_ROLES.includes(body.role as MemberRole)) {
+      reply.status(400).send({ error: 'invalid_body', message: `role must be one of ${MEMBER_ROLES.join(', ')}` });
+      return;
+    }
+    try {
+      await checkSeatLimit(id);
+      const invite = await createInvite({ orgId: id, email, role: body.role as MemberRole, invitedBy: user.userId });
+      await logPlatformActionSafely({
+        userId: user.userId,
+        action: 'organization.invite',
+        resourceType: 'invite',
+        resourceId: invite.id,
+        result: 'success',
+        newValue: { orgId: id, email: invite.email, role: invite.role },
+      });
+      getUserDisplayName(user.orgId, user.userId)
+        .then((name) => sendInviteEmail(invite, name))
+        .catch((err) => req.log.warn({ err, inviteId: invite.id }, 'Failed to send invite email'));
+      reply.status(201).send(invite);
+    } catch (err) {
+      if (err instanceof BillingLimitError) {
+        reply.status(err.statusCode).send({ error: err.code, message: err.message });
+        return;
+      }
+      if (err instanceof InviteError) {
+        reply.status(409).send({ error: err.code, message: err.message });
+        return;
+      }
+      throw err;
+    }
+  });
+
+  app.delete('/organizations/:id/invites/:inviteId', async (req, reply) => {
+    if (!(await requirePlatformAdmin(req, reply))) return;
+    const user = req.sessionUser!;
+    const { id, inviteId } = req.params as { id: string; inviteId: string };
+    try {
+      await revokeInvite(id, inviteId);
+      await logPlatformActionSafely({
+        userId: user.userId,
+        action: 'organization.invite_revoke',
+        resourceType: 'invite',
+        resourceId: inviteId,
+        result: 'success',
+        newValue: { orgId: id },
+      });
+      reply.status(204).send();
+    } catch (err) {
+      if (err instanceof InviteError) {
+        reply.status(404).send({ error: err.code, message: err.message });
+        return;
+      }
+      throw err;
+    }
+  });
+
+  app.patch('/organizations/:id/members/:userId/role', async (req, reply) => {
+    if (!(await requirePlatformAdmin(req, reply))) return;
+    const user = req.sessionUser!;
+    const { id, userId } = req.params as { id: string; userId: string };
+    const body = req.body as { role?: string };
+    try {
+      const result = await changeMemberRole({ orgId: id, userId, role: body?.role as MemberRole });
+      await logPlatformActionSafely({
+        userId: user.userId,
+        action: 'organization.member_role_change',
+        resourceType: 'user',
+        resourceId: userId,
+        result: 'success',
+        previousValue: { role: result.previousRole },
+        newValue: { orgId: id, role: result.role },
+      });
+      reply.send(result);
+    } catch (err) {
+      if (err instanceof TeamAdminError) {
+        reply.status(teamAdminErrorStatus(err)).send({ error: err.code, message: err.message });
+        return;
+      }
+      throw err;
+    }
+  });
+
+  // Session 53 — read and set an organization's plan by hand. Without
+  // this a company stuck on Free (5 seats) can't invite anyone, and
+  // there's no way to comp internal companies before Paystack is live.
+  app.get('/organizations/:id/billing', async (req, reply) => {
+    if (!(await requirePlatformAdmin(req, reply))) return;
+    const { id } = req.params as { id: string };
+    reply.send(await getBillingSummary(id));
+  });
+
+  app.patch('/organizations/:id/billing', async (req, reply) => {
+    if (!(await requirePlatformAdmin(req, reply))) return;
+    const user = req.sessionUser!;
+    const { id } = req.params as { id: string };
+    const body = req.body as { tier?: string; cascadesToChildren?: boolean; note?: string };
+    if (!body?.tier || !['free', 'starter', 'pro'].includes(body.tier)) {
+      reply.status(400).send({ error: 'invalid_body', message: 'tier must be one of free, starter, pro' });
+      return;
+    }
+    const before = await getBillingSummary(id).catch(() => null);
+    const summary = await setOrgBillingTierManually({
+      orgId: id,
+      tier: body.tier as BillingTierKey,
+      cascadesToChildren: typeof body.cascadesToChildren === 'boolean' ? body.cascadesToChildren : undefined,
+      note: body.note?.trim() || null,
+      actorUserId: user.userId,
+    });
+    await logPlatformActionSafely({
+      userId: user.userId,
+      action: 'organization.billing_set_manually',
+      resourceType: 'organization',
+      resourceId: id,
+      result: 'success',
+      previousValue: before ? { tier: before.tier, billingStatus: before.billingStatus } : undefined,
+      newValue: { tier: summary.tier, billingStatus: summary.billingStatus },
+    });
+    reply.send(summary);
+  });
+
+  app.get('/platform-admins', async (req, reply) => {
+    if (!(await requirePlatformAdmin(req, reply))) return;
+    const admins = await listPlatformAdmins();
+    reply.send({ admins });
+  });
+
+  app.post('/platform-admins', async (req, reply) => {
+    if (!(await requirePlatformAdmin(req, reply))) return;
+    const user = req.sessionUser!;
+    const body = req.body as { email?: string; homeOrgId?: string; role?: string };
+    const email = body?.email?.trim() ?? '';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      reply.status(400).send({ error: 'invalid_body', message: 'A valid email is required.' });
+      return;
+    }
+    if (body.role !== undefined && !MEMBER_ROLES.includes(body.role as MemberRole)) {
+      reply.status(400).send({ error: 'invalid_body', message: `role must be one of ${MEMBER_ROLES.join(', ')}` });
+      return;
+    }
+    try {
+      const result = await addPlatformAdmin({
+        email,
+        actorUserId: user.userId,
+        homeOrgId: body.homeOrgId || undefined,
+        role: (body.role as MemberRole | undefined) ?? undefined,
+      });
+      await logPlatformActionSafely({
+        userId: user.userId,
+        action: result.status === 'granted' ? 'platform_admin.grant' : 'platform_admin.invite',
+        resourceType: result.status === 'granted' ? 'user' : 'invite',
+        resourceId: result.status === 'granted' ? result.admin.userId : result.invite.id,
+        result: 'success',
+        newValue: { email },
+      });
+      if (result.status === 'invited') {
+        const invite = result.invite;
+        getUserDisplayName(user.orgId, user.userId)
+          .then((name) => sendInviteEmail(invite, name))
+          .catch((err) => req.log.warn({ err, inviteId: invite.id }, 'Failed to send Super Admin invite email'));
+      }
+      reply.status(result.status === 'granted' ? 200 : 201).send(result);
+    } catch (err) {
+      if (err instanceof TeamAdminError) {
+        reply.status(teamAdminErrorStatus(err)).send({ error: err.code, message: err.message });
+        return;
+      }
+      throw err;
+    }
+  });
+
+  app.delete('/platform-admins/:userId', async (req, reply) => {
+    if (!(await requirePlatformAdmin(req, reply))) return;
+    const user = req.sessionUser!;
+    const { userId } = req.params as { userId: string };
+    try {
+      await removePlatformAdmin({ actorUserId: user.userId, userId });
+      await logPlatformActionSafely({
+        userId: user.userId,
+        action: 'platform_admin.revoke',
+        resourceType: 'user',
+        resourceId: userId,
+        result: 'success',
+      });
+      reply.status(204).send();
+    } catch (err) {
+      if (err instanceof TeamAdminError) {
+        reply.status(teamAdminErrorStatus(err)).send({ error: err.code, message: err.message });
+        return;
+      }
+      throw err;
+    }
   });
 }

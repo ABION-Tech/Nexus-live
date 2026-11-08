@@ -6,6 +6,30 @@
 
 export type Role = 'leader' | 'team_member' | 'intern' | 'guest';
 
+/** Session 53 — the roles an org member can be assigned (guests are managed separately). */
+export type MemberRole = Exclude<Role, 'guest'>;
+
+/** Session 53 — a pending invite as shown in Team & Roles / the Super Admin org drawer. */
+export interface PendingInvite {
+  id: string;
+  orgId: string;
+  email: string;
+  role: MemberRole;
+  invitedBy: string;
+  createdAt: string;
+  expiresAt: string;
+  grantPlatformAdmin: boolean;
+}
+
+/** Session 53 — one row of Platform > Super Admins. */
+export interface PlatformAdminEntry {
+  userId: string;
+  name: string;
+  email: string;
+  grantedAt: string;
+  grantedByName?: string;
+}
+
 // ADMIN_BUILD_GUIDE.md §1 (repo Session 37). 'guest' is a real
 // org_memberships.role value (0016_admin_foundation.sql) but is never
 // offered by the normal invite flow (routes/invites.ts's own VALID_ROLES

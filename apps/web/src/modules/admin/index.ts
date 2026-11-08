@@ -22,3 +22,4 @@ export * from './SuperOrganizations';
 export * from './SuperUsers';
 export * from './SuperAudit';
 export * from './SuperBilling';
+export * from './SuperAdmins';

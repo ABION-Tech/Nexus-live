@@ -46,7 +46,7 @@ function labelForRole(role: Role): string {
 async function getOrgName(orgId: string): Promise<string> {
   try {
     return await withOrgContext(orgId, async (client) => {
-      const { rows } = await client.query<{ name: string }>(`select name from orgs where id = $1`, [orgId]);
+      const { rows } = await client.query<{ name: string }>(`select name from organizations where id = $1`, [orgId]);
       return rows[0]?.name ?? 'your team';
     });
   } catch {
@@ -67,22 +67,41 @@ export async function getUserDisplayName(orgId: string, userId: string): Promise
   });
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Session 53: accepting an invite is just signing in with Google at the
+// web app (routes/auth.ts consumes the pending invite for that email), so
+// the email links straight there. The previous copy pointed at an "invite
+// link you were given" that was never sent to anyone.
 export async function sendInviteEmail(invite: Invite, invitedByName: string): Promise<void> {
   const orgName = await getOrgName(invite.orgId);
   const roleLabel = labelForRole(invite.role);
   const provider = getEmailProvider();
+  const signInUrl = (process.env.WEB_ORIGIN ?? '').replace(/\/$/, '') || 'https://nexusabion.com';
+  const expires = new Date(invite.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const superAdminLine = invite.grantPlatformAdmin ? ' You will also be a NEXUS Super Admin.' : '';
 
   await provider.send({
     to: invite.email,
     subject: `${invitedByName} invited you to join ${orgName} on NEXUS`,
     text: [
-      `${invitedByName} has invited you to join ${orgName} on NEXUS as a ${roleLabel}.`,
+      `${invitedByName} has invited you to join ${orgName} on NEXUS as a ${roleLabel}.${superAdminLine}`,
       ``,
-      `Open the invite link you were given to accept and sign in with Google.`,
+      `To accept, go to ${signInUrl} and choose "Sign in with Google" using this email address (${invite.email}).`,
+      ``,
+      `This invite expires on ${expires}.`,
     ].join('\n'),
     html: [
-      `<p>${invitedByName} has invited you to join <strong>${orgName}</strong> on NEXUS as a ${roleLabel}.</p>`,
-      `<p>Open the invite link you were given to accept and sign in with Google.</p>`,
+      `<p>${escapeHtml(invitedByName)} has invited you to join <strong>${escapeHtml(orgName)}</strong> on NEXUS as a ${escapeHtml(roleLabel)}.${escapeHtml(superAdminLine)}</p>`,
+      `<p><a href="${escapeHtml(signInUrl)}" style="display:inline-block;padding:10px 18px;border-radius:8px;background:#5b52f0;color:#ffffff;text-decoration:none;font-weight:600">Accept and sign in</a></p>`,
+      `<p style="color:#666;font-size:13px">Sign in with Google using <strong>${escapeHtml(invite.email)}</strong>. This invite expires on ${escapeHtml(expires)}.</p>`,
     ].join(''),
   });
 }

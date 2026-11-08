@@ -15,6 +15,8 @@
 // display elsewhere in the app.
 import type { FastifyInstance } from 'fastify';
 import { listOrgPeople } from '../services/peopleService.js';
+import { changeMemberRole, TeamAdminError } from '../services/teamAdminService.js';
+import type { MemberRole } from '@nexus/shared';
 
 export async function registerPeopleRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.requireAuth);
@@ -23,5 +25,30 @@ export async function registerPeopleRoutes(app: FastifyInstance) {
     const user = req.sessionUser!;
     const people = await listOrgPeople(user.orgId);
     reply.send({ people });
+  });
+
+  // Session 53 — assign a member's role in this org. Leader-only, on
+  // purpose not a grantable permission: whoever can change roles can make
+  // themselves (or anyone) a leader, which is full access, so delegating
+  // it would be delegating everything.
+  app.patch('/:userId/role', async (req, reply) => {
+    const user = req.sessionUser!;
+    if (user.role !== 'leader') {
+      reply.status(403).send({ error: 'forbidden', message: 'Only a leader can change roles.' });
+      return;
+    }
+    const { userId } = req.params as { userId: string };
+    const body = req.body as { role?: string };
+    try {
+      const result = await changeMemberRole({ orgId: user.orgId, userId, role: body?.role as MemberRole });
+      reply.send(result);
+    } catch (err) {
+      if (err instanceof TeamAdminError) {
+        const status = err.code === 'not_found' ? 404 : err.code === 'invalid' ? 400 : 409;
+        reply.status(status).send({ error: err.code, message: err.message });
+        return;
+      }
+      throw err;
+    }
   });
 }

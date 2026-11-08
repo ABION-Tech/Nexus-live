@@ -4602,3 +4602,74 @@ Live addresses and the operating notes are in DEPLOYMENT.md's new
 - Postgres public TCP proxy (`acela.proxy.rlwy.net`) was created for the
   seed attempt and left in place (removal not approved) —
   password-protected, but remove it if it isn't needed.
+
+---
+
+## Session 53 — 2026-11-08 — Super Admins, invites, role assignment, plans; nexusabion.com + email
+
+Scope (from Othniel): make othnielemry@, abionindustries@ and
+abionnexus@gmail.com Super Admins; put NEXUS on nexusabion.com; send
+email through Resend; add the screens needed to invite companies and
+staff and assign roles; explain Agent Handoff and AI chat.
+
+### Built
+- **Super Admins (Platform > Super Admins, new screen).** List, add by
+  email (existing account: granted at once; no account: invited into a
+  chosen org and granted on first Google sign-in), remove (refuses
+  yourself and the last one). API: `GET/POST /admin/super/platform-admins`,
+  `DELETE /admin/super/platform-admins/:userId`. Migration 0037 adds
+  `invites.grant_platform_admin` and a `list_platform_admins()` SECURITY
+  DEFINER function (users has FORCE RLS; a plain join returned nobody).
+- **Deploy-time bootstrap** `ensurePlatformAdmins.ts` driven by
+  `PLATFORM_ADMIN_EMAILS` (additive, idempotent).
+- **Settings > Team & Roles:** Invite member (email + role), pending
+  invites with Cancel, and a Role picker in each person's drawer.
+  API: `GET /invites` (new), `PATCH /people/:userId/role` (new,
+  leader-only on purpose — role changes are full-access changes).
+- **Super Admin > Organizations drawer:** People section for any org
+  (members with role pickers, pending invites, invite), with a
+  "No admin yet" prompt for a new company; and a real **Plan** control
+  (Free 5 / Starter 25 / Pro unlimited) replacing the old unenforced
+  `organizations.plan` label. API: `GET/POST/DELETE
+  /admin/super/organizations/:id/{members,invites}`, `PATCH
+  .../members/:userId/role`, `GET/PATCH .../billing`.
+- Shared pieces in `components/admin/PeopleAccess.tsx` + `memberRoles.ts`.
+
+### Bugs found and fixed
+- **Invite privilege escalation:** anyone granted `users:create` could
+  invite a new account straight in as a leader. Now only a leader can
+  invite a leader.
+- **Invite email had no link** ("open the invite link you were given",
+  but none is ever sent). Now links to the web app, names the address to
+  sign in with, gives the expiry, and escapes names in HTML.
+- **Org name in emails was always "your team":** `getOrgName` queried a
+  non-existent `orgs` table and swallowed the error.
+- **Organizations list blank Type / invalid dates:** the investigate
+  route returned raw snake_case rows to a camelCase UI.
+- **ABION (and every new company) stuck at Free's 5 seats** with no way
+  to change it before Paystack is live — fixed by the Plan control.
+
+### Infra
+- `nexusabion.com` on the Vercel project; `www` and the old
+  `.vercel.app` address redirect to it. DNS at Spaceship.
+- Resend domain `nexusabion.com` verified; send-only key scoped to it;
+  `EMAIL_FROM = NEXUS <no-reply@nexusabion.com>`.
+- Railway `api`: `WEB_ORIGIN`, Google redirect URIs moved to
+  nexusabion.com; pre-deploy now migrate → bucket CORS → Super Admins.
+
+### Verified
+- typecheck clean; lint 0 errors (no new warnings); tests web 32 +
+  api 323 = 355 passing (+31); full build clean.
+- Live Postgres (RLS on, `nexus_app`): migrations 1–37; bootstrap
+  grants/invites and is idempotent; accepting a Super Admin invite
+  creates the account and the grant; last-leader and
+  last-Super-Admin/self-removal guards hold; role changes apply.
+- Screens checked in a browser (desktop): Team & Roles, invite modal,
+  role drawer, Super Admins + add modal, org drawer (plan, people,
+  no-admin prompt).
+
+### Still open
+- Google OAuth client ID/secret (sign-in is blocked until set).
+- App shell doesn't collapse the sidebar on phone widths (pre-existing;
+  UI-polish backlog).
+- A person still belongs to one organization per email; no org switcher.

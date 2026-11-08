@@ -467,3 +467,40 @@ export async function resolveBillingReviewEntry(
   if (!row || !row.org_id) return null;
   return toResolvedBillingReview(row);
 }
+
+/** Session 53 — Super Admin sets an org's plan by hand (comped/internal
+ * companies, or before Paystack is live). Writes the org's own
+ * org_billing row (creating it if missing) and marks it active with an
+ * audit note; Paystack fields are left untouched so a later real
+ * subscription still reconciles normally. Seat count is recomputed so
+ * the new limit applies immediately. Caller must already have passed
+ * isPlatformAdmin(). */
+export async function setOrgBillingTierManually(params: {
+  orgId: string;
+  tier: BillingTierKey;
+  cascadesToChildren?: boolean;
+  note?: string | null;
+  actorUserId: string;
+}): Promise<BillingSummary> {
+  if (!(params.tier in BILLING_TIERS)) {
+    throw new Error(`Unknown tier "${params.tier}".`);
+  }
+  await withOrgContext(params.orgId, async (client) => {
+    await client.query(
+      `insert into org_billing (org_id, tier, billing_status, cascades_to_children, review_note, reviewed_by_user_id, reviewed_at)
+       values ($1, $2, 'active', coalesce($3, false), $4, $5, now())
+       on conflict (org_id) do update
+         set tier = excluded.tier,
+             billing_status = 'active',
+             grace_period_ends_at = null,
+             cascades_to_children = coalesce($3, org_billing.cascades_to_children),
+             review_note = excluded.review_note,
+             reviewed_by_user_id = excluded.reviewed_by_user_id,
+             reviewed_at = now(),
+             updated_at = now()`,
+      [params.orgId, params.tier, params.cascadesToChildren ?? null, params.note ?? 'Set manually by a Super Admin', params.actorUserId]
+    );
+  });
+  await recomputeSeatCount(params.orgId).catch(() => undefined);
+  return getBillingSummary(params.orgId);
+}

@@ -4673,3 +4673,33 @@ staff and assign roles; explain Agent Handoff and AI chat.
 - App shell doesn't collapse the sidebar on phone widths (pre-existing;
   UI-polish backlog).
 - A person still belongs to one organization per email; no org switcher.
+
+---
+
+## Session 54 — 2026-11-08 — Password sign-in; landing page on nexusabion.com, app on app.nexusabion.com
+
+### Asked
+"I need a password to access the app (Google later). A proper landing page on the domain, a subdomain for the actual NEXUS. The landing page revised and modernised."
+
+### Decisions
+1. **Email + password for members, chosen by the person only.** No admin ever sets or sees a password. One flow covers first sign-in, forgotten password, and accepting an invite without Google: ask for a one-time link (`POST /auth/password/request`), open `/set-password?token=…`, choose a password (`POST /auth/password/set`, which signs you in). Links last 60 minutes, work once, and only their SHA-256 is stored.
+2. **No account enumeration.** Login says "email or password is incorrect" for both cases and runs scrypt against a dummy hash when the email is unknown; link requests always answer the same.
+3. **Reused `users.password_hash`** (from 0016, guests) in the same scrypt `salt:hash` format; member login excludes guests and guest login requires `guest`, so the paths don't cross. Hashing moved to `services/passwordHashing.ts`, shared by both.
+4. **Google button only when configured.** `GET /auth/methods` reports whether a Google client ID is set; the login page hides the button otherwise (it was the source of "Error 400: invalid_request").
+5. **Domains.** Landing page (separate repo `ABION-Tech/Nexus-landing`, Vercel project `nexus`) on `nexusabion.com`; the app on `app.nexusabion.com`. The apex is still attached to `nexus-live`, so two project-level routing rules on `nexus-live` serve it: www → 308 apex, apex → rewrite to the landing project. See DEPLOYMENT.md.
+
+### Built
+- `database/migrations/0038_password_login.sql`: `users.password_set_at`, `password_tokens`, `find_password_login()`, `set_user_password()` (SECURITY DEFINER, `nexus_app` execute only).
+- `apps/api/src/services/passwordAuthService.ts`, `passwordHashing.ts`; routes in `routes/auth.ts` (`/methods`, `/password/login|request|set`, rate-limited); `routes/passwordAuth.test.ts` (7 tests).
+- `apps/web/src/app/LoginPage.tsx` rewritten (sign in, email-me-a-link, check-your-inbox, set-password form); `services/authService.ts` client calls.
+- `apps/web/vercel.json`: old vercel.app host now redirects to `app.nexusabion.com`. Invite email fallback link → `app.nexusabion.com`.
+- Railway `api`: `WEB_ORIGIN`, both Google redirect URIs moved to `app.nexusabion.com`; apex kept in `CORS_EXTRA_ORIGINS`.
+- Landing page: full redesign (`Nexus-landing/index.html`) — "Run the whole group.", live Lagos clock with the next scheduler job, task lifecycle, the 07:00–18:05 day, task drawer, group structure, pricing, FAQ with AI chat fragment.
+
+### Verified
+Live against Postgres: unknown email sends nothing; link points at app.nexusabion.com; weak password rejected without consuming the link; reused link rejected; email case-insensitive; equal timing for wrong password vs unknown email; member credentials fail on guest login; invite accepted via link grants its role (Super Admin tested). Browser: wrong password, sign in, request link, set password, signed in.
+
+### Open
+- Sample content on the landing page (company names, people, prices) to confirm.
+- Production ABION org still on Free — set to Pro before inviting more than 5 people.
+- Google OAuth client (now optional).

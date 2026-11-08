@@ -6,6 +6,12 @@ import { createSession, revokeSession, createMobileExchangeCode, consumeMobileEx
 import { acceptInvite, InviteError } from '../services/inviteService.js';
 import { recomputeSeatCount } from '../services/billingService.js';
 import { verifyGuestLogin } from '../services/guestService.js';
+import {
+  loginWithPassword,
+  requestPasswordLink,
+  setPasswordWithToken,
+  PasswordAuthError,
+} from '../services/passwordAuthService.js';
 import { SESSION_COOKIE_NAME } from '../plugins/auth.js';
 import { isPlatformAdmin, isGroupAdmin, isCompanyAdmin } from '../services/authorizationService.js';
 import { getThemePreference } from '../services/userPreferencesService.js';
@@ -263,6 +269,82 @@ export async function registerAuthRoutes(app: FastifyInstance) {
       path: '/',
     });
     reply.send({ ok: true });
+  });
+
+  // ---- Session 54: member password sign-in -------------------------------
+  // A second login path alongside Google (PRD §13.2's Google-only rule is
+  // relaxed here at Othniel's request; Google stays available). See
+  // passwordAuthService.ts for the design: passwords are only ever set by
+  // their owner through a one-time emailed link.
+
+  // Which sign-in options this deployment offers, so the login page never
+  // shows a Google button that can't work (an unset client ID makes Google
+  // reject the request with "Error 400: invalid_request").
+  app.get('/methods', async (_req, reply) => {
+    reply.send({ google: Boolean(process.env.GOOGLE_OAUTH_CLIENT_ID), password: true });
+  });
+
+  app.post('/password/login', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (req, reply) => {
+    const { email, password } = (req.body as { email?: string; password?: string }) ?? {};
+    if (!email || !password) {
+      reply.status(400).send({ error: 'invalid_body', message: 'Enter your email and password.' });
+      return;
+    }
+    const verified = await loginWithPassword(email, password);
+    if (!verified) {
+      reply.status(401).send({ error: 'invalid_credentials', message: 'That email or password is incorrect.' });
+      return;
+    }
+    const { token, expiresAt } = await createSession(verified.userId, verified.orgId);
+    reply.setCookie(SESSION_COOKIE_NAME, token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: SESSION_COOKIE_SAMESITE,
+      expires: expiresAt,
+      path: '/',
+    });
+    reply.send({ ok: true });
+  });
+
+  // Always 200 with the same body, whether or not the address is known.
+  app.post('/password/request', { config: { rateLimit: { max: 5, timeWindow: '10 minutes' } } }, async (req, reply) => {
+    const { email } = (req.body as { email?: string }) ?? {};
+    if (email) {
+      await requestPasswordLink(email, process.env.WEB_ORIGIN ?? 'http://localhost:5173').catch((err) =>
+        req.log.warn({ err }, 'Failed to send password link')
+      );
+    }
+    reply.send({ ok: true, message: 'If that address is on NEXUS, a link is on its way. Check your inbox.' });
+  });
+
+  app.post('/password/set', { config: { rateLimit: { max: 10, timeWindow: '10 minutes' } } }, async (req, reply) => {
+    const { token, password, name } = (req.body as { token?: string; password?: string; name?: string }) ?? {};
+    if (!token || !password) {
+      reply.status(400).send({ error: 'invalid_body', message: 'token and password are required.' });
+      return;
+    }
+    try {
+      const result = await setPasswordWithToken({ token, password, name });
+      if (result.createdAccount) {
+        recomputeSeatCount(result.orgId).catch((err) => req.log.warn({ err }, 'Failed to recompute seat count after invite acceptance'));
+      }
+      const { token: sessionToken, expiresAt } = await createSession(result.userId, result.orgId);
+      reply.setCookie(SESSION_COOKIE_NAME, sessionToken, {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: SESSION_COOKIE_SAMESITE,
+        expires: expiresAt,
+        path: '/',
+      });
+      reply.send({ ok: true });
+    } catch (err) {
+      if (err instanceof PasswordAuthError) {
+        const status = err.code === 'weak_password' ? 400 : err.code === 'invalid_token' ? 410 : 403;
+        reply.status(status).send({ error: err.code, message: err.message });
+        return;
+      }
+      throw err;
+    }
   });
 
   app.post('/logout', async (req, reply) => {

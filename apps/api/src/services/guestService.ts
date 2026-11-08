@@ -11,28 +11,11 @@
 // way bcrypt does, so it's stored and applied by hand here).
 import crypto from 'node:crypto';
 import { pool, withOrgContext } from '../db.js';
+import { hashPassword, verifyPassword } from './passwordHashing.js';
 import type { Role } from '@nexus/shared';
 
-const SCRYPT_KEYLEN = 64;
-
-function hashPassword(password: string): string {
-  const salt = crypto.randomBytes(16);
-  const derived = crypto.scryptSync(password, salt, SCRYPT_KEYLEN);
-  return `${salt.toString('hex')}:${derived.toString('hex')}`;
-}
-
-function verifyPassword(password: string, stored: string): boolean {
-  const [saltHex, hashHex] = stored.split(':');
-  if (!saltHex || !hashHex) return false;
-  const salt = Buffer.from(saltHex, 'hex');
-  const expected = Buffer.from(hashHex, 'hex');
-  const actual = crypto.scryptSync(password, salt, SCRYPT_KEYLEN);
-  // Lengths always match (fixed SCRYPT_KEYLEN) so timingSafeEqual won't
-  // throw on a length mismatch here the way it can on attacker-controlled
-  // input elsewhere.
-  return crypto.timingSafeEqual(expected, actual);
-}
-
+// Session 54: hashing moved to passwordHashing.ts, shared with member
+// password sign-in (passwordAuthService.ts). Same scheme, unchanged.
 function generateTempPassword(): string {
   // 12 base64url chars, no ambiguous-character concerns worth solving for
   // a one-time credential the leader copies and hands over once — this

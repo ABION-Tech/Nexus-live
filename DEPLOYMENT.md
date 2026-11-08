@@ -1,8 +1,9 @@
-# Production — live setup (Session 52)
+# Production — live setup (Session 52, domains updated Session 54)
 
 | Piece | Where | Address |
 |---|---|---|
-| Web app (PWA) | Vercel project `nexus-live` (root `apps/web`) | **https://nexusabion.com** (www and the old `nexus-live-neon.vercel.app` redirect here) |
+| Landing page | Vercel project `nexus` (repo `ABION-Tech/Nexus-landing`, branch `master`) | **https://nexusabion.com** (www redirects here) |
+| Web app (PWA) | Vercel project `nexus-live` (root `apps/web`) | **https://app.nexusabion.com** (the old `nexus-live-neon.vercel.app` redirects here) |
 | API | Railway project `nexus`, service `api` (`apps/api/Dockerfile`) | https://api-production-6e64.up.railway.app |
 | Scheduler | Railway service `scheduler` (`apps/scheduler/Dockerfile`) | private only — calls `api.railway.internal:3001` |
 | Database | Railway `Postgres` (PG 17, volume in `iad`) | private only |
@@ -27,10 +28,19 @@ account, otherwise a Super Admin invite that applies on first sign-in;
 additive only, never removes anyone).
 
 **Domain and email.** `nexusabion.com` (registered at Spaceship, DNS at
-Spaceship): apex A records to Vercel, `www` CNAME to Vercel, plus the
+Spaceship): apex A records to Vercel, `www` and `app` CNAMEs to Vercel, plus the
 Resend records (`resend._domainkey`, `send` MX/TXT, `rsend`, `_dmarc`).
 Email goes out through Resend as `NEXUS <no-reply@nexusabion.com>` with a
 send-only API key restricted to that domain.
+
+**Why the landing page is served through `nexus-live`.** The apex and
+`www` were first attached to the `nexus-live` project, and no tool here
+can detach a domain from a project. So `nexus-live` carries two
+project-level routing rules (Vercel → project → Routing, not
+`vercel.json`): `www.nexusabion.com` → 308 to the apex, and
+`nexusabion.com/*` → rewrite to the landing project
+(`https://nexus-cyan-nu.vercel.app/*`). If the domains are later moved to
+the `nexus` project in the dashboard, delete those two rules.
 The app connects as the RLS-restricted `nexus_app` role. Only the
 migration step uses the Postgres superuser (`MIGRATION_DATABASE_URL`).
 
@@ -42,13 +52,14 @@ The scheduler references the API's maintenance secrets
 
 ## Still to switch on
 
-1. **Google sign-in (required to log in).** In Google Cloud Console →
+1. **Google sign-in (optional since Session 54 — email + password works
+   without it).** In Google Cloud Console →
    APIs & Services → Credentials → *Create OAuth client ID* → Web
    application:
-   - Authorised JavaScript origin: `https://nexusabion.com`
+   - Authorised JavaScript origin: `https://app.nexusabion.com`
    - Authorised redirect URIs:
-     `https://nexusabion.com/api/v1/auth/google/callback` and
-     `https://nexusabion.com/api/v1/calendar/oauth/callback`
+     `https://app.nexusabion.com/api/v1/auth/google/callback` and
+     `https://app.nexusabion.com/api/v1/calendar/oauth/callback`
    - Put the client ID and secret into the Railway `api` service as
      `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET`.
 2. ~~Email~~ — live (Session 53), see "Domain and email" above.

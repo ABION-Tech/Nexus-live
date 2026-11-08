@@ -33,7 +33,7 @@
           "value": "nexus-live-neon.vercel.app"
         }
       ],
-      "destination": "https://nexusabion.com/:path*",
+      "destination": "https://app.nexusabion.com/:path*",
       "permanent": true
     }
   ]

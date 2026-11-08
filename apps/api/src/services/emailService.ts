@@ -84,7 +84,7 @@ export async function sendInviteEmail(invite: Invite, invitedByName: string): Pr
   const orgName = await getOrgName(invite.orgId);
   const roleLabel = labelForRole(invite.role);
   const provider = getEmailProvider();
-  const signInUrl = (process.env.WEB_ORIGIN ?? '').replace(/\/$/, '') || 'https://nexusabion.com';
+  const signInUrl = (process.env.WEB_ORIGIN ?? '').replace(/\/$/, '') || 'https://app.nexusabion.com';
   const expires = new Date(invite.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const superAdminLine = invite.grantPlatformAdmin ? ' You will also be a NEXUS Super Admin.' : '';
 

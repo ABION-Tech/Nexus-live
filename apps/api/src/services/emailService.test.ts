@@ -82,13 +82,13 @@ describe('sendInviteEmail', () => {
 
   it('links to the web app and names the address to sign in with (regression: no link was ever sent)', async () => {
     const prev = process.env.WEB_ORIGIN;
-    process.env.WEB_ORIGIN = 'https://nexusabion.com/';
+    process.env.WEB_ORIGIN = 'https://app.nexusabion.com/';
     try {
       await sendInviteEmail(invite, 'Ayo Joshua');
       const message = sendMock.mock.calls[0]![0];
-      expect(message.text).toContain('https://nexusabion.com');
+      expect(message.text).toContain('https://app.nexusabion.com');
       expect(message.text).toContain(invite.email);
-      expect(message.html).toContain('href="https://nexusabion.com"');
+      expect(message.html).toContain('href="https://app.nexusabion.com"');
       expect(message.text).not.toContain('invite link you were given');
     } finally {
       process.env.WEB_ORIGIN = prev;

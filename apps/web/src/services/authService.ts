@@ -150,3 +150,32 @@ export async function fetchDevRoster(): Promise<DevRosterUser[] | null> {
 export function devLogin(userId: string): Promise<{ ok: true }> {
   return apiClient.post<{ ok: true }>('/auth/dev-login', { userId });
 }
+
+// ---- Session 54: password sign-in (routes/auth.ts /password/*) -----------
+
+export interface AuthMethods {
+  google: boolean;
+  password: boolean;
+}
+
+/** Which sign-in options the API offers. Falls back to password-only if
+ * the call fails, so the page is never left with no way in. */
+export async function fetchAuthMethods(): Promise<AuthMethods> {
+  try {
+    return await apiClient.get<AuthMethods>('/auth/methods');
+  } catch {
+    return { google: false, password: true };
+  }
+}
+
+export function passwordLogin(email: string, password: string): Promise<{ ok: true }> {
+  return apiClient.post<{ ok: true }>('/auth/password/login', { email, password });
+}
+
+export function requestPasswordLink(email: string): Promise<{ ok: true; message: string }> {
+  return apiClient.post<{ ok: true; message: string }>('/auth/password/request', { email });
+}
+
+export function setPasswordWithToken(token: string, password: string, name?: string): Promise<{ ok: true }> {
+  return apiClient.post<{ ok: true }>('/auth/password/set', { token, password, name });
+}

@@ -243,3 +243,14 @@ Both are real PRD §12 keys but have no implementation behind them yet
 returns 501 for either, so scheduling them now would just be a cron
 job that fires forever and never does anything. Add them to whichever
 option you're using once they're actually built.
+
+
+## Personal keys bootstrap (Session 56)
+
+`apps/api/src/scripts/ensurePersonalKeys.ts` runs in the pre-deploy step
+after `ensurePlatformAdmins.js`. It registers keys generated elsewhere from
+their SHA-256 only, via `PERSONAL_KEY_GRANTS="email|name|prefix|sha256[;…]"`.
+Used once to connect Synergia: Synergia's database generated the key and
+kept it; Nexus only ever received the fingerprint. Idempotent, additive; a
+key revoked in Settings → Account stays revoked. Normal keys are created by
+people themselves in Settings → Account.

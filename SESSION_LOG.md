@@ -4752,3 +4752,4 @@ Rebuilt as a light, product-led page with a live clickable demo, photography gen
 
 ### Verified
 Locally: no key → 401; a session cookie doesn't open the feed; a key can't list/create keys or reach `/tasks`; stored value is the SHA-256 only; revoke → 401 immediately. Typecheck, lint (pre-existing warnings only), 369 tests, build.
+- Connected for real (production): Synergia's database generated othnielemry@'s key and stores it; Nexus received only `PERSONAL_KEY_GRANTS` (email, name "Synergia", prefix, SHA-256) and `scripts/ensurePersonalKeys.ts` (pre-deploy) registered it. The key never appeared in an env var, log or chat. It shows in Settings → Account → Personal keys as "Synergia" and can be revoked there.

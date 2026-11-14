@@ -66,12 +66,16 @@ export async function importTasks(userId: string, orgId: string, tasks: ImportTa
         out.push({ externalRef: ref, id: existing.rows[0].id, outcome: 'existing' });
         continue;
       }
+      // Same title already in this company (created here, or brought in by
+      // another import): that's the same task. Only an unclaimed one takes
+      // this ref, so a second source never steals the first one's link.
       const same = await c.query<{ id: string }>(
-        `select id from tasks where org_id = $1 and archived_at is null and lower(btrim(title)) = lower($2) and external_ref is null limit 1`,
+        `select id from tasks where org_id = $1 and archived_at is null and lower(btrim(title)) = lower($2)
+          order by (external_ref is null) desc, created_at limit 1`,
         [orgId, title]
       );
       if (same.rows[0]) {
-        await c.query(`update tasks set external_ref = $2 where id = $1`, [same.rows[0].id, ref]);
+        await c.query(`update tasks set external_ref = $2 where id = $1 and external_ref is null`, [same.rows[0].id, ref]);
         out.push({ externalRef: ref, id: same.rows[0].id, outcome: 'matched_title' });
         continue;
       }

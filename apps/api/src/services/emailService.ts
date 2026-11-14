@@ -88,20 +88,28 @@ export async function sendInviteEmail(invite: Invite, invitedByName: string): Pr
   const expires = new Date(invite.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const superAdminLine = invite.grantPlatformAdmin ? ' You will also be a NEXUS Super Admin.' : '';
 
+  // Session 57: someone who already has an account accepts from inside
+  // the app (an invitation card with Join / Decline), so the instructions
+  // differ. Sign-in itself is Google or email + password (Session 54).
+  const how = invite.existingAccount
+    ? `Sign in to NEXUS as usual with ${invite.email}. You'll see the invitation at the top of the app: choose Join to add ${orgName} to your companies, or Decline.`
+    : `Go to ${signInUrl}, enter ${invite.email} and sign in with Google, or ask for an email link to set your password.`;
+  const button = invite.existingAccount ? 'Open NEXUS' : 'Accept and sign in';
+
   await provider.send({
     to: invite.email,
     subject: `${invitedByName} invited you to join ${orgName} on NEXUS`,
     text: [
       `${invitedByName} has invited you to join ${orgName} on NEXUS as a ${roleLabel}.${superAdminLine}`,
       ``,
-      `To accept, go to ${signInUrl} and choose "Sign in with Google" using this email address (${invite.email}).`,
+      how,
       ``,
       `This invite expires on ${expires}.`,
     ].join('\n'),
     html: [
       `<p>${escapeHtml(invitedByName)} has invited you to join <strong>${escapeHtml(orgName)}</strong> on NEXUS as a ${escapeHtml(roleLabel)}.${escapeHtml(superAdminLine)}</p>`,
-      `<p><a href="${escapeHtml(signInUrl)}" style="display:inline-block;padding:10px 18px;border-radius:8px;background:#5b52f0;color:#ffffff;text-decoration:none;font-weight:600">Accept and sign in</a></p>`,
-      `<p style="color:#666;font-size:13px">Sign in with Google using <strong>${escapeHtml(invite.email)}</strong>. This invite expires on ${escapeHtml(expires)}.</p>`,
+      `<p><a href="${escapeHtml(signInUrl)}" style="display:inline-block;padding:10px 18px;border-radius:8px;background:#5b52f0;color:#ffffff;text-decoration:none;font-weight:600">${button}</a></p>`,
+      `<p style="color:#666;font-size:13px">${escapeHtml(how)} This invite expires on ${escapeHtml(expires)}.</p>`,
     ].join(''),
   });
 }

@@ -77,8 +77,13 @@ export function TeamRoles({ user }: { user: CurrentUser }) {
   }, []);
 
   async function handleInvite(email: string, role: MemberRole) {
-    await sendInvite(email, role);
-    show(`Invite sent to ${email}.`, 'success');
+    const sent = await sendInvite(email, role);
+    show(
+      sent.existingAccount
+        ? `${email} already uses NEXUS. They'll see your invitation next time they open it, and can join or decline.`
+        : `Invite sent to ${email}.`,
+      'success'
+    );
     setInviteOpen(false);
     loadInvites();
   }

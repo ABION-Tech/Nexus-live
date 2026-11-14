@@ -130,8 +130,8 @@ export async function addPlatformAdmin(params: {
     });
     return { status: 'invited', invite };
   } catch (err) {
-    if (err instanceof InviteError && (err.code === 'conflict' || err.code === 'user_exists')) {
-      throw new TeamAdminError(err.code, err.message);
+    if (err instanceof InviteError && (err.code === 'conflict' || err.code === 'user_exists' || err.code === 'already_member')) {
+      throw new TeamAdminError(err.code === 'already_member' ? 'conflict' : err.code, err.message);
     }
     throw err;
   }

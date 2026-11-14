@@ -74,6 +74,8 @@ export const IA: IaSection[] = [
     subsections: [
       { id: 'overview', label: 'Overview', path: '/work', built: true },
       { id: 'my-tasks', label: 'My Tasks', path: '/work/my-tasks', built: true },
+      // Session 57: your tasks from every company you belong to.
+      { id: 'all-companies', label: 'All my companies', path: '/work/all', built: true },
       { id: 'team-tasks', label: 'Team Tasks', path: '/work/team-tasks', built: true },
       // Projects (ADMIN_BUILD_GUIDE.md §2, Session 38, repo numbering)
       // revisits the "future — not in MVP, not in v1" call PRD §7.2

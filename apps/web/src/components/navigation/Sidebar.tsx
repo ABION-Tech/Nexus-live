@@ -4,6 +4,7 @@ import { IA } from '../../app/ia';
 import type { CurrentUser } from '../../services/authService';
 import { sectionIcon } from './sectionIcons';
 import { Logo } from './Logo';
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 
 export interface SidebarProps {
   user: CurrentUser;
@@ -37,6 +38,8 @@ export function Sidebar({ user, open = false, onClose, footer }: SidebarProps) {
           ✕
         </button>
       </div>
+      {/* Session 57 — which company you're in; switch to another. */}
+      <WorkspaceSwitcher disabled={Boolean(user.impersonatedBy)} />
       <ul className="nx-sidebar__sections">
         {IA.filter((section) => !section.permissionGated || isLeader).map((section) => {
           const sectionActive = pathname === section.path || pathname.startsWith(section.path + '/');

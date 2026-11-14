@@ -17,6 +17,9 @@ export interface Invite {
   expiresAt: string;
   /** Session 53: accepting this invite also makes the person a Super Admin. */
   grantPlatformAdmin: boolean;
+  /** Session 57: the email already has a NEXUS account (in another
+   * company). They accept or decline from inside the app. */
+  existingAccount?: boolean;
 }
 
 export interface AcceptedInvite {
@@ -27,7 +30,7 @@ export interface AcceptedInvite {
 
 export class InviteError extends Error {
   constructor(
-    public code: 'conflict' | 'not_found' | 'expired' | 'user_exists',
+    public code: 'conflict' | 'not_found' | 'expired' | 'user_exists' | 'already_member',
     message: string
   ) {
     super(message);
@@ -95,9 +98,19 @@ export async function createInvite(params: {
   // inspection — same `find_user_by_email` SECURITY DEFINER lookup
   // `routes/auth.ts` and `findLiveInviteByEmail` (below) already use,
   // for the same RLS reason: org isn't known yet at this point.
-  const existingUser = await pool.query(`select id from find_user_by_email($1)`, [email]);
-  if (existingUser.rows.length > 0) {
-    throw new InviteError('user_exists', `${email} already has a NEXUS account.`);
+  //
+  // Session 57: an existing account is no longer a dead end. One person
+  // can belong to several companies, so the invite is created as normal
+  // and waits in that person's app (Join / Decline) — see
+  // workspaceService.acceptInvitation. The only refusal left is inviting
+  // someone who is already in *this* company.
+  const existingUser = await pool.query<{ id: string }>(`select id from find_user_by_email($1)`, [email]);
+  const existingId = existingUser.rows[0]?.id;
+  if (existingId) {
+    const { rows } = await pool.query(`select 1 from my_workspaces($1) where org_id = $2`, [existingId, params.orgId]);
+    if (rows.length > 0) {
+      throw new InviteError('already_member', `${email} is already a member of this company.`);
+    }
   }
 
   try {
@@ -124,7 +137,7 @@ export async function createInvite(params: {
         [params.orgId, email, params.role, params.invitedBy, params.grantPlatformAdmin ?? false]
       );
 
-      return mapInviteRow(rows[0]);
+      return { ...mapInviteRow(rows[0]), existingAccount: Boolean(existingId) };
     });
   } catch (err) {
     if (isUniqueViolation(err)) {

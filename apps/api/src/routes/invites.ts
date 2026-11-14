@@ -82,10 +82,10 @@ export async function registerInviteRoutes(app: FastifyInstance) {
         return;
       }
       if (err instanceof InviteError) {
-        // createInvite only ever throws 'conflict' or 'user_exists'
-        // (the other two codes — not_found, expired — belong to the
-        // accept-side lookup). Both are 409s: something about this
-        // email already exists that makes a new invite redundant.
+        // createInvite only ever throws 'conflict' (a live invite already
+        // exists) or 'already_member' (Session 57: they're already in this
+        // company). Both are 409s. Someone with an account in another
+        // company is no longer an error: they get an invitation in-app.
         reply.status(409).send({ error: err.code, message: err.message });
         return;
       }

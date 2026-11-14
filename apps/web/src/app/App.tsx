@@ -6,6 +6,8 @@ import {
 } from '../components/ui';
 import { LoadingState, ErrorState } from '../components/ui';
 import { Sidebar, ComingSoon, ImpersonationBanner, Logo } from '../components/navigation';
+import { WorkspaceProvider } from '../components/navigation/WorkspaceContext';
+import { InvitationBanner } from '../components/navigation/InvitationBanner';
 import { IA } from './ia';
 import type { IaSection, IaSubsection } from './ia';
 import { Overview as DashboardOverview } from '../modules/dashboard/Overview';
@@ -16,6 +18,7 @@ import { Partnerships } from '../modules/network/Partnerships';
 import { OrgDatabase } from '../modules/network/OrgDatabase';
 import { Overview as WorkOverview } from '../modules/work/Overview';
 import { MyTasks } from '../modules/work/MyTasks';
+import { AllCompanies } from '../modules/work/AllCompanies';
 import { TeamTasks } from '../modules/work/TeamTasks';
 import { FollowUps as WorkFollowUps } from '../modules/work/FollowUps';
 import { Completed as WorkCompleted } from '../modules/work/Completed';
@@ -251,7 +254,7 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
   }, [navOpen]);
 
   return (
-    <>
+    <WorkspaceProvider>
       {/* Session 11 follow-up — rendered as a sibling above the shell,
           not inside .nx-app-main, so `position: sticky` pins it to the
           real viewport top regardless of which route/scroll container
@@ -313,6 +316,9 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
             </Button>
           </div>
         </header>
+
+        {/* Session 57 — a company has invited you (Join / Decline). */}
+        <InvitationBanner readOnly={Boolean(user.impersonatedBy)} />
 
         <Routes>
           {visibleSections.map((section) =>
@@ -377,7 +383,7 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
         </Routes>
       </main>
       </div>
-    </>
+    </WorkspaceProvider>
   );
 }
 
@@ -396,6 +402,7 @@ function renderSubsection(section: IaSection, sub: IaSubsection, user: CurrentUs
   if (section.id === 'work') {
     if (sub.id === 'overview') return <WorkOverview user={user} />;
     if (sub.id === 'my-tasks') return <MyTasks user={user} />;
+    if (sub.id === 'all-companies') return <AllCompanies user={user} />;
     if (sub.id === 'team-tasks') return <TeamTasks user={user} />;
     if (sub.id === 'follow-ups') return <WorkFollowUps user={user} />;
     if (sub.id === 'completed') return <WorkCompleted user={user} />;

@@ -34,15 +34,28 @@ vi.mock('../services/taskService.js', async () => {
   });
   return {
     ...actual,
-    listTasks: vi.fn(async (_org: string, q: { involvingUserId?: string }) => {
-      const tasks = q.involvingUserId === ME.userId ? [t('t1', 'in_progress', ME.userId), t('t2', 'done', ME.userId), t('t3', 'not_started', 'someone', ME.userId)] : [];
+    listTasks: vi.fn(async (org: string, q: { involvingUserId?: string }) => {
+      const mine = q.involvingUserId === ME.userId;
+      const tasks = !mine ? [] : org === 'o1'
+        ? [t('t1', 'in_progress', ME.userId), t('t2', 'done', ME.userId), t('t3', 'not_started', 'someone', ME.userId)]
+        : [t('r1', 'not_started', ME.userId)];
       return { tasks, total: tasks.length, page: 1, pageSize: 100 };
     }),
   };
 });
 
 vi.mock('../db.js', () => ({
-  pool: { query: vi.fn(async () => ({ rows: [] })) },
+  // Session 57: the person belongs to two companies.
+  pool: {
+    query: vi.fn(async (sql: string) =>
+      /my_workspaces/.test(sql)
+        ? { rows: [
+            { org_id: 'o1', name: 'ABION Industries', org_type: 'company', parent_name: null, role: 'team_member', is_home: true, active: true },
+            { org_id: 'o2', name: 'RescueTap', org_type: 'company', parent_name: null, role: 'leader', is_home: false, active: true },
+          ] }
+        : { rows: [] }
+    ),
+  },
   withOrgContext: vi.fn(async (_org: string, fn: (c: unknown) => unknown) => fn({ query: async () => ({ rows: [{ name: 'ABION Industries' }] }) })),
 }));
 
@@ -101,16 +114,19 @@ describe('Session 56 — personal API keys', () => {
     expect((await app.inject({ method: 'GET', url: '/api/v1/integrations/my-tasks', headers: { authorization: 'Bearer nxk_wrong' } })).statusCode).toBe(401);
   });
 
-  it("returns only the key owner's open tasks, with their role on each", async () => {
+  it("returns the key owner's open tasks in every company, tagged with the company", async () => {
     const res = await app.inject({ method: 'GET', url: '/api/v1/integrations/my-tasks', headers: { authorization: `Bearer ${GOOD_KEY}` } });
     expect(res.statusCode).toBe(200);
     const body = res.json();
     expect(listTasks).toHaveBeenCalledWith(ME.orgId, expect.objectContaining({ involvingUserId: ME.userId }));
     expect(body.organization.name).toBe('ABION Industries');
-    expect(body.tasks.map((t: { id: string }) => t.id)).toEqual(['t1', 't3']); // done task left out
+    expect(listTasks).toHaveBeenCalledWith('o2', expect.objectContaining({ involvingUserId: ME.userId }));
+    expect(body.tasks.map((t: { id: string }) => t.id).sort()).toEqual(['r1', 't1', 't3']); // done task left out
     expect(body.tasks.find((t: { id: string }) => t.id === 't3').role).toBe('support');
+    expect(body.tasks.find((t: { id: string }) => t.id === 'r1').organization).toEqual({ id: 'o2', name: 'RescueTap' });
+    expect(body.companies.map((c: { name: string }) => c.name)).toEqual(['ABION Industries', 'RescueTap']);
     const all = await app.inject({ method: 'GET', url: '/api/v1/integrations/my-tasks?includeDone=true', headers: { authorization: `Bearer ${GOOD_KEY}` } });
-    expect(all.json().tasks).toHaveLength(3);
+    expect(all.json().tasks).toHaveLength(4);
   });
 
   it('a key cannot reach the rest of the API', async () => {

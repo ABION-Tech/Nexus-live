@@ -19,6 +19,9 @@ export interface PendingInvite {
   createdAt: string;
   expiresAt: string;
   grantPlatformAdmin: boolean;
+  /** Session 57: they already have a NEXUS account and will Join or
+   * Decline from inside the app. Only set on the create response. */
+  existingAccount?: boolean;
 }
 
 /** Session 53 — one row of Platform > Super Admins. */
@@ -28,6 +31,49 @@ export interface PlatformAdminEntry {
   email: string;
   grantedAt: string;
   grantedByName?: string;
+}
+
+/** Session 57 — one company this person belongs to (the switcher). */
+export interface Workspace {
+  orgId: string;
+  name: string;
+  orgType: 'group' | 'company';
+  /** The group a company sits under, if any. */
+  parentName?: string;
+  role: string;
+  /** The company you land in when you sign in. */
+  isHome: boolean;
+  /** The company this session is in right now. */
+  isCurrent: boolean;
+}
+
+/** Session 57 — an invitation waiting for someone who already has an
+ * account. They choose Join or Decline. */
+export interface WorkspaceInvitation {
+  id: string;
+  orgId: string;
+  orgName: string;
+  role: string;
+  invitedByName?: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
+/** Session 57 — a task in the cross-company "All my companies" view. */
+export interface CrossCompanyTask {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  priority: string;
+  /** How this person is involved. */
+  role: 'owner' | 'support' | 'supervisor';
+  startDate?: string;
+  deadline?: string;
+  department?: string;
+  business?: string;
+  updatedAt: string;
+  company: { id: string; name: string };
 }
 
 // ADMIN_BUILD_GUIDE.md §1 (repo Session 37). 'guest' is a real

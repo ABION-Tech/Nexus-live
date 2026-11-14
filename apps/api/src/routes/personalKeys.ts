@@ -6,15 +6,14 @@
 //     DELETE  /:id → revoke
 //
 //   /api/v1/integrations     (personal key: "Authorization: Bearer nxk_…")
-//     GET /my-tasks          open tasks I own, support or supervise
+//     GET /my-tasks          tasks I own, support or supervise, in every company I'm in
 //
 // The two halves never mix: key management only accepts a session cookie
 // (a leaked key can't mint more keys or revoke yours), and the
 // integration routes only accept a key (a browser session can't be used
 // to drive them cross-site).
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import { withOrgContext } from '../db.js';
-import { listTasks } from '../services/taskService.js';
+import { listMyWorkAcrossCompanies } from '../services/workspaceService.js';
 import { createKey, listKeys, revokeKey, verifyKey, PersonalKeyError, type KeyIdentity } from '../services/personalKeyService.js';
 
 const WEB_ORIGIN = () => (process.env.WEB_ORIGIN || 'https://app.nexusabion.com').replace(/\/$/, '');
@@ -80,20 +79,16 @@ export async function registerIntegrationRoutes(app: FastifyInstance) {
 
     const q = req.query as { includeDone?: string };
     const includeDone = q.includeDone === 'true';
-    const tasks = [];
-    for (let page = 1; page <= 5; page++) {
-      const res = await listTasks(who.orgId, { involvingUserId: who.userId, page, pageSize: 100 });
-      tasks.push(...res.tasks);
-      if (tasks.length >= res.total) break;
-    }
-    const orgName = await withOrgContext(who.orgId, async (c) => {
-      const r = await c.query<{ name: string }>(`select name from organizations where id = $1`, [who.orgId]);
-      return r.rows[0]?.name ?? null;
-    });
+    // Session 57: your tasks in every company you belong to, each tagged
+    // with its company. `organization` (top level) stays the company the
+    // key was created in, so older readers keep working.
+    const { companies, tasks } = await listMyWorkAcrossCompanies(who.userId, { includeDone: true });
+    const keyOrg = companies.find((c) => c.id === who.orgId);
 
     const base = WEB_ORIGIN();
     return {
-      organization: { id: who.orgId, name: orgName },
+      organization: { id: who.orgId, name: keyOrg?.name ?? null },
+      companies: companies.map((c) => ({ id: c.id, name: c.name })),
       fetchedAt: new Date().toISOString(),
       tasks: tasks
         .filter((t) => includeDone || t.status !== 'done')
@@ -103,12 +98,13 @@ export async function registerIntegrationRoutes(app: FastifyInstance) {
           description: t.description ?? null,
           status: t.status,
           priority: t.priority,
-          role: t.assignedToUserId === who.userId ? 'owner' : t.supportUserId === who.userId ? 'support' : 'supervisor',
+          role: t.role,
           startDate: t.startDate ?? null,
           deadline: t.deadline ?? null,
           department: t.department ?? null,
           business: t.business ?? null,
           updatedAt: t.updatedAt,
+          organization: t.company,
           url: `${base}/work/my-tasks`,
         })),
     };

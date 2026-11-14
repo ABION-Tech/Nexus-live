@@ -4753,3 +4753,29 @@ Rebuilt as a light, product-led page with a live clickable demo, photography gen
 ### Verified
 Locally: no key → 401; a session cookie doesn't open the feed; a key can't list/create keys or reach `/tasks`; stored value is the SHA-256 only; revoke → 401 immediately. Typecheck, lint (pre-existing warnings only), 369 tests, build.
 - Connected for real (production): Synergia's database generated othnielemry@'s key and stores it; Nexus received only `PERSONAL_KEY_GRANTS` (email, name "Synergia", prefix, SHA-256) and `scripts/ensurePersonalKeys.ts` (pre-deploy) registered it. The key never appeared in an env var, log or chat. It shows in Settings → Account → Personal keys as "Synergia" and can be revoked there.
+
+## Session 57 — 2026-11-14 — One person, many companies
+
+### Asked
+"You as an individual have an account, then you are being invited into the workspace of the organization you want to go and work in … you can work in three different organizations and they don't clash, they don't know each other. But in your account, you get to see all the companies' tasks … you can filter by company" → "Build". Invitations are accepted or declined by the person (nobody is added to a company without saying yes).
+
+### Built
+- `0040_workspaces.sql`: `invites.declined_at`; three SECURITY DEFINER functions owned by `nexus_bootstrap`, always called with the user id from a verified session and returning only that person's own rows: `my_workspaces(user)`, `my_pending_invites(user)`, `set_home_workspace(user, org)`.
+- Invites: an email that already has an account is no longer refused ("already has a NEXUS account"). The invite is created and waits in that person's app; inviting someone already in the company → 409 `already_member`. Invite email text depends on whether they have an account, and no longer says Google-only.
+- `services/workspaceService.ts` + `routes/workspaces.ts`:
+  - `GET /me/workspaces` my companies + open invitations
+  - `POST /me/workspaces/switch` moves this session (`sessions.org_id`) into another company, after the membership check 0006 asked for
+  - `POST /me/workspaces/home` the company you land in at sign-in
+  - `POST /me/invitations/:id/accept|decline` Join adds a membership (seat count refreshed, audit `invite.accept` in that company); Decline sets `declined_at` + `revoked_at`
+  - `GET /me/work` my tasks in every company, each tagged with its company, `?orgId=` narrows to one. Each company is read in its own `withOrgContext`, so it can't return anything you couldn't see by switching there.
+  - Switch / home / accept / decline are refused while impersonating (the person's own decisions).
+- Personal-key feed (`/integrations/my-tasks`) now covers every company, each task tagged `organization`; `companies` listed; top-level `organization` unchanged for older readers.
+- `meetingRecordingService`: organiser matched by membership in the company, not only home company.
+- Web: company switcher under the logo (also in the phone drawer; dot when invitations wait; "Land in X when I sign in"); invitation banner (Join / Decline, then "Open X"); 02 WORK → **All my companies** (`/work/all`): per-company counts, table with Company / Your part / Status / Priority / Deadline, a company filter that turns the page into a clean single-company view (no other company's name on it) for screenshots, tap a task to open it in its company. Team & Roles toast explains when the invitee already uses NEXUS.
+- `routes/workspaces.test.ts` 7 tests; `personalKeys.test.ts` now covers two companies.
+
+### Verified (live Postgres, two real companies)
+RescueTap's leader invited an ABION leader → invitation shown → Join → 2 companies; second Join → 404. 13 ABION + 3 RescueTap = 16 tasks in All my companies; filter → 3. Switched into RescueTap: role there is Team member, `/tasks` = 3 RescueTap tasks only, `/people` = 2 RescueTap people only. RescueTap's leader: People shows nothing of ABION; an ABION task id → 404; switching into ABION → 403 `not_member`; re-inviting a member → 409 `already_member`. Decline cleared the invitation. Home company changes `users.home_org_id` + exactly one `is_home`. Join → Open → switch back clicked through in the UI. Typecheck, lint (no new errors), 376 tests (344 API + 32 web), build.
+
+### Synergia
+`nexus` function uses each task's own company for Organisation (ABION / RescueTap / Other) and adds the company to the next-action line.

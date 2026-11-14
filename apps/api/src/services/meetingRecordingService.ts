@@ -101,7 +101,11 @@ async function findExactIdMatch(client: PoolClient, orgId: string, externalMeeti
 async function resolveOrganizerUserId(client: PoolClient, orgId: string, organizerEmail: string | undefined): Promise<string | null> {
   if (!organizerEmail) return null;
   const { rows } = await client.query<{ id: string }>(
-    `select id from users where home_org_id = $1 and email = $2`,
+    // Session 57: any member of this company, not only people whose home
+    // company it is (someone can belong to several).
+    `select u.id from users u
+       join org_memberships m on m.user_id = u.id and m.org_id = $1
+      where u.email = lower($2)`,
     [orgId, organizerEmail]
   );
   return rows[0]?.id ?? null;

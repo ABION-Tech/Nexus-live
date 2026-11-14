@@ -4802,3 +4802,14 @@ RescueTap's leader invited an ABION leader → invitation shown → Join → 2 c
 
 ### Verified
 Same-data screenshots against the old app; desktop and phone. Overview counts match the old app (27 active, 7 partnerships, 31 follow-ups, 28 failsafe). Five-part EOD filed and read back; history range and member scoping. Typecheck; lint 0 errors; 380 tests (348 API + 32 web); build.
+
+## Session 59 — 2026-11-14 — Bring work in from Synergia and the original sheet
+
+### Asked
+"Pull in tasks that sound like work, or RescueTap work … from Synergia and the html the sheet is connected to." Answers: a new RescueTap company; "bring each as companies I have access to"; everything (completed too); from the sheet, real tasks only.
+
+### Built
+- `0042_task_external_ref.sql`: `tasks.external_ref`, unique per company, so an import can run again without duplicates.
+- `services/taskImportService.ts` + `POST /api/v1/integrations/tasks/import` (personal key with the new `tasks:import` scope; only into companies you belong to; ≤200 per call). Matches an existing task with the same title instead of duplicating; bare-date deadlines land at 17:00 Abuja; checklist items supported.
+- `scripts/ensurePersonalKeys.ts`: optional 5th grant field adds scopes; `MEMBER_COMPANIES="email|Company|role;…"` creates a company if missing and adds the membership (additive only).
+- 3 tests (`routes/taskImport.test.ts`); import re-run, title match and company setup checked against Postgres.

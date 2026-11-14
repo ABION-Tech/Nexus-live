@@ -9,7 +9,10 @@ import { pool, withOrgContext } from '../db.js';
 
 export const KEY_PREFIX = 'nxk_';
 export const MAX_ACTIVE_KEYS = 10;
-export type KeyScope = 'tasks:read';
+// Session 59: 'tasks:import' lets an app of yours (Synergia) add tasks to
+// companies you belong to, assigned to you. Granted only at deploy time
+// (scripts/ensurePersonalKeys.ts), never from the browser.
+export type KeyScope = 'tasks:read' | 'tasks:import';
 
 export interface PersonalKey {
   id: string;

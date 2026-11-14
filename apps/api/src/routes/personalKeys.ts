@@ -14,6 +14,7 @@
 // to drive them cross-site).
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { listMyWorkAcrossCompanies } from '../services/workspaceService.js';
+import { findMyCompany, importTasks, TaskImportError, type ImportTaskInput } from '../services/taskImportService.js';
 import { createKey, listKeys, revokeKey, verifyKey, PersonalKeyError, type KeyIdentity } from '../services/personalKeyService.js';
 
 const WEB_ORIGIN = () => (process.env.WEB_ORIGIN || 'https://app.nexusabion.com').replace(/\/$/, '');
@@ -108,5 +109,34 @@ export async function registerIntegrationRoutes(app: FastifyInstance) {
           url: `${base}/work/my-tasks`,
         })),
     };
+  });
+}
+
+// Session 59 — POST /api/v1/integrations/tasks/import
+//   { company: "RescueTap", tasks: ImportTaskInput[] (≤ 200) }
+// Key must carry 'tasks:import'; the company must be one you belong to.
+// Returns one { externalRef, id, outcome } per task, in order.
+export async function registerImportRoutes(app: FastifyInstance) {
+  app.addHook('preHandler', async (req, reply) => {
+    const identity = await requireKey(req);
+    if (!identity) return reply.status(401).header('WWW-Authenticate', 'Bearer').send({ error: 'invalid_key', message: 'Missing, unknown or revoked key.' });
+    if (!identity.scopes.includes('tasks:import')) return reply.status(403).send({ error: 'forbidden', message: 'This key cannot import tasks.' });
+    req.keyIdentity = identity;
+  });
+
+  app.post('/import', { bodyLimit: 2_000_000, config: { rateLimit: { max: 30, timeWindow: '1 minute' } } }, async (req, reply) => {
+    const who = req.keyIdentity!;
+    const body = req.body as { company?: unknown; tasks?: unknown } | null;
+    if (typeof body?.company !== 'string' || !Array.isArray(body.tasks) || body.tasks.length === 0 || body.tasks.length > 200) {
+      return reply.status(400).send({ error: 'invalid_body', message: 'Send { company, tasks: [...] } with 1 to 200 tasks.' });
+    }
+    try {
+      const company = await findMyCompany(who.userId, body.company);
+      const results = await importTasks(who.userId, company.orgId, body.tasks as ImportTaskInput[]);
+      return { company, results };
+    } catch (err) {
+      if (err instanceof TaskImportError) return reply.status(err.code === 'not_member' ? 403 : 400).send({ error: err.code, message: err.message });
+      throw err;
+    }
   });
 }

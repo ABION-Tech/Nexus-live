@@ -11,6 +11,10 @@ interface EodLogRow {
   filed_by_user_id: string;
   date: Date;
   summary: string;
+  moved_forward: string | null;
+  key_achievement: string | null;
+  blockers: string | null;
+  tomorrow_plan: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -21,8 +25,15 @@ function toEodLog(row: EodLogRow): EodLog {
     orgId: row.org_id,
     userId: row.user_id,
     filedByUserId: row.filed_by_user_id,
-    date: row.date.toISOString().slice(0, 10), // see analyticsService.ts's toTaskTrendPoint for why not toISOString() alone
+    // Session 58: node-postgres reads a `date` as local midnight, so the
+    // local calendar parts are the stored date on any server time zone
+    // (toISOString() moved it back a day anywhere east of UTC).
+    date: `${row.date.getFullYear()}-${String(row.date.getMonth() + 1).padStart(2, '0')}-${String(row.date.getDate()).padStart(2, '0')}`,
     summary: row.summary,
+    movedForward: row.moved_forward ?? undefined,
+    keyAchievement: row.key_achievement ?? undefined,
+    blockers: row.blockers ?? undefined,
+    tomorrowPlan: row.tomorrow_plan ?? undefined,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };
@@ -33,14 +44,30 @@ export async function submitEod(orgId: string, filedByUserId: string, input: Sub
   const userId = input.userId ?? filedByUserId;
   return withOrgContext(orgId, async (client) => {
     const { rows } = await client.query<EodLogRow>(
-      `insert into eod_logs (org_id, user_id, filed_by_user_id, date, summary)
-       values ($1, $2, $3, $4, $5)
+      `insert into eod_logs (org_id, user_id, filed_by_user_id, date, summary, moved_forward, key_achievement, blockers, tomorrow_plan)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        on conflict (org_id, user_id, date)
-       do update set summary = excluded.summary, filed_by_user_id = excluded.filed_by_user_id, updated_at = now()
+       do update set summary = excluded.summary, moved_forward = excluded.moved_forward, key_achievement = excluded.key_achievement,
+                     blockers = excluded.blockers, tomorrow_plan = excluded.tomorrow_plan,
+                     filed_by_user_id = excluded.filed_by_user_id, updated_at = now()
        returning *`,
-      [orgId, userId, filedByUserId, input.date, input.summary]
+      [orgId, userId, filedByUserId, input.date, input.summary, input.movedForward || null, input.keyAchievement || null, input.blockers || null, input.tomorrowPlan || null]
     );
     return toEodLog(rows[0]!);
+  });
+}
+
+/** Session 58 — Activity Log: EODs between two dates, newest first,
+ * optionally one person's. */
+export async function listEodLogsInRange(orgId: string, from: string, to: string, userId?: string): Promise<EodLog[]> {
+  return withOrgContext(orgId, async (client) => {
+    const p: unknown[] = [orgId, from, to];
+    const who = userId ? (p.push(userId), 'and user_id = $4') : '';
+    const { rows } = await client.query<EodLogRow>(
+      `select * from eod_logs where org_id = $1 and date between $2 and $3 ${who} order by date desc, created_at desc limit 1000`,
+      p
+    );
+    return rows.map(toEodLog);
   });
 }
 

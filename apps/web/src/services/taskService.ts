@@ -5,7 +5,7 @@
 // for now (Work's list views don't paginate yet; the API already does
 // the enforcement server-side regardless of what the client asks for).
 import { apiClient, postQueueable } from './apiClient';
-import type { Task, TaskStatus } from '@nexus/shared';
+import type { Task, TaskPriority, TaskStatus } from '@nexus/shared';
 
 // Mirrors apps/api/src/services/taskService.ts's *Input interfaces —
 // same reasoning as networkService.ts's CosInput/PartnershipInput: those
@@ -23,6 +23,8 @@ export interface TaskCreateInput {
   business?: string;
   department?: string;
   deadline?: string;
+  priority?: TaskPriority;
+  startDate?: string;
 }
 
 export interface TaskUpdateInput {
@@ -37,6 +39,8 @@ export interface TaskUpdateInput {
   business?: string;
   department?: string;
   deadline?: string | null;
+  priority?: TaskPriority;
+  startDate?: string | null;
 }
 
 export interface TaskListParams {
@@ -49,6 +53,8 @@ export interface TaskListParams {
   involvingUserId?: string;
   goalId?: string;
   includeArchived?: boolean;
+  page?: number;
+  pageSize?: number;
 }
 
 function toQueryString(params: TaskListParams): string {
@@ -58,8 +64,22 @@ function toQueryString(params: TaskListParams): string {
   if (params.involvingUserId) qs.set('involvingUserId', params.involvingUserId);
   if (params.goalId) qs.set('goalId', params.goalId);
   if (params.includeArchived) qs.set('includeArchived', 'true');
+  if (params.page) qs.set('page', String(params.page));
+  if (params.pageSize) qs.set('pageSize', String(params.pageSize));
   const s = qs.toString();
   return s ? `?${s}` : '';
+}
+
+/** Session 58: every matching task, not just the first page (the list
+ * endpoint pages at 100; the original HTML app always showed them all). */
+export async function fetchAllTasks(params: TaskListParams = {}): Promise<Task[]> {
+  const all: Task[] = [];
+  for (let page = 1; page <= 20; page++) {
+    const res = await apiClient.get<{ tasks: Task[]; total: number }>(`/tasks${toQueryString({ ...params, page, pageSize: 100 })}`);
+    all.push(...res.tasks);
+    if (all.length >= res.total || res.tasks.length === 0) break;
+  }
+  return all;
 }
 
 export function fetchTasks(params: TaskListParams = {}): Promise<Task[]> {

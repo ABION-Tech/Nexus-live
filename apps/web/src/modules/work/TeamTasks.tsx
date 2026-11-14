@@ -1,5 +1,5 @@
 import { TaskSection } from './TaskSection';
-import { fetchTasks } from '../../services/taskService';
+import { fetchAllTasks } from '../../services/taskService';
 import type { CurrentUser } from '../../services/authService';
 
 // PRD §7.2 02 WORK → Team Tasks (Master Tasks). No filter applied here —
@@ -16,7 +16,7 @@ export function TeamTasks({ user }: { user: CurrentUser }) {
       emptyTitle="No tasks yet"
       newLabel="New task"
       user={user}
-      fetchList={() => fetchTasks({})}
+      fetchList={() => fetchAllTasks({})}
     />
   );
 }

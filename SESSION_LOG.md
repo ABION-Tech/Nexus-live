@@ -4779,3 +4779,26 @@ RescueTap's leader invited an ABION leader → invitation shown → Join → 2 c
 
 ### Synergia
 `nexus` function uses each task's own company for Organisation (ABION / RescueTap / Other) and adds the company to the next-action line.
+
+## Session 58 — 2026-11-14 — Back to (and past) the original HTML app
+
+### Asked
+"Some things work and look better on the older version html than this version which is a crime" → audit (claude/NEXUS old HTML vs new app audit.md: all 18 old screens against the new app, same data) → "Fix" → "Finalize. Also the super admin, company admin all looks dead, also the side bar can be better. You can make the dashboard or sidebar flat."
+
+### Built
+- **Dashboard is real.** It was hard-coded ("24 open / 92%", invented people). Now `GET /api/v1/overview` (services/overviewService.ts): alert bars (blocked; not updated in 2+ days; missing EODs), Active tasks / Partnerships / Overdue-at-risk / Failsafe, Recent tasks with checklist progress and −10/+10.
+- **Frame:** top bar (page title, Abuja time, notification bell on the existing inbox API, Chat, + Goal, a + button matching the page that opens that page's own create form via `nx:quick-add`); flat grouped sidebar (app/nav.ts — routes and permissions still from ia.ts) with live counts, flat styling with an accent bar; pages up to 1440px wide.
+- **Every table:** Export CSV + Cols (show/hide, remembered per device) in `Table` (`exportName`).
+- **Rate limit:** per signed-in session (300/min), per IP only when signed out (100/min). An office on one IP could lock itself out.
+- **Task lists load every task** (they stopped at 25). `fetchAllTasks`; list endpoint adds `ref` and checklist counts.
+- **Master Tasks:** search; status / assignee / priority / dept / support filters; sort; ID, priority, age, checklist, depends-on and blocking chips, supervisor, support, red overdue deadline, progress, Edit. Form gains priority, start date, depends-on.
+- **Follow-Up Tracker:** who's behind (2+ days no update, per person), partnerships past follow-up, all stale/blocked/overdue tasks with Last updated + Days stale.
+- **Failsafe:** four panels with owner and days late.
+- **EOD:** `0041_eod_fields.sql` moved_forward, key_achievement, blockers, tomorrow_plan (optional); five-part form. **Activity Log** (`/comms-ops/activity`, `GET /eod/history`): EOD history by person and date range, export.
+- **Network / Partnerships / Org Database:** phone, email, members, assigned, type, last contact, overdue follow-up, remarks, owner, state, staff.
+- **Marketing** as a table with the caption itself, owner, due, status, link. **Meetings** opens on Past when nothing is upcoming. **HR** is a team directory (role, email, open tasks, EOD today, search, role filter).
+- **Admin homes** (modules/admin/AdminHome.tsx) for Company, Group and Super Admin: what the area is for, linked live numbers, "What you can do here" tiles, recent audit activity; Group lists its companies; Super lists organizations and shows checked health only (unchecked subsystems on one line).
+- EOD dates were shown a day early on servers east of UTC; fixed.
+
+### Verified
+Same-data screenshots against the old app; desktop and phone. Overview counts match the old app (27 active, 7 partnerships, 31 follow-ups, 28 failsafe). Five-part EOD filed and read back; history range and member scoping. Typecheck; lint 0 errors; 380 tests (348 API + 32 web); build.

@@ -1,3 +1,4 @@
+import type React from 'react';
 import { Table, type TableColumn } from '../ui/Table';
 import { EmptyState } from '../ui/EmptyState';
 
@@ -11,6 +12,10 @@ export interface RelationshipTableProps<T> {
   emptyTitle?: string;
   emptyDescription?: string;
   rowClassName?: (row: T) => string | undefined;
+  exportName?: string;
+  title?: React.ReactNode;
+  toolbar?: React.ReactNode;
+  defaultHidden?: string[];
 }
 
 // PRD §8.3's "RelationshipTable" — every Network subsection (State
@@ -29,9 +34,13 @@ export function RelationshipTable<T>({
   emptyTitle = 'Nothing here yet',
   emptyDescription,
   rowClassName,
+  exportName,
+  title,
+  toolbar,
+  defaultHidden,
 }: RelationshipTableProps<T>) {
   if (rows.length === 0) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
-  return <Table columns={columns} rows={rows} rowKey={rowKey} onRowClick={onRowClick} rowClassName={rowClassName} />;
+  return <Table columns={columns} rows={rows} rowKey={rowKey} onRowClick={onRowClick} rowClassName={rowClassName} exportName={exportName} title={title} toolbar={toolbar} defaultHidden={defaultHidden} />;
 }

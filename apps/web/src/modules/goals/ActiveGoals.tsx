@@ -4,6 +4,7 @@ import { Card, Button, Modal, Input, LoadingState, ErrorState, EmptyState, useTo
 import { DecompositionProgress } from '../../components/goals';
 import { fetchGoals, createGoal } from '../../services/goalService';
 import type { Goal } from '@nexus/shared';
+import { useQuickAdd } from '../../components/navigation/quickAdd';
 
 type ListState =
   | { status: 'loading' }
@@ -22,6 +23,7 @@ export function ActiveGoals() {
   const [modalOpen, setModalOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [decomposing, setDecomposing] = useState(false);
+  useQuickAdd(() => setModalOpen(true));
   const [formError, setFormError] = useState<string | null>(null);
 
   function load() {

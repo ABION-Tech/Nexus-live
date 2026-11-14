@@ -46,7 +46,23 @@ function nameFor(people: Person[], userId: string): string {
 interface EodDraft {
   summary: string;
   filingFor: string;
+  extra?: EodExtra;
 }
+
+// Session 58 — the rest of the original HTML app's EOD form.
+interface EodExtra {
+  movedForward: string;
+  keyAchievement: string;
+  blockers: string;
+  tomorrowPlan: string;
+}
+const NO_EXTRA: EodExtra = { movedForward: '', keyAchievement: '', blockers: '', tomorrowPlan: '' };
+const EXTRA_FIELDS: { key: keyof EodExtra; label: string; placeholder: string }[] = [
+  { key: 'movedForward', label: 'What I moved forward', placeholder: "Work that progressed but isn't finished yet" },
+  { key: 'keyAchievement', label: 'Key achievement', placeholder: 'The one thing worth celebrating today' },
+  { key: 'blockers', label: 'Blockers', placeholder: "What's in the way, and who could unblock it" },
+  { key: 'tomorrowPlan', label: "Tomorrow's plan", placeholder: 'The first things you will do tomorrow' },
+];
 
 export function EodReport({ user }: { user: CurrentUser }) {
   const { show } = useToast();
@@ -55,6 +71,7 @@ export function EodReport({ user }: { user: CurrentUser }) {
   const [people, setPeople] = useState<Person[]>([]);
   const [filingFor, setFilingFor] = useState(user.id);
   const [summary, setSummary] = useState('');
+  const [extra, setExtra] = useState<EodExtra>(NO_EXTRA);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [filesByLog, setFilesByLog] = useState<Record<string, FileRecord[]>>({});
@@ -76,6 +93,7 @@ export function EodReport({ user }: { user: CurrentUser }) {
     restoreDraftIfAny(draftFormId).then((raw) => {
       const draft = raw as EodDraft | undefined;
       if (draft?.summary) setSummary(draft.summary);
+      if (draft?.extra) setExtra({ ...NO_EXTRA, ...draft.extra });
       if (draft?.filingFor) setFilingFor(draft.filingFor);
       draftRestored.current = true;
     });
@@ -93,10 +111,10 @@ export function EodReport({ user }: { user: CurrentUser }) {
   useEffect(() => {
     if (!draftRestored.current) return; // don't stomp the restore above with the pre-restore blank state
     const timer = setTimeout(() => {
-      saveDraft(draftFormId, { summary, filingFor } satisfies EodDraft);
+      saveDraft(draftFormId, { summary, filingFor, extra } satisfies EodDraft);
     }, 500);
     return () => clearTimeout(timer);
-  }, [draftFormId, summary, filingFor]);
+  }, [draftFormId, summary, filingFor, extra]);
 
   function loadAll() {
     setLoad({ status: 'loading' });
@@ -134,9 +152,10 @@ export function EodReport({ user }: { user: CurrentUser }) {
     if (!text || submitting) return;
     setSubmitting(true);
     try {
-      const log = await submitEodLog({ userId: filingFor, date: todayIso(), summary: text });
+      const log = await submitEodLog({ userId: filingFor, date: todayIso(), summary: text, ...extra });
       setLogs((prev) => [log, ...prev.filter((l) => l.id !== log.id)]);
       setSummary('');
+      setExtra(NO_EXTRA);
       clearDraft(draftFormId);
 
       if (proofFile) {
@@ -224,16 +243,32 @@ export function EodReport({ user }: { user: CurrentUser }) {
           </select>
         </div>
         <div className="nx-field">
-          <label className="nx-field__label" htmlFor="eod-summary">Summary</label>
+          <label className="nx-field__label" htmlFor="eod-summary">What I completed (with proof)</label>
           <textarea
             id="eod-summary"
             className="nx-input"
             rows={4}
-            placeholder="What did you get done today?"
+            placeholder="What did you finish today? Add links to the proof."
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             disabled={submitting}
           />
+        </div>
+        <div className="nx-eod-grid">
+          {EXTRA_FIELDS.map((f) => (
+            <div className="nx-field" key={f.key}>
+              <label className="nx-field__label" htmlFor={`eod-${f.key}`}>{f.label}</label>
+              <textarea
+                id={`eod-${f.key}`}
+                className="nx-input"
+                rows={2}
+                placeholder={f.placeholder}
+                value={extra[f.key]}
+                onChange={(e) => setExtra({ ...extra, [f.key]: e.target.value })}
+                disabled={submitting}
+              />
+            </div>
+          ))}
         </div>
         <div className="nx-field">
           <label className="nx-field__label" htmlFor="eod-proof">Proof attachment (optional)</label>
@@ -266,6 +301,11 @@ export function EodReport({ user }: { user: CurrentUser }) {
               <div>
                 <div style={{ fontWeight: 600 }}>{nameFor(people, log.userId)}</div>
                 <p style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap' }}>{log.summary}</p>
+                {([['Moved forward', log.movedForward], ['Key achievement', log.keyAchievement], ['Blockers', log.blockers], ["Tomorrow", log.tomorrowPlan]] as const)
+                  .filter(([, v]) => v)
+                  .map(([k, v]) => (
+                    <p key={k} className="nx-eod-line"><b>{k}:</b> {v}</p>
+                  ))}
                 {(filesByLog[log.id] ?? []).map((file) => (
                   <button
                     key={file.id}

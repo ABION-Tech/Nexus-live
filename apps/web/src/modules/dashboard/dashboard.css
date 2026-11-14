@@ -1,7 +1,7 @@
 /* modules/dashboard layout only — component-level styling lives in
    styles/patterns.css (Tier 2) and styles/components.css (Tier 1). */
 .nx-dashboard-overview {
-  display: flex; flex-direction: column; gap: var(--space-5); max-width: 960px;
+  display: flex; flex-direction: column; gap: var(--space-5); max-width: 1440px;
   /* UI Rehaul polish pass — this class already doubles as the generic
      page shell for 12 module pages beyond Dashboard itself (Analytics,
      Network, Work/TaskSection, Network/CrudSection, People Leave/
@@ -13,3 +13,42 @@
 .nx-dashboard-overview__metrics {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4);
 }
+
+/* ------------------------------------------------------------------
+   Session 58 — KPI Dashboard as in the original HTML app
+   ------------------------------------------------------------------ */
+.nx-alertbar {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-lg);
+  border: 1px solid; font-size: 13px;
+}
+.nx-alertbar > div { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.nx-alertbar b { font-size: 14px; }
+.nx-alertbar span { color: var(--text-dim); font-size: 12.5px; }
+.nx-alertbar--danger { border-color: color-mix(in srgb, var(--danger) 45%, transparent); background: var(--danger-bg); }
+.nx-alertbar--danger > svg { color: var(--danger); }
+.nx-alertbar--warn { border-color: color-mix(in srgb, var(--warning) 40%, transparent); background: var(--warning-bg); }
+.nx-alertbar--warn > svg { color: var(--warning); }
+.nx-kpi__stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+.nx-kpi__stat {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; text-align: left;
+  border: 1px solid var(--border2); border-radius: var(--radius-lg); background: var(--surface); color: var(--text); cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s var(--ease-out);
+}
+.nx-kpi__stat:hover { transform: translateY(-1px); }
+.nx-kpi__stat::after { content: ''; position: absolute; right: -30px; top: -30px; width: 90px; height: 90px; border-radius: 50%; opacity: 0.16; background: var(--kc); }
+.nx-kpi__stat:hover { border-color: var(--kc); }
+.nx-kpi__stat--accent { --kc: var(--accent); }
+.nx-kpi__stat--green { --kc: var(--accent2); }
+.nx-kpi__stat--red { --kc: var(--danger); }
+.nx-kpi__stat--amber { --kc: var(--accent3); }
+.nx-kpi__icon { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--kc); background: color-mix(in srgb, var(--kc) 16%, transparent); margin-bottom: 6px; }
+.nx-kpi__n { font-family: var(--font-display); font-size: 30px; font-weight: 800; line-height: 1; }
+.nx-kpi__l { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.nx-kpi__step { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-right: 6px; }
+.nx-kpi__step b { color: var(--text); font-family: var(--font-mono); font-size: 11px; }
+.nx-mono-id { font-family: var(--font-mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+.nx-cell-strong { font-weight: 600; }
+.nx-cell-dim { color: var(--text-dim); font-size: 13px; }
+.nx-late { color: var(--danger); font-weight: 600; }
+.nx-progress-cell { display: flex; flex-direction: column; gap: 4px; min-width: 70px; font-size: 12px; }
+@media (max-width: 900px) { .nx-kpi__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

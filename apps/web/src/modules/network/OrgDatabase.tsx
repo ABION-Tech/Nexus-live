@@ -21,9 +21,16 @@ const ONBOARDING_STATUS_OPTIONS = ['pending', 'in_progress', 'active', 'declined
   label: formatStatusLabel(value),
 }));
 
-const COLUMNS: TableColumn<OrgContact>[] = [
-  { key: 'visitorName', header: 'Visitor', render: (r) => r.visitorName },
+// Session 58: position, email, phone, state, staff size and contact
+// owner, as on the original HTML app's Org Database.
+const buildColumns = (names: Map<string, string>): TableColumn<OrgContact>[] => [
+  { key: 'visitorName', header: 'Visitor', render: (r) => <span className="nx-task"><b>{r.visitorName}</b>{r.position && <span className="nx-cell-dim">{r.position}</span>}</span> },
   { key: 'companyOrg', header: 'Organisation', render: (r) => r.companyOrg ?? '—' },
+  { key: 'email', header: 'Email', render: (r) => (r.email ? <a className="nx-link" href={`mailto:${r.email}`} onClick={(e) => e.stopPropagation()}>{r.email}</a> : '—') },
+  { key: 'phone', header: 'Phone', render: (r) => (r.phone ? <a className="nx-link" href={`tel:${r.phone}`} onClick={(e) => e.stopPropagation()}>{r.phone}</a> : '—') },
+  { key: 'state', header: 'State', render: (r) => r.state ?? '—' },
+  { key: 'staff', header: 'Staff', render: (r) => r.staffSize ?? '—' },
+  { key: 'owner', header: 'Owner', render: (r) => (r.contactOwnerUserId ? names.get(r.contactOwnerUserId) ?? '—' : '—') },
   {
     key: 'letterStatus',
     header: 'Letter',
@@ -37,7 +44,7 @@ const COLUMNS: TableColumn<OrgContact>[] = [
   {
     key: 'dateVisited',
     header: 'Visited',
-    render: (r) => (r.dateVisited ? new Date(r.dateVisited).toLocaleDateString() : '—'),
+    render: (r) => (r.dateVisited ? new Date(r.dateVisited).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'),
   },
 ];
 
@@ -91,11 +98,13 @@ export function OrgDatabase({ user }: { user: CurrentUser }) {
 
   const peopleOptions = useMemo(() => people.map((p) => ({ value: p.id, label: p.name })), [people]);
   const schema = useMemo(() => buildSchema(peopleOptions), [peopleOptions]);
+  const columns = useMemo(() => buildColumns(new Map(people.map((p) => [p.id, p.name]))), [people]);
 
   return (
     <CrudSection<OrgContact>
       title="Org Database"
-      columns={COLUMNS}
+      columns={columns}
+      defaultHidden={['staff']}
       schema={schema}
       fetchList={() => fetchOrgContacts()}
       createItem={(input) => createOrgContact(input as unknown as OrgContactInput)}

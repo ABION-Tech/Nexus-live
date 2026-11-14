@@ -224,6 +224,8 @@ export const IA: IaSection[] = [
       // an Add/Edit drill-in at /comms-ops/marketing/edit[/:id], same
       // fixed-path-plus-:id-drill-in shape as Knowledge's Add/Edit Entry.
       { id: 'eod-report', label: 'EOD Report', path: '/comms-ops', built: true },
+      // Session 58: the original HTML app's Activity Log (EOD history).
+      { id: 'activity', label: 'Activity Log', path: '/comms-ops/activity', built: true },
       { id: 'calendar', label: 'Calendar / Meetings', path: '/comms-ops/calendar', built: true },
       { id: 'follow-ups', label: 'Follow-Ups', path: '/comms-ops/follow-ups', built: true },
       { id: 'failsafe-alerts', label: 'Failsafe Alerts', path: '/comms-ops/failsafe-alerts', built: true },

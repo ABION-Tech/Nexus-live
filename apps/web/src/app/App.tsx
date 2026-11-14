@@ -5,8 +5,10 @@ import {
   Avatar, Tabs, ProgressBar, EmptyState, Input, Modal,
 } from '../components/ui';
 import { LoadingState, ErrorState } from '../components/ui';
-import { Sidebar, ComingSoon, ImpersonationBanner, Logo } from '../components/navigation';
+import { Sidebar, ComingSoon, ImpersonationBanner } from '../components/navigation';
 import { WorkspaceProvider } from '../components/navigation/WorkspaceContext';
+import { NavCountsProvider } from '../components/navigation/NavCounts';
+import { Topbar } from '../components/navigation/Topbar';
 import { InvitationBanner } from '../components/navigation/InvitationBanner';
 import { IA } from './ia';
 import type { IaSection, IaSubsection } from './ia';
@@ -44,6 +46,7 @@ import { Leave } from '../modules/people/Leave';
 import { Onboarding } from '../modules/people/Onboarding';
 import { EodReport } from '../modules/comms-ops/EodReport';
 import { FailsafeAlerts } from '../modules/comms-ops/FailsafeAlerts';
+import { ActivityLog } from '../modules/comms-ops/ActivityLog';
 import { Marketing } from '../modules/comms-ops/Marketing';
 import { MarketingEdit } from '../modules/comms-ops/MarketingEdit';
 import { Meetings } from '../modules/comms-ops/Meetings';
@@ -255,6 +258,7 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
 
   return (
     <WorkspaceProvider>
+      <NavCountsProvider>
       {/* Session 11 follow-up — rendered as a sibling above the shell,
           not inside .nx-app-main, so `position: sticky` pins it to the
           real viewport top regardless of which route/scroll container
@@ -286,36 +290,21 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
         />
         <div className="nx-scrim" onClick={() => setNavOpen(false)} aria-hidden="true" />
       <main className="nx-app-main">
-        <header className="nx-topbar">
-          <button
-            type="button"
-            className="nx-topbar__menu"
-            aria-label="Open menu"
-            aria-controls="nx-sidebar"
-            aria-expanded={navOpen}
-            onClick={() => setNavOpen(true)}
-          >
-            <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-            </svg>
-          </button>
-          <span className="nx-topbar__logo"><Logo size={17} /></span>
-          <div className="nx-app-main__user">
-            <ThemeToggle />
-            <Avatar name={user.name} size="sm" />
-            <span className="nx-app-main__username">{user.name}</span>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="nx-app-main__logout"
-              onClick={() => {
-                logout().finally(onLoggedOut);
-              }}
-            >
-              Log out
-            </Button>
-          </div>
-        </header>
+        <Topbar
+          user={user}
+          onMenu={() => setNavOpen(true)}
+          menuOpen={navOpen}
+          account={
+            <div className="nx-app-main__user">
+              <ThemeToggle />
+              <Avatar name={user.name} size="sm" />
+              <span className="nx-app-main__username">{user.name}</span>
+              <Button size="sm" variant="ghost" className="nx-app-main__logout" onClick={() => logout().finally(onLoggedOut)}>
+                Log out
+              </Button>
+            </div>
+          }
+        />
 
         {/* Session 57 — a company has invited you (Join / Decline). */}
         <InvitationBanner readOnly={Boolean(user.impersonatedBy)} />
@@ -383,6 +372,7 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
         </Routes>
       </main>
       </div>
+      </NavCountsProvider>
     </WorkspaceProvider>
   );
 }
@@ -447,6 +437,7 @@ function renderSubsection(section: IaSection, sub: IaSubsection, user: CurrentUs
   }
   if (section.id === 'comms-ops') {
     if (sub.id === 'eod-report') return <EodReport user={user} />;
+    if (sub.id === 'activity') return <ActivityLog user={user} />;
     if (sub.id === 'calendar') return <WorkCalendar />;
     if (sub.id === 'follow-ups') return <WorkFollowUps user={user} />;
     if (sub.id === 'failsafe-alerts') return <FailsafeAlerts />;

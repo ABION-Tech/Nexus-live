@@ -298,6 +298,11 @@ export interface Task {
   // task can belong to a goal, a project, both, or neither; nothing
   // here disallows that combination, same as business/department.
   projectId?: string;
+  /** Session 58 — short human id (T-031) when the task has one. */
+  ref?: string;
+  /** Session 58 — checklist progress (list endpoints only). */
+  checklistDone?: number;
+  checklistTotal?: number;
 }
 
 // taskService.listTasks — filters and pagination the `GET /tasks` route
@@ -620,6 +625,11 @@ export interface EodLog {
   filedByUserId: string; // who submitted it — may differ (PRD §8.9 "who am I filing for" selector)
   date: string; // ISO date
   summary: string;
+  // Session 58 — the rest of the original HTML app's EOD form.
+  movedForward?: string;
+  keyAchievement?: string;
+  blockers?: string;
+  tomorrowPlan?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -628,6 +638,10 @@ export interface SubmitEodInput {
   userId?: string; // defaults to the caller — see routes/eod.ts
   date: string; // ISO date
   summary: string;
+  movedForward?: string;
+  keyAchievement?: string;
+  blockers?: string;
+  tomorrowPlan?: string;
 }
 
 // PRD §8.4: "EOD-day-aware — only flags members scheduled to

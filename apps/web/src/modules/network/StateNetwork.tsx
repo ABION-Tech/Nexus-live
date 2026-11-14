@@ -16,7 +16,12 @@ const COS_STATUS_OPTIONS = ['not_started', 'acknowledged', 'in_progress', 'follo
 
 const COLUMNS: TableColumn<NetworkCos>[] = [
   { key: 'state', header: 'State', render: (r) => r.state },
-  { key: 'admin', header: 'Admin', render: (r) => r.adminName ?? '—' },
+  { key: 'admin', header: 'Admin', render: (r) => <span className="nx-cell-strong">{r.adminName ?? '—'}</span> },
+  // Session 58: phone, email, members and the Call / Email actions, as on
+  // the original HTML app's Network page.
+  { key: 'phone', header: 'Phone', render: (r) => (r.adminPhone ? <a className="nx-link" href={`tel:${r.adminPhone}`} onClick={(e) => e.stopPropagation()}>{r.adminPhone}</a> : '—') },
+  { key: 'email', header: 'Email', render: (r) => (r.adminEmail ? <a className="nx-link" href={`mailto:${r.adminEmail}`} onClick={(e) => e.stopPropagation()}>{r.adminEmail}</a> : '—') },
+  { key: 'members', header: 'Members', render: (r) => r.membersCount ?? 0 },
   {
     key: 'status',
     header: 'Status',
@@ -26,8 +31,9 @@ const COLUMNS: TableColumn<NetworkCos>[] = [
   {
     key: 'lastReport',
     header: 'Last report',
-    render: (r) => (r.lastReportDate ? new Date(r.lastReportDate).toLocaleDateString() : '—'),
+    render: (r) => (r.lastReportDate ? new Date(r.lastReportDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'),
   },
+  { key: 'notes', header: 'Notes', render: (r) => <span className="nx-cell-dim">{r.notes || '—'}</span> },
 ];
 
 // `state` is the table's natural ID (0008_network.sql: unique(org_id,

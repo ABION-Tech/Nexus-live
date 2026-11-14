@@ -1,45 +1,116 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { TaskSection } from './TaskSection';
-import { fetchBlockedTasks, fetchUpcomingDeadlines } from '../../services/analyticsService';
+import { Card } from '../../components/ui';
+import { fetchAllTasks } from '../../services/taskService';
+import { fetchPartnerships } from '../../services/networkService';
+import { fetchPeople } from '../../services/peopleService';
 import type { CurrentUser } from '../../services/authService';
-import type { Task } from '@nexus/shared';
+import type { Partnership, Task } from '@nexus/shared';
 
-// PRD §7.2 02 WORK → Follow-Ups. Not a new data source: reuses the same
-// two task-based Failsafe categories Analytics already computes server-
-// side (analyticsService.ts's getBlockedTasks / getUpcomingDeadlines,
-// exposed at GET /analytics/failsafe/blocked and /deadlines) — "things
-// that need a follow-up" is blocked tasks + tasks whose deadline has
-// passed or is close, which is exactly what those two endpoints already
-// return, scoped to the caller the same way /failsafe/* already is
-// (full org for a `tasks.read` grant, own-record only otherwise). This
-// view is the union of both lists, deduplicated by id (a task can be
-// both blocked AND close to its deadline), rendered through the same
-// TaskSection/CrudSection Work already uses for My Tasks/Team Tasks —
-// so editing status or extending a deadline from here uses the exact
-// same create/update/archive calls, not a second read-only code path.
-function fetchFollowUps(): Promise<Task[]> {
-  return Promise.all([fetchBlockedTasks(), fetchUpcomingDeadlines()]).then(([blocked, deadlines]) => {
-    const byId = new Map<string, Task>();
-    for (const task of [...blocked, ...deadlines]) byId.set(task.id, task);
-    // Soonest/most-overdue deadline first; blocked tasks with no
-    // deadline (not covered by /failsafe/deadlines) sort to the end
-    // rather than the top, since there's no date to act on urgently.
-    return Array.from(byId.values()).sort((a, b) => {
-      if (!a.deadline && !b.deadline) return 0;
-      if (!a.deadline) return 1;
-      if (!b.deadline) return -1;
-      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-    });
-  });
+// PRD §7.2 02 WORK → Follow-Ups. Session 58: rebuilt as the original HTML
+// app's "Follow-Up Tracker": who is behind (open tasks with no update for
+// 2+ days, per person), partnerships past their follow-up date, and every
+// task that needs chasing — stale, blocked, overdue or due within 48h —
+// with how many days it's gone without an update.
+const STALE_MS = 2 * 86_400_000;
+
+function needsFollowUp(t: Task): boolean {
+  if (t.status === 'done') return false;
+  if (t.status === 'blocked') return true;
+  if (Date.now() - new Date(t.updatedAt).getTime() >= STALE_MS) return true;
+  return !!t.deadline && new Date(t.deadline).getTime() - Date.now() < 48 * 3_600_000;
+}
+
+const fetchFollowUps = () =>
+  fetchAllTasks({}).then((all) =>
+    all.filter(needsFollowUp).sort((a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime())
+  );
+
+function TrackerPanels() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [partners, setPartners] = useState<Partnership[]>([]);
+  const [names, setNames] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    fetchAllTasks({}).then(setTasks).catch(() => undefined);
+    fetchPartnerships({}).then(setPartners).catch(() => undefined);
+    fetchPeople().then((p) => setNames(new Map(p.map((x) => [x.id, x.name])))).catch(() => undefined);
+  }, []);
+
+  const behind = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const t of tasks) {
+      if (t.status === 'done' || !t.assignedToUserId) continue;
+      if (Date.now() - new Date(t.updatedAt).getTime() >= STALE_MS) m.set(t.assignedToUserId, (m.get(t.assignedToUserId) ?? 0) + 1);
+    }
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [tasks]);
+  const unassignedStale = tasks.filter((t) => t.status !== 'done' && !t.assignedToUserId && Date.now() - new Date(t.updatedAt).getTime() >= STALE_MS).length;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const pending = partners
+    .filter((p) => p.currentStatus !== 'active' && p.currentStatus !== 'declined' && p.followUpDate && p.followUpDate.slice(0, 10) <= today)
+    .sort((a, b) => (a.followUpDate ?? '').localeCompare(b.followUpDate ?? ''));
+
+  return (
+    <div className="nx-tracker">
+      <Card>
+        <h2 className="nx-adminhome__h2">Behind — 2+ days with no update</h2>
+        {behind.length === 0 && unassignedStale === 0 ? (
+          <p className="nx-cell-dim">Everyone's up to date.</p>
+        ) : (
+          <ul className="nx-tracker__list">
+            {behind.map(([id, n]) => (
+              <li key={id}>
+                <b>{names.get(id) ?? 'Someone'}</b>
+                <span className="nx-tchip nx-tchip--red">{n} task{n > 1 ? 's' : ''}</span>
+              </li>
+            ))}
+            {unassignedStale > 0 && (
+              <li>
+                <b className="nx-cell-dim">Not assigned</b>
+                <span className="nx-tchip">{unassignedStale} task{unassignedStale > 1 ? 's' : ''}</span>
+              </li>
+            )}
+          </ul>
+        )}
+      </Card>
+      <Card>
+        <div className="nx-adminhome__feedhead">
+          <h2 className="nx-adminhome__h2">Partnerships due for follow-up</h2>
+          <Link className="nx-chipbtn" to="/network/partnerships">Open</Link>
+        </div>
+        {pending.length === 0 ? (
+          <p className="nx-cell-dim">No partnership is past its follow-up date.</p>
+        ) : (
+          <ul className="nx-tracker__list">
+            {pending.slice(0, 8).map((p) => (
+              <li key={p.id}>
+                <b>{p.organisation}</b>
+                <span className="nx-cell-dim">{p.assignedToUserId ? names.get(p.assignedToUserId) ?? '' : 'Unassigned'}</span>
+                <span className="nx-tchip nx-tchip--red">
+                  {new Date(p.followUpDate!).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+    </div>
+  );
 }
 
 export function FollowUps({ user }: { user: CurrentUser }) {
   return (
     <TaskSection
-      title="Follow-Ups"
+      title="Follow-Up Tracker"
       emptyTitle="Nothing needs a follow-up right now"
       newLabel="New task"
       user={user}
       fetchList={fetchFollowUps}
+      header={<TrackerPanels />}
+      showStale
     />
   );
 }

@@ -1,81 +1,112 @@
-import { useEffect, useState } from 'react';
-import { Card, Badge, LoadingState, ErrorState } from '../../components/ui';
-import { MetricCard } from '../../components/dashboard';
+// PRD §7.2 04 PEOPLE → Overview ("HR"). Session 58: rebuilt as the
+// original HTML app's team directory — a card per person with their role,
+// email, open tasks and whether today's EOD is in — under the role counts
+// and today's EOD compliance. Search by name, email or role.
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Avatar, Badge, Card, ErrorState, LoadingState } from '../../components/ui';
 import { fetchPeople } from '../../services/peopleService';
-import { fetchEodCompliance } from '../../services/eodService';
+import { fetchEodCompliance, fetchEodLogs } from '../../services/eodService';
+import { fetchAllTasks } from '../../services/taskService';
 import type { EodComplianceSummary, Person, Role } from '@nexus/shared';
 
-type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready' };
+const ROLE_LABELS: Record<Role, string> = { leader: 'Leader', team_member: 'Team member', intern: 'Intern', guest: 'Guest' } as Record<Role, string>;
+const ROLE_ORDER: Role[] = ['leader', 'team_member', 'intern'] as Role[];
 
-const ROLE_LABELS: Record<Role, string> = {
-  leader: 'Leaders',
-  team_member: 'Team members',
-  intern: 'Interns',
-  // Guests (Session 37, ADMIN_BUILD_GUIDE.md §1) are provisioned via
-  // guestService.ts, not the invite flow this roster/summary reflects —
-  // included only so this satisfies Record<Role, ...> now that Role
-  // has a fourth value; guests aren't expected to actually appear here
-  // until project-scoped guest visibility (a later session) surfaces them.
-  guest: 'Guests',
-};
-
-// PRD §7.2 04 PEOPLE → Overview. A small roster-by-role summary plus
-// today's EOD compliance — the same two data sources Team Members and
-// Attendance each drill into individually, surfaced together as the
-// section landing page.
 export function Overview() {
-  const [load, setLoad] = useState<LoadState>({ status: 'loading' });
-  const [people, setPeople] = useState<Person[]>([]);
+  const [state, setState] = useState<{ status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; people: Person[] }>({ status: 'loading' });
   const [compliance, setCompliance] = useState<EodComplianceSummary | null>(null);
+  const [open, setOpen] = useState<Map<string, number>>(new Map());
+  const [filed, setFiled] = useState<Set<string>>(new Set());
+  const [q, setQ] = useState('');
+  const [role, setRole] = useState<string>('');
 
-  useEffect(() => {
-    Promise.all([fetchPeople(), fetchEodCompliance().catch(() => null)])
-      .then(([p, c]) => {
-        setPeople(p);
-        setCompliance(c);
-        setLoad({ status: 'ready' });
+  function load() {
+    setState({ status: 'loading' });
+    fetchPeople()
+      .then((people) => setState({ status: 'ready', people }))
+      .catch((err: unknown) => setState({ status: 'error', message: err instanceof Error ? err.message : 'Something went wrong.' }));
+    fetchEodCompliance().then(setCompliance).catch(() => setCompliance(null));
+    fetchEodLogs().then((logs) => setFiled(new Set(logs.map((l) => l.userId)))).catch(() => undefined);
+    fetchAllTasks({})
+      .then((tasks) => {
+        const m = new Map<string, number>();
+        for (const t of tasks) if (t.status !== 'done' && t.assignedToUserId) m.set(t.assignedToUserId, (m.get(t.assignedToUserId) ?? 0) + 1);
+        setOpen(m);
       })
-      .catch((err: unknown) => {
-        const message = err instanceof Error ? err.message : 'Something went wrong.';
-        setLoad({ status: 'error', message });
-      });
-  }, []);
+      .catch(() => undefined);
+  }
+  useEffect(load, []);
 
-  if (load.status === 'loading') return <LoadingState label="Loading team overview…" />;
-  if (load.status === 'error') return <ErrorState title="Couldn't load People overview" description={load.message} />;
+  const people = useMemo(() => (state.status === 'ready' ? state.people : []), [state]);
+  const shown = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return people
+      .filter((p) => (!role || p.role === role) && (!s || [p.name, p.email, ROLE_LABELS[p.role]].some((x) => x?.toLowerCase().includes(s))))
+      .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || a.name.localeCompare(b.name));
+  }, [people, q, role]);
 
-  const counts = (['leader', 'team_member', 'intern'] as Role[]).map((role) => ({
-    role,
-    count: people.filter((p) => p.role === role).length,
-  }));
+  if (state.status === 'loading') return <LoadingState label="Loading people…" />;
+  if (state.status === 'error') return <ErrorState title="Couldn't load people" description={state.message} onRetry={load} />;
+
+  const counts = ROLE_ORDER.map((r) => ({ role: r, n: people.filter((p) => p.role === r).length }));
+  const pct = compliance && compliance.expectedCount > 0 ? compliance.compliancePercent : null;
 
   return (
-    <div className="nx-page nx-view-enter">
-      <h2>People</h2>
-      {/* UI Rehaul polish pass — this was hand-rolling a Card with the same
-          28px-value/label-below shape MetricCard already defines, missing
-          out on the icon slot, mono value font, and hover-lift/accent-corner
-          treatment every other Overview page (Work, Network, Analytics, the
-          three admin overviews) gets via MetricCard itself. */}
-      <div className="nx-dashboard-overview__metrics">
+    <div className="nx-dashboard-overview nx-view-enter">
+      <div className="nx-adminhome__stats">
+        <div className="nx-adminhome__stat"><span className="nx-adminhome__n">{people.length}</span><span className="nx-adminhome__l">People</span></div>
         {counts.map((c) => (
-          <MetricCard key={c.role} label={ROLE_LABELS[c.role]} value={c.count} />
+          <button key={c.role} type="button" className="nx-adminhome__stat nx-hr__statbtn" onClick={() => setRole(role === c.role ? '' : c.role)} aria-pressed={role === c.role}>
+            <span className="nx-adminhome__n">{c.n}</span>
+            <span className="nx-adminhome__l">{ROLE_LABELS[c.role]}s</span>
+          </button>
         ))}
+        <Link className={`nx-adminhome__stat nx-adminhome__stat--${pct === null ? 'accent' : pct >= 80 ? 'green' : pct >= 50 ? 'amber' : 'red'}`} to="/people/attendance">
+          <span className="nx-adminhome__n">{pct === null ? '—' : `${pct}%`}</span>
+          <span className="nx-adminhome__l">EOD filed today{compliance ? ` · ${compliance.filedCount}/${compliance.expectedCount}` : ''}</span>
+        </Link>
       </div>
-      {compliance && (
-        <Card>
-          <div className="nx-row nx-row--between">
-            <div>
-              <div style={{ fontWeight: 600 }}>Today's EOD compliance</div>
-              <div style={{ opacity: 0.7, fontSize: 13 }}>
-                {compliance.filedCount} of {compliance.expectedCount} expected members have filed
-              </div>
-            </div>
-            <Badge tone={compliance.compliancePercent >= 80 ? 'success' : compliance.compliancePercent >= 50 ? 'warning' : 'danger'}>
-              {compliance.compliancePercent}%
-            </Badge>
-          </div>
-        </Card>
+
+      <Card className="nx-filterbar">
+        <label className="nx-filterbar__search">
+          <span>Search the team</span>
+          <input className="nx-input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name, email or role…" />
+        </label>
+        <label>
+          <span>Role</span>
+          <select className="nx-select" value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="">Everyone</option>
+            {ROLE_ORDER.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}s</option>)}
+          </select>
+        </label>
+        <Link className="nx-qbtn nx-qbtn--add" style={{ height: 36, textDecoration: 'none' }} to="/settings/team">+ Invite</Link>
+      </Card>
+
+      {shown.length === 0 ? (
+        <p className="nx-cell-dim">No one matches.</p>
+      ) : (
+        <div className="nx-hr">
+          {shown.map((p) => {
+            const n = open.get(p.id) ?? 0;
+            return (
+              <article key={p.id} className="nx-hr__card">
+                <div className="nx-hr__top">
+                  <Avatar name={p.name} src={p.avatarUrl} size="md" />
+                  <div className="nx-hr__who">
+                    <b>{p.name}</b>
+                    <a className="nx-link" href={`mailto:${p.email}`}>{p.email}</a>
+                  </div>
+                </div>
+                <div className="nx-hr__meta">
+                  <Badge tone={p.role === 'leader' ? 'info' : p.role === 'intern' ? 'warning' : 'neutral'}>{ROLE_LABELS[p.role] ?? p.role}</Badge>
+                  <span className="nx-tchip">{n} open task{n === 1 ? '' : 's'}</span>
+                  <span className={'nx-tchip' + (filed.has(p.id) ? ' nx-hr__ok' : '')}>{filed.has(p.id) ? '✓ EOD in' : 'No EOD yet'}</span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
       )}
     </div>
   );

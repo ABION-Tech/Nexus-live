@@ -1,70 +1,74 @@
 import { useEffect, useState } from 'react';
-import { Card, Badge, LoadingState, ErrorState } from '../../components/ui';
-import { MetricCard } from '../../components/dashboard';
-import { fetchGroupAnalyticsOverview, fetchGroupCompanies } from '../../services/groupAdminService';
-import type { GroupAnalyticsSummary, Organization } from '@nexus/shared';
+import { Link } from 'react-router-dom';
+import { Activity, BarChart3, Building2, Target, Users, Workflow } from 'lucide-react';
+import { Badge, LoadingState, ErrorState } from '../../components/ui';
+import { fetchGroupActivity, fetchGroupAnalyticsOverview, fetchGroupCompanies } from '../../services/groupAdminService';
+import type { AuditLogEntry, GroupAnalyticsSummary, Organization } from '@nexus/shared';
+import { AdminHome } from './AdminHome';
 
-type LoadState =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'ready'; summary: GroupAnalyticsSummary; companies: Organization[] };
-
-// Group Admin > Overview (ADMIN_BUILD_GUIDE.md §3 "Session 6"). One
-// summary card row from GET /admin/group/analytics/overview, plus a
-// quick glance at the group's own companies list (full management lives
-// on the Companies tab — this is a preview, same "landing page surfaces
-// what the section's own subsections drill into" pattern People >
-// Overview already uses for its role-count cards).
+// Group Admin > Overview. Session 58: rebuilt on AdminHome, with the
+// group's companies as a list you can open.
 export function GroupOverview() {
-  const [state, setState] = useState<LoadState>({ status: 'loading' });
+  const [state, setState] = useState<
+    { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; summary: GroupAnalyticsSummary; companies: Organization[] }
+  >({ status: 'loading' });
+  const [activity, setActivity] = useState<AuditLogEntry[] | null>(null);
 
   function load() {
     setState({ status: 'loading' });
     Promise.all([fetchGroupAnalyticsOverview(), fetchGroupCompanies()])
       .then(([summary, companies]) => setState({ status: 'ready', summary, companies }))
-      .catch((err: unknown) => {
-        setState({ status: 'error', message: err instanceof Error ? err.message : 'Something went wrong.' });
-      });
+      .catch((err: unknown) => setState({ status: 'error', message: err instanceof Error ? err.message : 'Something went wrong.' }));
+    fetchGroupActivity({ limit: 8 }).then(setActivity).catch(() => setActivity([]));
   }
-
   useEffect(load, []);
 
   if (state.status === 'loading') return <LoadingState label="Loading group overview…" />;
   if (state.status === 'error') return <ErrorState title="Couldn't load group overview" description={state.message} onRetry={load} />;
-
-  const { summary, companies } = state;
-  const preview = companies.slice(0, 5);
+  const { summary: s, companies } = state;
 
   return (
-    <div className="nx-page nx-view-enter">
-      <h1>Group Admin</h1>
-
-      <div className="nx-dashboard-overview__metrics">
-        <MetricCard label="Companies" value={summary.totalCompanies} />
-        <MetricCard label="Active companies" value={summary.activeCompanies} />
-        <MetricCard label="Total users" value={summary.totalUsers} />
-      </div>
-
-      <Card>
-        <h3 style={{ marginBottom: 12 }}>Companies in this group</h3>
-        {preview.length === 0 ? (
-          <p style={{ color: 'var(--text-dim)' }}>No companies in this group yet.</p>
-        ) : (
-          <div className="nx-stack nx-stack--sm">
-            {preview.map((c) => (
-              <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                <span>{c.name}</span>
-                <Badge tone={c.active ? 'success' : 'neutral'}>{c.active ? 'Active' : 'Inactive'}</Badge>
-              </div>
-            ))}
+    <AdminHome
+      kicker="Group Admin"
+      title="Your group of companies"
+      lede="Every company in the group, its people and its work, in one place."
+      primary={{ label: '+ Add a company', to: '/admin/companies' }}
+      stats={[
+        { label: 'Companies', value: s.totalCompanies, to: '/admin/companies' },
+        { label: 'Active', value: s.activeCompanies, to: '/admin/companies', tone: 'green' },
+        { label: 'People', value: s.totalUsers, to: '/admin/people', tone: 'amber' },
+      ]}
+      actions={[
+        { icon: Building2, title: 'Companies', text: 'Add a company, rename it, or switch it off.', to: '/admin/companies' },
+        { icon: Users, title: 'People', text: 'Everyone across the group and their roles.', to: '/admin/people' },
+        { icon: Workflow, title: 'Operations', text: 'Open, blocked and overdue work per company.', to: '/admin/operations' },
+        { icon: Target, title: 'Goals', text: 'Goals across the group and how far along they are.', to: '/admin/goals' },
+        { icon: BarChart3, title: 'Analytics', text: 'Compare companies side by side.', to: '/admin/analytics' },
+        { icon: Activity, title: 'Activity log', text: "What's happened across the group.", to: '/admin/activity' },
+      ]}
+      activity={activity}
+      activityTo="/admin/activity"
+      extra={
+        <section className="nx-card">
+          <div className="nx-adminhome__feedhead">
+            <h2 className="nx-adminhome__h2">Companies in this group</h2>
+            <Link className="nx-chipbtn" to="/admin/companies">Manage</Link>
           </div>
-        )}
-        {companies.length > preview.length && (
-          <p style={{ marginTop: 12, color: 'var(--text-dim)', fontSize: 13 }}>
-            +{companies.length - preview.length} more — see the Companies tab.
-          </p>
-        )}
-      </Card>
-    </div>
+          {companies.length === 0 ? (
+            <p className="nx-cell-dim">No companies in this group yet. Add the first one with "+ Add a company".</p>
+          ) : (
+            <ul className="nx-adminhome__orgs">
+              {companies.map((c) => (
+                <li key={c.id}>
+                  <span className="nx-ws__mark nx-ws__mark--sm" aria-hidden="true">{c.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase()}</span>
+                  <b>{c.name}</b>
+                  <Badge tone={c.active ? 'success' : 'neutral'} dot>{c.active ? 'Active' : 'Off'}</Badge>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      }
+    />
   );
 }

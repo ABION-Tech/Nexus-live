@@ -315,3 +315,30 @@
   .nx-card:has(> .nx-table), .nx-card:has(> * > .nx-table) { padding: 0; overflow: hidden; }
   .nx-modal, .nx-drawer { max-width: 100vw; }
 }
+
+/* ------------------------------------------------------------------
+   Session 58 — table toolbar (Table exportName): Export CSV + Cols,
+   as on every table in the original HTML app.
+   ------------------------------------------------------------------ */
+.nx-tablebox__bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.nx-tablebox__title { font-weight: 700; font-size: 15px; min-width: 0; }
+.nx-tablebox__tools { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.nx-tablebox__scroll { overflow-x: auto; }
+.nx-tablebox__cols { position: relative; }
+.nx-tablebox__menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 190px; max-height: 320px; overflow: auto;
+  padding: 6px; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); box-shadow: var(--shadow-raised);
+}
+.nx-tablebox__opt { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; }
+.nx-tablebox__opt:hover { background: var(--surface2); }
+.nx-tablebox__opt input { accent-color: var(--accent); }
+.nx-chipbtn {
+  height: 26px; padding: 0 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface2);
+  display: inline-flex; align-items: center; text-decoration: none;
+  color: var(--accent-bright); font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.03em; cursor: pointer; white-space: nowrap;
+}
+[data-theme='light'] .nx-chipbtn { color: var(--accent); }
+.nx-chipbtn:hover:not(:disabled) { border-color: var(--accent); }
+.nx-chipbtn:disabled { opacity: 0.5; cursor: default; }
+@media (max-width: 700px) { .nx-tablebox__scroll { overflow-x: visible; } }
+.nx-link { color: var(--accent-bright); text-decoration: none; } .nx-link:hover { text-decoration: underline; } [data-theme='light'] .nx-link { color: var(--accent); }

@@ -49,3 +49,31 @@ export const SECTION_ICONS: Record<string, LucideIcon> = {
 export function sectionIcon(id: string): LucideIcon {
   return SECTION_ICONS[id] ?? LayoutDashboard;
 }
+
+// Session 58 — one icon per item of the flat sidebar (app/nav.ts).
+import {
+  ListChecks, UserCheck, Layers, FolderKanban, ClipboardCheck, Handshake, Database, FileText, Activity,
+  CalendarDays, Video, Clock, AlertTriangle, Megaphone,
+} from 'lucide-react';
+
+const NAV_ICONS: Record<string, LucideIcon> = {
+  ...SECTION_ICONS,
+  work: ListChecks,
+  'my-tasks': UserCheck,
+  companies: Layers,
+  projects: FolderKanban,
+  review: ClipboardCheck,
+  partners: Handshake,
+  org: Database,
+  eod: FileText,
+  activity: Activity,
+  calendar: CalendarDays,
+  meetings: Video,
+  'follow-ups': Clock,
+  failsafe: AlertTriangle,
+  marketing: Megaphone,
+};
+
+export function navIcon(id: string): LucideIcon {
+  return NAV_ICONS[id] ?? LayoutDashboard;
+}

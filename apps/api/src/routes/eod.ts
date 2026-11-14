@@ -27,6 +27,7 @@ import {
   getEodCompliance,
   getMissingEod,
   listEodLogsForDate,
+  listEodLogsInRange,
   submitEod,
 } from '../services/eodService.js';
 import type { SubmitEodInput } from '@nexus/shared';
@@ -38,6 +39,8 @@ function isValidIsoDate(value: string): boolean {
 function today(): string {
   return new Date().toISOString().slice(0, 10); // UTC — no per-org timezone modeled yet, see routes note
 }
+
+const clip = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() ? v.trim().slice(0, 4000) : undefined);
 
 export async function registerEodRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.requireAuth);
@@ -68,6 +71,10 @@ export async function registerEodRoutes(app: FastifyInstance) {
       userId: targetUserId,
       date: body.date ?? today(),
       summary: body.summary,
+      movedForward: clip(body.movedForward),
+      keyAchievement: clip(body.keyAchievement),
+      blockers: clip(body.blockers),
+      tomorrowPlan: clip(body.tomorrowPlan),
     });
     reply.status(201).send(log);
   });
@@ -85,6 +92,22 @@ export async function registerEodRoutes(app: FastifyInstance) {
     const logs = await listEodLogsForDate(user.orgId, date);
     const scoped = canReadAll ? logs : logs.filter((l) => l.userId === user.userId);
     reply.send({ logs: scoped });
+  });
+
+  // Session 58 — Activity Log: EOD history. Leaders (eod.read) see
+  // everyone's; anyone else sees their own.
+  app.get('/history', async (req, reply) => {
+    const user = req.sessionUser!;
+    const q = req.query as { from?: string; to?: string; userId?: string };
+    const to = q.to ?? today();
+    const from = q.from ?? new Date(Date.parse(to) - 29 * 86_400_000).toISOString().slice(0, 10);
+    if (!isValidIsoDate(from) || !isValidIsoDate(to)) {
+      reply.status(400).send({ error: 'invalid_date', message: 'from and to must be ISO dates (YYYY-MM-DD).' });
+      return;
+    }
+    const canReadAll = await hasPermission(user, 'eod', 'read');
+    const who = canReadAll ? q.userId : user.userId;
+    reply.send({ from, to, logs: await listEodLogsInRange(user.orgId, from, to, who) });
   });
 
   app.get('/compliance', async (req, reply) => {

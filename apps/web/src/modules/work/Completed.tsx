@@ -1,5 +1,5 @@
 import { TaskSection } from './TaskSection';
-import { fetchTasks } from '../../services/taskService';
+import { fetchAllTasks } from '../../services/taskService';
 import type { CurrentUser } from '../../services/authService';
 
 // PRD §7.2 02 WORK → Completed. Same TaskSection/CrudSection every other
@@ -17,7 +17,7 @@ export function Completed({ user }: { user: CurrentUser }) {
       emptyTitle="No completed tasks yet"
       newLabel="New task"
       user={user}
-      fetchList={() => fetchTasks({ status: 'done' })}
+      fetchList={() => fetchAllTasks({ status: 'done' })}
     />
   );
 }

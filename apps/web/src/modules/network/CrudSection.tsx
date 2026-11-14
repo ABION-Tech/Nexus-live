@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, Button, Modal, LoadingState, ErrorState, useToast } from '../../components/ui';
 import { RelationshipTable, RelationshipForm, type FieldSchema, type TableColumn } from '../../components/network';
 import { ApiError } from '../../services/apiClient';
+import { useQuickAdd } from '../../components/navigation/quickAdd';
 
 export interface CrudSectionProps<T extends { id: string }> {
   title: string;
@@ -20,6 +21,8 @@ export interface CrudSectionProps<T extends { id: string }> {
   isLeader: boolean;
   newLabel: string;
   emptyTitle: string;
+  /** Session 58 — columns hidden until turned on with Cols. */
+  defaultHidden?: string[];
   // UI Rehaul polish pass — same opt-in row tint RelationshipTable/Table
   // now support; CrudSection itself is generic over T and has no notion
   // of "stale follow-up", so it's the caller's job to decide (Partnerships/
@@ -38,6 +41,7 @@ type ModalState<T> = { mode: 'create' } | { mode: 'edit'; row: T } | null;
 // one layer up at the page level.
 export function CrudSection<T extends { id: string }>({
   title,
+  defaultHidden,
   columns,
   schema,
   fetchList,
@@ -116,6 +120,8 @@ export function CrudSection<T extends { id: string }>({
     }
   }
 
+  useQuickAdd(() => setModal({ mode: 'create' }));
+
   return (
     <div className="nx-dashboard-overview">
       <div className="nx-app-main__header" style={{ padding: 0, marginBottom: 16 }}>
@@ -132,6 +138,9 @@ export function CrudSection<T extends { id: string }>({
         )}
         {state.status === 'ready' && (
           <RelationshipTable
+            exportName={title}
+            title={<span>{title} <span className="nx-cell-dim">· {state.rows.length}</span></span>}
+            defaultHidden={defaultHidden}
             columns={columns}
             rows={state.rows}
             rowKey={(row) => row.id}

@@ -10,7 +10,8 @@ import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
 import helmet from '@fastify/helmet';
-import authPlugin from './plugins/auth.js';
+import { createHash } from 'node:crypto';
+import authPlugin, { SESSION_COOKIE_NAME } from './plugins/auth.js';
 import impersonationGuardPlugin from './plugins/impersonationGuard.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerDevAuthRoutes, isDevLoginEnabled } from './routes/devAuth.js';
@@ -52,6 +53,7 @@ import { registerBillingRoutes } from './routes/billing.js';
 import { registerBillingWebhookRoutes } from './routes/billingWebhook.js';
 import { registerBillingMaintenanceRoutes } from './routes/billingMaintenance.js';
 import { registerPersonalKeyRoutes, registerIntegrationRoutes } from './routes/personalKeys.js';
+import { registerOverviewRoutes } from './routes/overview.js';
 import { registerWorkspaceRoutes, registerInvitationRoutes, registerMyWorkRoutes } from './routes/workspaces.js';
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -115,9 +117,18 @@ export function buildServer(opts: { logger?: boolean } = {}) {
 
   // Global baseline; tighter per-endpoint limits (auth, AI, export) are
   // applied at the route level per PRD §13.4.
+  // Session 58: counted per signed-in person, not per network address.
+  // A whole office shares one public IP, so a per-IP budget meant a team
+  // using NEXUS together could lock each other out ("Rate limit
+  // exceeded"). Signed-in traffic gets its own budget per session;
+  // anonymous traffic keeps the per-address one.
   app.register(rateLimit, {
-    max: 100,
+    max: (req) => (req.cookies?.[SESSION_COOKIE_NAME] ? 300 : 100),
     timeWindow: '1 minute',
+    keyGenerator: (req) => {
+      const sid = req.cookies?.[SESSION_COOKIE_NAME];
+      return sid ? `s:${createHash('sha256').update(sid).digest('hex').slice(0, 32)}` : `ip:${req.ip}`;
+    },
   });
 
   // PRD §13.4 — strict error handling: typed error code + user-facing
@@ -195,6 +206,7 @@ export function buildServer(opts: { logger?: boolean } = {}) {
   app.register(registerWorkspaceRoutes, { prefix: '/api/v1/me/workspaces' });
   app.register(registerInvitationRoutes, { prefix: '/api/v1/me/invitations' });
   app.register(registerMyWorkRoutes, { prefix: '/api/v1/me/work' });
+  app.register(registerOverviewRoutes, { prefix: '/api/v1/overview' });
   app.register(registerNotificationRoutes, { prefix: '/api/v1/notifications' });
   // ADMIN_BUILD_GUIDE.md §1 (Session 37) — guest credential provisioning.
   app.register(registerGuestRoutes, { prefix: '/api/v1/guests' });

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Card, Badge, Button, Select, LoadingState, ErrorState, EmptyState } from '../../components/ui';
+import { Link, useNavigate } from 'react-router-dom';
+import { Card, Badge, Button, Select, LoadingState, ErrorState, EmptyState, Table, type TableColumn } from '../../components/ui';
+import { fetchPeople } from '../../services/peopleService';
 import { fetchMarketingContent } from '../../services/marketingService';
 import type { MarketingContentItem, MarketingContentStatus } from '@nexus/shared';
 
@@ -32,6 +33,46 @@ function statusTone(status: MarketingContentStatus): 'neutral' | 'info' | 'succe
 export function Marketing() {
   const [state, setState] = useState<ListState>({ status: 'loading' });
   const [statusFilter, setStatusFilter] = useState('');
+  const navigate = useNavigate();
+  const [names, setNames] = useState<Map<string, string>>(new Map());
+  useEffect(() => {
+    fetchPeople().then((p) => setNames(new Map(p.map((x) => [x.id, x.name])))).catch(() => undefined);
+  }, []);
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Session 58: a table as on the original HTML app — the caption itself,
+  // who owns it, and the post link, not just the content type.
+  const columns: TableColumn<MarketingContentItem>[] = [
+    { key: 'type', header: 'Type', render: (r) => <span className="nx-tchip">{r.contentType || '—'}</span> },
+    { key: 'caption', header: 'Topic / caption', render: (r) => <span className="nx-cell-strong">{r.caption || <span className="nx-cell-dim">No caption yet</span>}</span> },
+    { key: 'platform', header: 'Platform', render: (r) => r.platform ?? '—' },
+    { key: 'owner', header: 'Assigned', render: (r) => (r.ownerUserId ? names.get(r.ownerUserId) ?? '—' : '—') },
+    {
+      key: 'due',
+      header: 'Due',
+      render: (r) =>
+        r.dueDate ? (
+          <span className={r.status !== 'posted' && r.dueDate.slice(0, 10) < today ? 'nx-late' : undefined}>
+            {new Date(r.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </span>
+        ) : (
+          '—'
+        ),
+    },
+    { key: 'status', header: 'Status', render: (r) => <Badge tone={statusTone(r.status)}>{STATUS_OPTIONS.find((s) => s.value === r.status)?.label ?? r.status}</Badge> },
+    {
+      key: 'link',
+      header: 'Link',
+      render: (r) =>
+        r.postLink ? (
+          <a className="nx-link" href={r.postLink} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
+            Open ↗
+          </a>
+        ) : (
+          '—'
+        ),
+    },
+  ];
 
   function load() {
     setState({ status: 'loading' });
@@ -93,29 +134,17 @@ export function Marketing() {
           )}
 
           {filtered.length > 0 && (
-            <div className="nx-stack nx-stack--sm">
-              {filtered.map((item) => (
-                <Link
-                  key={item.id}
-                  to={`/comms-ops/marketing/${item.id}`}
-                  style={{ textDecoration: 'none', color: 'inherit' }}
-                >
-                  <Card interactive style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                      <strong>{item.contentType || 'Untitled content'}</strong>
-                      <Badge tone={statusTone(item.status)}>
-                        {STATUS_OPTIONS.find((s) => s.value === item.status)?.label ?? item.status}
-                      </Badge>
-                    </div>
-                    <div style={{ opacity: 0.75, fontSize: 13 }}>
-                      {item.platform && <span>{item.platform}</span>}
-                      {item.platform && item.dueDate && <span> · </span>}
-                      {item.dueDate && <span>Due {item.dueDate}</span>}
-                    </div>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+            <Card>
+              <Table
+                exportName="Marketing"
+                title={<span>Content calendar <span className="nx-cell-dim">· {filtered.length}</span></span>}
+                columns={columns}
+                rows={filtered}
+                rowKey={(r) => r.id}
+                onRowClick={(r) => navigate(`/comms-ops/marketing/${r.id}`)}
+                rowClassName={(r) => (r.status !== 'posted' && r.dueDate && r.dueDate.slice(0, 10) < today ? 'nx-table__row--overdue' : undefined)}
+              />
+            </Card>
           )}
         </>
       )}

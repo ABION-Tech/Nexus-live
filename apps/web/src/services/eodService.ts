@@ -30,3 +30,13 @@ export function fetchEodLogs(date?: string): Promise<EodLog[]> {
 export function submitEodLog(input: SubmitEodInput): Promise<EodLog> {
   return postQueueable<EodLog>('/eod', input, 'EOD report');
 }
+
+/** Session 58 — Activity Log: EOD history between two dates. */
+export function fetchEodHistory(params: { from?: string; to?: string; userId?: string } = {}): Promise<{ from: string; to: string; logs: EodLog[] }> {
+  const q = new URLSearchParams();
+  if (params.from) q.set('from', params.from);
+  if (params.to) q.set('to', params.to);
+  if (params.userId) q.set('userId', params.userId);
+  const qs = q.toString();
+  return apiClient.get(`/eod/history${qs ? `?${qs}` : ''}`);
+}

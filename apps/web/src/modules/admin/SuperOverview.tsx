@@ -1,81 +1,105 @@
 import { useEffect, useState } from 'react';
-import { Card, Badge, LoadingState, ErrorState } from '../../components/ui';
-import { MetricCard } from '../../components/dashboard';
-import { fetchPlatformAnalytics, fetchSystemHealth } from '../../services/superAdminService';
-import type { PlatformAnalyticsSummary, SubsystemStatus, SystemHealthReport } from '@nexus/shared';
+import { Link } from 'react-router-dom';
+import { Building2, CreditCard, ShieldCheck, ShieldAlert, Users } from 'lucide-react';
+import { Badge, LoadingState, ErrorState } from '../../components/ui';
+import { fetchAuditLog, fetchPlatformAnalytics, fetchSystemHealth, searchOrganizations, searchPlatformUsers } from '../../services/superAdminService';
+import type { AuditLogEntry, Organization, PlatformAnalyticsSummary, SubsystemStatus, SystemHealthReport } from '@nexus/shared';
+import { AdminHome } from './AdminHome';
 
-type LoadState =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'ready'; summary: PlatformAnalyticsSummary; health: SystemHealthReport };
+const TONE: Record<SubsystemStatus, 'success' | 'warning' | 'danger' | 'neutral'> = { ok: 'success', degraded: 'warning', down: 'danger', unknown: 'neutral' };
 
-const STATUS_TONE: Record<SubsystemStatus, 'success' | 'warning' | 'danger' | 'neutral'> = {
-  ok: 'success',
-  degraded: 'warning',
-  down: 'danger',
-  unknown: 'neutral',
-};
-
-// Super Admin > Overview (ADMIN_BUILD_GUIDE.md §3 "Session 5"). Platform-
-// wide counts (GET /admin/super/analytics/overview) plus a subsystem
-// health strip (GET /admin/super/system-health) — same "landing page
-// previews what the section's own tabs drill into" pattern GroupOverview
-// already uses, one level up (platform-wide instead of one group's own
-// children).
+// Super Admin > Overview. Session 58: rebuilt on AdminHome. System health
+// shows what is actually checked; subsystems without a check yet are one
+// quiet line instead of a wall of "unknown".
 export function SuperOverview() {
-  const [state, setState] = useState<LoadState>({ status: 'loading' });
+  const [state, setState] = useState<
+    | { status: 'loading' }
+    | { status: 'error'; message: string }
+    | { status: 'ready'; summary: PlatformAnalyticsSummary; health: SystemHealthReport; orgs: Organization[] }
+  >({ status: 'loading' });
+  const [activity, setActivity] = useState<AuditLogEntry[] | null>(null);
+  const [names, setNames] = useState<Map<string, string>>(new Map());
 
   function load() {
     setState({ status: 'loading' });
-    Promise.all([fetchPlatformAnalytics(), fetchSystemHealth()])
-      .then(([summary, health]) => setState({ status: 'ready', summary, health }))
-      .catch((err: unknown) => {
-        setState({ status: 'error', message: err instanceof Error ? err.message : 'Something went wrong.' });
-      });
+    Promise.all([fetchPlatformAnalytics(), fetchSystemHealth(), searchOrganizations()])
+      .then(([summary, health, orgs]) => setState({ status: 'ready', summary, health, orgs }))
+      .catch((err: unknown) => setState({ status: 'error', message: err instanceof Error ? err.message : 'Something went wrong.' }));
+    fetchAuditLog({ limit: 8 }).then(setActivity).catch(() => setActivity([]));
+    searchPlatformUsers().then((u) => setNames(new Map(u.map((x) => [x.id, x.name])))).catch(() => undefined);
   }
-
   useEffect(load, []);
 
   if (state.status === 'loading') return <LoadingState label="Loading platform overview…" />;
   if (state.status === 'error') return <ErrorState title="Couldn't load platform overview" description={state.message} onRetry={load} />;
-
-  const { summary, health } = state;
+  const { summary: s, health, orgs } = state;
+  const checked = health.subsystems.filter((x) => x.status !== 'unknown');
+  const unchecked = health.subsystems.filter((x) => x.status === 'unknown');
 
   return (
-    <div className="nx-page nx-view-enter">
-      <h1>Super Admin</h1>
-
-      <div className="nx-dashboard-overview__metrics">
-        <MetricCard label="Groups" value={summary.totalGroups} />
-        <MetricCard label="Companies" value={summary.totalCompanies} />
-        <MetricCard label="Active organizations" value={summary.activeOrganizations} />
-        <MetricCard label="Total users" value={summary.totalUsers} />
-        <MetricCard label="Platform admins" value={summary.totalPlatformAdmins} />
-      </div>
-
-      <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h3 style={{ margin: 0 }}>System health</h3>
-          <Badge tone={STATUS_TONE[health.overall]}>{health.overall}</Badge>
-        </div>
-        <div className="nx-stack nx-stack--sm">
-          {health.subsystems.map((s) => (
-            <div
-              key={s.name}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--border)' }}
-            >
-              <span style={{ textTransform: 'capitalize' }}>{s.name}</span>
-              <div className="nx-row">
-                {s.detail && <span style={{ color: 'var(--text-dim)', fontSize: 13 }}>{s.detail}</span>}
-                <Badge tone={STATUS_TONE[s.status]} dot>{s.status}</Badge>
-              </div>
+    <AdminHome
+      kicker="Super Admin"
+      title="The whole NEXUS platform"
+      lede="Every organization and person on NEXUS, who runs it, billing, and security."
+      primary={{ label: '+ New organization', to: '/admin/platform/organizations' }}
+      stats={[
+        { label: 'Organizations', value: s.totalOrganizations, to: '/admin/platform/organizations' },
+        { label: 'Companies', value: s.totalCompanies, to: '/admin/platform/organizations' },
+        { label: 'Groups', value: s.totalGroups, to: '/admin/platform/organizations', tone: 'amber' },
+        { label: 'People', value: s.totalUsers, to: '/admin/platform/users', tone: 'green' },
+        { label: 'Super Admins', value: s.totalPlatformAdmins, to: '/admin/platform/super-admins', tone: 'red' },
+      ]}
+      actions={[
+        { icon: Building2, title: 'Organizations', text: 'Create, rename, group or switch off companies and groups.', to: '/admin/platform/organizations' },
+        { icon: Users, title: 'Users', text: 'Find anyone on the platform and the company they belong to.', to: '/admin/platform/users' },
+        { icon: ShieldCheck, title: 'Super Admins', text: 'Who else can run the platform.', to: '/admin/platform/super-admins' },
+        { icon: CreditCard, title: 'Billing review', text: 'Plans waiting for a decision.', to: '/admin/platform/billing' },
+        { icon: ShieldAlert, title: 'Audit & security', text: 'Every sign-in, impersonation and admin action.', to: '/admin/platform/audit' },
+      ]}
+      activity={activity}
+      activityTo="/admin/platform/audit"
+      nameOf={(id) => (id ? names.get(id) : undefined)}
+      extra={
+        <div className="nx-adminhome__grid">
+          <section className="nx-card">
+            <div className="nx-adminhome__feedhead">
+              <h2 className="nx-adminhome__h2">Organizations</h2>
+              <Link className="nx-chipbtn" to="/admin/platform/organizations">Manage</Link>
             </div>
-          ))}
+            <ul className="nx-adminhome__orgs">
+              {orgs.slice(0, 8).map((o) => (
+                <li key={o.id}>
+                  <span className="nx-ws__mark nx-ws__mark--sm" aria-hidden="true">{o.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase()}</span>
+                  <b>{o.name}</b>
+                  <span className="nx-cell-dim">{o.orgType === 'group' ? 'Group' : 'Company'}</span>
+                  <Badge tone={o.active ? 'success' : 'neutral'} dot>{o.active ? 'Active' : 'Off'}</Badge>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section className="nx-card">
+            <div className="nx-adminhome__feedhead">
+              <h2 className="nx-adminhome__h2">System health</h2>
+              <Badge tone={checked.some((x) => x.status !== 'ok') ? TONE[checked.find((x) => x.status !== 'ok')!.status] : 'success'} dot>
+                {checked.every((x) => x.status === 'ok') ? 'All good' : 'Needs a look'}
+              </Badge>
+            </div>
+            <ul className="nx-adminhome__health">
+              {checked.map((x) => (
+                <li key={x.name}>
+                  <span style={{ textTransform: 'capitalize' }}>{x.name}</span>
+                  <Badge tone={TONE[x.status]} dot>{x.status === 'ok' ? 'OK' : x.status}</Badge>
+                </li>
+              ))}
+            </ul>
+            {unchecked.length > 0 && (
+              <p className="nx-cell-dim" style={{ margin: '10px 0 0', fontSize: 12 }}>
+                Not monitored yet: {unchecked.map((x) => x.name).join(', ')}.
+              </p>
+            )}
+          </section>
         </div>
-        <p style={{ marginTop: 12, color: 'var(--text-dim)', fontSize: 12 }}>
-          Some subsystems report "unknown" until their real health check is wired up (systemMetricsService.ts) — not a failure, just not instrumented yet.
-        </p>
-      </Card>
-    </div>
+      }
+    />
   );
 }

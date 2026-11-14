@@ -18,7 +18,7 @@
 //                          ambiguous queue; a human links each row to the
 //                          correct meeting here (never auto-resolved,
 //                          see that service's own header for why)
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
   Card,
@@ -47,6 +47,7 @@ import {
 import { fetchPeople } from '../../services/peopleService';
 import type { CreateMeetingInput, Meeting, MeetingLocationType, MeetingRecording, Person } from '@nexus/shared';
 import { ApiError } from '../../services/apiClient';
+import { useQuickAdd } from '../../components/navigation/quickAdd';
 
 const LOCATION_OPTIONS: { value: MeetingLocationType; label: string }[] = [
   { value: 'physical', label: 'In person' },
@@ -193,6 +194,15 @@ export function Meetings({ user }: { user: { id: string } }) {
     return { upcoming: upcomingActive, past: [...pastActive, ...archived.sort((a, b) => b.startTime.localeCompare(a.startTime))] };
   }, [state]);
 
+  useQuickAdd(() => openCreate());
+  // Session 58: like the original HTML app, open on past meetings when
+  // nothing is coming up, rather than on an empty tab.
+  const autoTabbed = useRef(false);
+  useEffect(() => {
+    if (autoTabbed.current || state.status !== 'ready') return;
+    autoTabbed.current = true;
+    if (upcoming.length === 0 && past.length > 0) setTab('past');
+  }, [state.status, upcoming.length, past.length]);
   function openCreate() {
     setForm(emptyForm(user.id));
     setDrawer({ mode: 'create' });

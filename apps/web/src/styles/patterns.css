@@ -108,3 +108,63 @@
    filter bar tight together the way the other Work pages read. */
 .nx-dashboard-overview.nx-allwork { gap: 0; }
 .nx-allwork > .nx-allwork__lede { margin-bottom: var(--space-5); }
+
+/* ------------------------------------------------------------------
+   Session 58 — Master Tasks (TaskSection.tsx), as in the original HTML app
+   ------------------------------------------------------------------ */
+.nx-filterbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 12px; padding: 14px 16px !important; }
+.nx-filterbar label { display: flex; flex-direction: column; gap: 5px; min-width: 120px; flex: 1 1 120px; }
+.nx-filterbar label > span { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.nx-filterbar .nx-filterbar__search { flex: 2 1 220px; }
+.nx-filterbar .nx-input, .nx-filterbar .nx-select { height: 36px; }
+.nx-filterbar__clear { height: 36px; }
+.nx-select--sm { height: 26px !important; padding: 0 26px 0 8px !important; font-size: 12px !important; width: auto !important; }
+.nx-task { display: flex; flex-direction: column; gap: 5px; min-width: 200px; }
+.nx-task__title { font-weight: 600; }
+.nx-task__chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.nx-task__chips:empty { display: none; }
+.nx-tchip {
+  display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 4px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700; white-space: nowrap;
+  background: var(--surface2); border: 1px solid var(--border2); color: var(--text-dim);
+}
+.nx-tchip--red { background: var(--danger-bg); border-color: color-mix(in srgb, var(--danger) 35%, transparent); color: var(--danger); }
+@media (max-width: 700px) {
+  .nx-filterbar label { flex: 1 1 calc(50% - 6px); min-width: 0; }
+  .nx-filterbar .nx-filterbar__search { flex: 1 1 100%; }
+}
+/* Session 58 — Follow-Up Tracker panels */
+.nx-tracker { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.nx-tracker__list { list-style: none; margin: 0; padding: 0; }
+.nx-tracker__list li { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+.nx-tracker__list li:last-child { border-bottom: 0; }
+.nx-tracker__list li b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 800px) { .nx-tracker { grid-template-columns: 1fr; } }
+/* Session 58 — Failsafe Alerts as four panels */
+.nx-failsafe { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); align-items: start; }
+.nx-failsafe__panel--danger { border-top: 3px solid var(--danger); }
+.nx-failsafe__panel--warning { border-top: 3px solid var(--accent3); }
+.nx-failsafe__panel--ok { border-top: 3px solid var(--accent2); }
+.nx-failsafe__list { list-style: none; margin: 0; padding: 0; max-height: 420px; overflow: auto; }
+.nx-failsafe__list li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.nx-failsafe__list li:last-child { border-bottom: 0; }
+.nx-failsafe__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.nx-failsafe__main b { font-size: 13.5px; font-weight: 600; }
+.nx-failsafe__main span { font-size: 12px; color: var(--muted); }
+@media (max-width: 900px) { .nx-failsafe { grid-template-columns: 1fr; } }
+/* Session 58 — EOD form, as the original HTML app's */
+.nx-eod-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.nx-eod-line { margin: 4px 0 0; font-size: 13px; color: var(--text-dim); white-space: pre-wrap; }
+.nx-eod-line b { color: var(--text); font-weight: 600; }
+@media (max-width: 700px) { .nx-eod-grid { grid-template-columns: 1fr; } }
+/* Session 58 — HR team directory */
+.nx-hr { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: var(--space-3); }
+.nx-hr__card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--border2); border-radius: var(--radius-lg); background: var(--surface); }
+.nx-hr__top { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.nx-hr__who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.nx-hr__who b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nx-hr__who a { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nx-hr__meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.nx-hr__ok { color: var(--accent2); border-color: color-mix(in srgb, var(--accent2) 40%, transparent); }
+.nx-hr__statbtn { border: 0; font: inherit; text-align: left; cursor: pointer; }
+.nx-hr__statbtn:hover, .nx-hr__statbtn[aria-pressed='true'] { background: var(--surface2); }

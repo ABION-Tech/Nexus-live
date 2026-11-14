@@ -21,9 +21,16 @@ const DOCUMENT_STATUS_OPTIONS = ['not_started', 'draft_sent', 'under_review', 's
   label: formatStatusLabel(value),
 }));
 
-const COLUMNS: TableColumn<Partnership>[] = [
-  { key: 'organisation', header: 'Organisation', render: (r) => r.organisation },
+const fmtDate = (d?: string) => (d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
+
+// Session 58: assigned to, type, contact email, last contact, overdue
+// follow-ups in red, remarks — as on the original HTML app's Partnerships.
+const buildColumns = (names: Map<string, string>): TableColumn<Partnership>[] => [
+  { key: 'organisation', header: 'Organisation', render: (r) => <span className="nx-cell-strong">{r.organisation}</span> },
+  { key: 'assigned', header: 'Assigned', render: (r) => (r.assignedToUserId ? names.get(r.assignedToUserId) ?? '—' : '—') },
+  { key: 'category', header: 'Type', render: (r) => r.category ?? '—' },
   { key: 'contact', header: 'Contact', render: (r) => r.contactName ?? '—' },
+  { key: 'email', header: 'Contact email', render: (r) => (r.contactEmail ? <a className="nx-link" href={`mailto:${r.contactEmail}`} onClick={(e) => e.stopPropagation()}>{r.contactEmail}</a> : '—') },
   {
     key: 'currentStatus',
     header: 'Status',
@@ -35,10 +42,19 @@ const COLUMNS: TableColumn<Partnership>[] = [
     render: (r) => <Badge tone={statusTone(r.documentStatus)}>{formatStatusLabel(r.documentStatus)}</Badge>,
   },
   {
+    key: 'lastContact',
+    header: 'Last contact',
+    render: (r) => fmtDate(r.lastContactDate),
+  },
+  {
     key: 'followUpDate',
     header: 'Follow-up',
-    render: (r) => (r.followUpDate ? new Date(r.followUpDate).toLocaleDateString() : '—'),
+    render: (r) => {
+      const late = r.followUpDate && r.currentStatus !== 'active' && r.followUpDate.slice(0, 10) < new Date().toISOString().slice(0, 10);
+      return <span className={late ? 'nx-late' : undefined}>{fmtDate(r.followUpDate)}</span>;
+    },
   },
+  { key: 'remarks', header: 'Remarks', render: (r) => <span className="nx-cell-dim">{r.remarks || '—'}</span> },
 ];
 
 // `documentStatus` AND `assignedToUserId` are both leader-only per
@@ -87,11 +103,13 @@ export function Partnerships({ user }: { user: CurrentUser }) {
 
   const peopleOptions = useMemo(() => people.map((p) => ({ value: p.id, label: p.name })), [people]);
   const schema = useMemo(() => buildSchema(peopleOptions), [peopleOptions]);
+  const columns = useMemo(() => buildColumns(new Map(people.map((p) => [p.id, p.name]))), [people]);
 
   return (
     <CrudSection<Partnership>
       title="Partnerships"
-      columns={COLUMNS}
+      columns={columns}
+      defaultHidden={['email', 'lastContact']}
       schema={schema}
       fetchList={() => fetchPartnerships()}
       createItem={(input) => createPartnership(input as unknown as PartnershipInput)}

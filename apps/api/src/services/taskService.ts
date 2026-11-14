@@ -20,6 +20,9 @@ import type { Task, TaskListQuery, TaskPriority, TaskStatus } from '@nexus/share
 // the tasks schema ever changes, instead of a second copy drifting.
 export interface TaskRow {
   id: string;
+  legacy_sheet_id?: string | null;
+  checklist_done?: number;
+  checklist_total?: number;
   org_id: string;
   title: string;
   description: string | null;
@@ -66,6 +69,11 @@ export function toTask(row: TaskRow): Task {
     archivedAt: row.archived_at?.toISOString(),
     marketingContentId: row.marketing_content_id ?? undefined,
     projectId: row.project_id ?? undefined, // Session 38
+    // Session 58: the short id people use (T-031) and checklist progress,
+    // as the original HTML app showed on every task row.
+    ref: row.legacy_sheet_id ?? undefined,
+    checklistDone: row.checklist_done ?? undefined,
+    checklistTotal: row.checklist_total ?? undefined,
   };
 }
 
@@ -143,7 +151,12 @@ export async function listTasks(orgId: string, query: TaskListQuery): Promise<Ta
 
     const listParams = [...params, pageSize, offset];
     const { rows } = await client.query<TaskRow>(
-      `select * from tasks where ${where}
+      `select tasks.*, coalesce(cl.done, 0)::int as checklist_done, coalesce(cl.total, 0)::int as checklist_total
+         from tasks
+         left join lateral (
+           select count(*) filter (where k.is_done) as done, count(*) as total from task_checklists k where k.task_id = tasks.id
+         ) cl on true
+        where ${where}
         order by created_at desc
         limit $${listParams.length - 1} offset $${listParams.length}`,
       listParams

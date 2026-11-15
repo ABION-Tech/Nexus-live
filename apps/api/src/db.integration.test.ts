@@ -30,6 +30,7 @@ describe.skipIf(!ADMIN_URL || !APP_URL)('database (real Postgres)', () => {
   beforeAll(async () => {
     admin = new pg.Pool({ connectionString: ADMIN_URL });
     app = new pg.Pool({ connectionString: APP_URL });
+    await admin.query(`delete from tasks where org_id in ($1, $2) and recurrence_source_id is not null`, [A, B]);
     await admin.query(`delete from tasks where org_id in ($1, $2)`, [A, B]);
     await admin.query(`delete from organizations where id in ($1, $2)`, [A, B]);
     await admin.query(`insert into organizations (id, name) values ($1, 'Isolation A'), ($2, 'Isolation B')`, [A, B]);
@@ -38,6 +39,9 @@ describe.skipIf(!ADMIN_URL || !APP_URL)('database (real Postgres)', () => {
 
   afterAll(async () => {
     await admin.query(`delete from activity_log where org_id in ($1, $2)`, [A, B]);
+    await admin.query(`delete from notifications where org_id in ($1, $2)`, [A, B]);
+    await admin.query(`delete from automation_controls where org_id in ($1, $2)`, [A, B]);
+    await admin.query(`delete from tasks where org_id in ($1, $2) and recurrence_source_id is not null`, [A, B]);
     await admin.query(`delete from tasks where org_id in ($1, $2)`, [A, B]);
     await admin.query(`delete from organizations where id in ($1, $2)`, [A, B]);
     await admin.end();
@@ -134,6 +138,47 @@ describe.skipIf(!ADMIN_URL || !APP_URL)('database (real Postgres)', () => {
     expect(mine[0]).toMatchObject({ action: 'task.updated', previous: { status: 'not_started' }, next: { status: 'done' } });
     expect(await listTaskHistory(B, taskId)).toEqual([]);
     await admin.query(`delete from activity_log where resource_id = $1`, [taskId]);
+  });
+
+  it('recurring tasks: one copy on each day due, never twice (C-11)', async () => {
+    process.env.DATABASE_URL = APP_URL;
+    const { runRecurringTasks } = await import('./services/automationJobs.js');
+    await admin.query(
+      `insert into automation_controls (org_id, key, enabled) values ($1, 'daily_recurring_tasks', true)
+       on conflict (org_id, key) do update set enabled = true`,
+      [A]
+    );
+    // Anchors relative to today in Lagos, so the expectations hold any day.
+    const { rows: [d] } = await admin.query<{ today: string; isodow: number }>(
+      `select (now() at time zone 'Africa/Lagos')::date::text as today, extract(isodow from (now() at time zone 'Africa/Lagos')::date)::int as isodow`
+    );
+    const make = (title: string, recurrence: string, anchorSql: string) =>
+      admin.query(`insert into tasks (org_id, title, recurrence, start_date) values ($1, $2, $3, ${anchorSql})`, [A, title, recurrence]);
+    const today = `(now() at time zone 'Africa/Lagos')::date`;
+    await make('R daily', 'daily', `${today} - 1`);
+    await make('R weekly due', 'weekly', `${today} - 7`);
+    await make('R weekly not due', 'weekly', `${today} - 6`);
+    await make('R monthly due', 'monthly', `(${today} - interval '1 month')::date`);
+    await make('R weekdays', 'weekdays', `${today} - 1`);
+    await make('R starts today', 'daily', today);
+
+    await runRecurringTasks();
+    await runRecurringTasks(); // a retry makes nothing new
+    const { rows } = await admin.query<{ title: string; n: number }>(
+      `select s.title, count(c.id)::int as n from tasks s left join tasks c on c.recurrence_source_id = s.id
+        where s.org_id = $1 and s.title like 'R %' group by s.title`,
+      [A]
+    );
+    const copies = Object.fromEntries(rows.map((r) => [r.title, r.n]));
+    const monthlyDue = Number(d!.today.slice(8, 10)) <= 28; // in a short month the 29th–31st clamp; keep the test exact
+    expect(copies).toEqual({
+      'R daily': 1,
+      'R weekly due': 1,
+      'R weekly not due': 0,
+      'R monthly due': monthlyDue ? 1 : copies['R monthly due'],
+      'R weekdays': d!.isodow <= 5 ? 1 : 0,
+      'R starts today': 0, // the original covers its own first day
+    });
   });
 
   it("a company can't write into another company", async () => {

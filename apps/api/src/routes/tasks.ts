@@ -35,6 +35,7 @@ import {
   type TaskAssigneeRole,
   type UpdateTaskInput,
 } from '../services/taskService.js';
+import { TASK_RECURRENCES } from '@nexus/shared';
 import type { TaskListQuery, TaskPriority, TaskStatus } from '@nexus/shared';
 import { listTaskHistory } from '../services/taskHistoryService.js';
 
@@ -47,7 +48,28 @@ const VALID_ASSIGNEE_ROLES: TaskAssigneeRole[] = ['assignee', 'support'];
 // grant ("update (status, notes only)"). `description` stands in for
 // "notes" — see taskService.ts's UpdateTaskInput comment; there's no
 // separate notes column in 0001_init.sql.
+/** Session 60 (C-11): recurrence and follow-up hours, checked on create
+ * and update. Returns an error message, or null when fine. null clears. */
+function invalidRepeatFields(body: { recurrence?: unknown; followUpHours?: unknown }): string | null {
+  if (body.recurrence !== undefined && body.recurrence !== null && !(TASK_RECURRENCES as readonly unknown[]).includes(body.recurrence)) {
+    return `recurrence must be one of ${TASK_RECURRENCES.join(', ')}, or null.`;
+  }
+  if (body.followUpHours !== undefined && body.followUpHours !== null) {
+    const n = body.followUpHours;
+    if (typeof n !== 'number' || !Number.isInteger(n) || n < 1 || n > 720) return 'followUpHours must be a whole number from 1 to 720, or null.';
+  }
+  return null;
+}
+
 const OWN_UPDATE_FIELDS = new Set<keyof UpdateTaskInput>(['status', 'description']);
+
+/** Session 60: what a person may set through PATCH. Anything else in the
+ * body (id, createdAt, ref, … from a whole Task) is ignored, and the
+ * dependency sweep's internal preBlockStatus can't be set from outside. */
+const CLIENT_UPDATE_FIELDS = new Set<keyof UpdateTaskInput>([
+  'title', 'description', 'status', 'priority', 'startDate', 'assignedToUserId', 'supportUserId', 'supervisorUserId',
+  'dependsOnTaskId', 'goalId', 'projectId', 'business', 'department', 'deadline', 'recurrence', 'followUpHours',
+]);
 
 export async function registerTaskRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.requireAuth);
@@ -151,6 +173,12 @@ export async function registerTaskRoutes(app: FastifyInstance) {
       return;
     }
 
+    const repeatError = invalidRepeatFields(body);
+    if (repeatError) {
+      reply.status(400).send({ error: 'invalid_body', message: repeatError });
+      return;
+    }
+
     const task = await createTask(user.orgId, body as CreateTaskInput, user.userId);
     reply.status(201).send(task);
   });
@@ -182,13 +210,21 @@ export async function registerTaskRoutes(app: FastifyInstance) {
       return;
     }
 
-    let input = body;
+    const repeatError = invalidRepeatFields(body);
+    if (repeatError) {
+      reply.status(400).send({ error: 'invalid_body', message: repeatError });
+      return;
+    }
+
+    let input = Object.fromEntries(
+      Object.entries(body ?? {}).filter(([key]) => CLIENT_UPDATE_FIELDS.has(key as keyof UpdateTaskInput))
+    ) as UpdateTaskInput;
     if (!canUpdateAll && own) {
       // Own-record grant only covers status/notes (PRD §13.3) — silently
       // drop anything else rather than 403 the whole request for one
       // extra field the client sent.
       input = Object.fromEntries(
-        Object.entries(body).filter(([key]) => OWN_UPDATE_FIELDS.has(key as keyof UpdateTaskInput))
+        Object.entries(input).filter(([key]) => OWN_UPDATE_FIELDS.has(key as keyof UpdateTaskInput))
       ) as UpdateTaskInput;
     }
 

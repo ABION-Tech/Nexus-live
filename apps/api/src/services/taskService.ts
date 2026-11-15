@@ -12,7 +12,7 @@
 import type { PoolClient } from 'pg';
 import { withOrgContext } from '../db.js';
 import { diffColumns, logActivity, logActivityCreated } from './activityLogService.js';
-import type { Task, TaskListQuery, TaskPriority, TaskStatus } from '@nexus/shared';
+import type { Task, TaskListQuery, TaskPriority, TaskRecurrence, TaskStatus } from '@nexus/shared';
 
 // Exported for analyticsService.ts (PRD §8.7), which queries the same
 // `tasks` table directly for its derived Failsafe lists (blocked,
@@ -43,6 +43,9 @@ export interface TaskRow {
   archived_at: Date | null;
   marketing_content_id: string | null;
   project_id: string | null; // Session 38
+  recurrence: TaskRecurrence | null; // Session 60 (0047)
+  recurrence_source_id: string | null;
+  follow_up_hours: number | null;
   pre_block_status: string | null; // 0024 — see migration's own comment; internal to the dependency sweep, not exposed on the public Task type
 }
 
@@ -69,6 +72,9 @@ export function toTask(row: TaskRow): Task {
     archivedAt: row.archived_at?.toISOString(),
     marketingContentId: row.marketing_content_id ?? undefined,
     projectId: row.project_id ?? undefined, // Session 38
+    recurrence: row.recurrence ?? undefined, // Session 60 (0047)
+    recurrenceSourceId: row.recurrence_source_id ?? undefined,
+    followUpHours: row.follow_up_hours ?? undefined,
     // Session 58: the short id people use (T-031) and checklist progress,
     // as the original HTML app showed on every task row.
     ref: row.legacy_sheet_id ?? undefined,
@@ -190,6 +196,8 @@ export interface CreateTaskInput {
   deadline?: string;
   marketingContentId?: string;
   projectId?: string; // Session 38
+  recurrence?: TaskRecurrence | null; // Session 60 (0047)
+  followUpHours?: number | null;
 }
 
 /**
@@ -206,8 +214,8 @@ export async function insertTaskRow(client: PoolClient, orgId: string, input: Cr
     `insert into tasks (
        org_id, title, description, status, priority, start_date, assigned_to_user_id, support_user_id,
        supervisor_user_id, depends_on_task_id, goal_id, source_pending_task_id,
-       business, department, deadline, marketing_content_id, project_id
-     ) values ($1, $2, $3, coalesce($4, 'not_started'), coalesce($5, 'medium'), $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+       business, department, deadline, marketing_content_id, project_id, recurrence, follow_up_hours
+     ) values ($1, $2, $3, coalesce($4, 'not_started'), coalesce($5, 'medium'), $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
      returning *`,
     [
       orgId,
@@ -227,6 +235,8 @@ export async function insertTaskRow(client: PoolClient, orgId: string, input: Cr
       input.deadline ?? null,
       input.marketingContentId ?? null,
       input.projectId ?? null, // Session 38
+      input.recurrence ?? null, // Session 60 (0047)
+      input.followUpHours ?? null,
     ]
   );
   return toTask(rows[0]!);
@@ -260,6 +270,8 @@ export interface UpdateTaskInput {
   business?: string;
   department?: string;
   deadline?: string | null;
+  recurrence?: TaskRecurrence | null; // Session 60 (0047)
+  followUpHours?: number | null;
   /** 0024 — internal-only field the dependency sweep (automationJobs.ts)
    * uses to record/clear what a task's status was immediately before an
    * auto-block, so an auto-unblock can restore it rather than guessing
@@ -283,6 +295,8 @@ const UPDATABLE_COLUMNS: Record<keyof UpdateTaskInput, string> = {
   business: 'business',
   department: 'department',
   deadline: 'deadline',
+  recurrence: 'recurrence', // Session 60 (0047)
+  followUpHours: 'follow_up_hours',
   preBlockStatus: 'pre_block_status',
 };
 
@@ -292,7 +306,9 @@ export async function updateTask(
   input: UpdateTaskInput,
   actorUserId: string | null = null
 ): Promise<Task | null> {
-  const entries = Object.entries(input).filter(([, v]) => v !== undefined) as [keyof UpdateTaskInput, unknown][];
+  // Session 60: only known columns. A caller passing a whole Task (the
+  // edit form did) used to produce "column undefined" and a 500.
+  const entries = Object.entries(input).filter(([k, v]) => v !== undefined && k in UPDATABLE_COLUMNS) as [keyof UpdateTaskInput, unknown][];
   if (entries.length === 0) return getTaskById(orgId, taskId);
 
   return withOrgContext(orgId, async (client) => {

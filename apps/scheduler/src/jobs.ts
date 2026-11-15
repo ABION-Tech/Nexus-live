@@ -53,11 +53,11 @@ export const AUTOMATION_JOBS: ScheduledJob[] = [
   { name: 'daily_overdue_check', kind: 'automation', implemented: true, cron: '0 8 * * *', cronOverrideEnvVar: 'CRON_DAILY_OVERDUE_CHECK', humanSchedule: '08:00 daily' },
   { name: 'daily_morning_digest', kind: 'automation', implemented: true, cron: '5 8 * * *', cronOverrideEnvVar: 'CRON_DAILY_MORNING_DIGEST', humanSchedule: '08:05 daily (5 min after overdue-check, so the digest can reflect today\'s freshly-flagged overdue tasks rather than racing it)' },
   { name: 'daily_dependency_sweep', kind: 'automation', implemented: true, cron: '0 9 * * *', cronOverrideEnvVar: 'CRON_DAILY_DEPENDENCY_SWEEP', humanSchedule: '09:00 daily' },
-  { name: 'daily_recurring_tasks', kind: 'automation', implemented: false, cron: '0 10 * * *', cronOverrideEnvVar: 'CRON_DAILY_RECURRING_TASKS', humanSchedule: '10:00 daily — NOT SCHEDULED (automationJobs.ts has no implementation: no recurrence-template schema exists yet)' },
+  { name: 'daily_recurring_tasks', kind: 'automation', implemented: true, cron: '0 10 * * *', cronOverrideEnvVar: 'CRON_DAILY_RECURRING_TASKS', humanSchedule: '10:00 daily (Session 60: makes today\'s copy of every repeating task, 0047)' },
   { name: 'daily_cob_reminders', kind: 'automation', implemented: true, cron: '0 16 * * *', cronOverrideEnvVar: 'CRON_DAILY_COB_REMINDERS', humanSchedule: '16:00 daily' },
   { name: 'daily_follow_up_escalation', kind: 'automation', implemented: true, cron: '0 18 * * *', cronOverrideEnvVar: 'CRON_DAILY_FOLLOW_UP_ESCALATION', humanSchedule: '18:00 daily' },
   { name: 'daily_eod_nudge', kind: 'automation', implemented: true, cron: '5 18 * * *', cronOverrideEnvVar: 'CRON_DAILY_EOD_NUDGE', humanSchedule: '18:05 daily (5 min after follow-up escalation, same same-minute-collision avoidance as the morning pair above)' },
-  { name: 'hourly_follow_up', kind: 'automation', implemented: false, cron: '0 8-19 * * 1-5', cronOverrideEnvVar: 'CRON_HOURLY_FOLLOW_UP', humanSchedule: 'hourly 08:00-19:00 weekdays — NOT SCHEDULED (no Follow_Up_Hours-equivalent column exists yet)' },
+  { name: 'hourly_follow_up', kind: 'automation', implemented: true, cron: '0 8-19 * * 1-5', cronOverrideEnvVar: 'CRON_HOURLY_FOLLOW_UP', humanSchedule: 'hourly 08:00-19:00 weekdays (Session 60: nudges on tasks with follow_up_hours, 0047)' },
   { name: 'daily_task_snapshot', kind: 'automation', implemented: true, cron: '0 23 * * *', cronOverrideEnvVar: 'CRON_DAILY_TASK_SNAPSHOT', humanSchedule: '23:00 daily (last job of the day, by design — a snapshot of the day\'s task state)' },
 ];
 

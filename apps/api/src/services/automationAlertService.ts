@@ -11,6 +11,8 @@ const LABEL: Record<string, string> = {
   daily_overdue_check: 'Overdue check (08:00)',
   daily_morning_digest: 'Morning digest (08:05)',
   daily_dependency_sweep: 'Dependency sweep (09:00)',
+  daily_recurring_tasks: 'Recurring tasks (10:00)',
+  hourly_follow_up: 'Hourly follow-up (08:00–19:00 weekdays)',
   daily_cob_reminders: 'Close-of-business reminders (16:00)',
   daily_follow_up_escalation: 'Follow-up escalation (18:00)',
   daily_eod_nudge: 'EOD nudge (18:05)',

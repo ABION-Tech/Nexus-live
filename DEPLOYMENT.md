@@ -235,14 +235,12 @@ was pulled directly from cron-job.org's published REST API docs at
 build time, not from memory — still worth confirming the first job's
 execution history in the console after the real run, same as Option 1.
 
-**Both options deliberately schedule only the 7 real §12 jobs plus the
-calendar sweep, calendar channel renewal, and billing grace check —**
-`daily_recurring_tasks` and `hourly_follow_up` are left unscheduled.
-Both are real PRD §12 keys but have no implementation behind them yet
-(`services/automationJobs.ts`'s `UNIMPLEMENTED_JOBS`) — the endpoint
-returns 501 for either, so scheduling them now would just be a cron
-job that fires forever and never does anything. Add them to whichever
-option you're using once they're actually built.
+**Session 60: all nine §12 jobs are built.** `daily_recurring_tasks`
+(10:00) and `hourly_follow_up` (hourly, 08:00–19:00 weekdays) now run on
+0047's columns, and the built-in scheduler service (`apps/scheduler`)
+schedules them with the other seven. If you use an external scheduler
+instead, add both. Neither does anything until a task has "Repeats" or
+"Nudge if no update for" set.
 
 
 ## Personal keys bootstrap (Session 56)

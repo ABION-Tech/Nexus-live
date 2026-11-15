@@ -5,7 +5,7 @@
 // for now (Work's list views don't paginate yet; the API already does
 // the enforcement server-side regardless of what the client asks for).
 import { apiClient, postQueueable } from './apiClient';
-import type { Task, TaskPriority, TaskStatus, TaskHistoryEntry } from '@nexus/shared';
+import type { Task, TaskPriority, TaskRecurrence, TaskStatus, TaskHistoryEntry } from '@nexus/shared';
 
 // Mirrors apps/api/src/services/taskService.ts's *Input interfaces —
 // same reasoning as networkService.ts's CosInput/PartnershipInput: those
@@ -25,6 +25,8 @@ export interface TaskCreateInput {
   deadline?: string;
   priority?: TaskPriority;
   startDate?: string;
+  recurrence?: TaskRecurrence; // Session 60 (C-11)
+  followUpHours?: number;
 }
 
 export interface TaskUpdateInput {
@@ -41,6 +43,8 @@ export interface TaskUpdateInput {
   deadline?: string | null;
   priority?: TaskPriority;
   startDate?: string | null;
+  recurrence?: TaskRecurrence | null; // Session 60 (C-11)
+  followUpHours?: number | null;
 }
 
 export interface TaskListParams {

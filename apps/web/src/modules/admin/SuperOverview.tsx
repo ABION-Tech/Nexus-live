@@ -12,6 +12,8 @@ const JOB_LABEL: Record<string, string> = {
   daily_overdue_check: 'Overdue check',
   daily_morning_digest: 'Morning digest',
   daily_dependency_sweep: 'Dependency sweep',
+  daily_recurring_tasks: 'Recurring tasks',
+  hourly_follow_up: 'Hourly follow-up',
   daily_cob_reminders: 'Close-of-business reminders',
   daily_follow_up_escalation: 'Follow-up escalation',
   daily_eod_nudge: 'EOD nudge',

@@ -52,7 +52,34 @@ function buildSchema(peopleOptions: { value: string; label: string }[], taskOpti
     { key: 'startDate', label: 'Start date', type: 'date', leaderOnly: true },
     { key: 'deadline', label: 'Deadline', type: 'date', leaderOnly: true },
     { key: 'dependsOnTaskId', label: 'Depends on', type: 'select', options: taskOptions, leaderOnly: true },
+    // Session 60 (C-11, 0047).
+    { key: 'recurrence', label: 'Repeats', type: 'select', options: REPEAT_OPTIONS, leaderOnly: true },
+    { key: 'followUpHours', label: 'Nudge if no update for (hours)', type: 'number', leaderOnly: true },
   ];
+}
+
+const REPEAT_OPTIONS = [
+  { value: '', label: "Doesn't repeat" },
+  { value: 'daily', label: 'Every day' },
+  { value: 'weekdays', label: 'Every weekday (Mon–Fri)' },
+  { value: 'weekly', label: 'Every week, same day' },
+  { value: 'monthly', label: 'Every month, same date' },
+];
+
+/** Session 60: only the fields the form edits, with "empty" sent as null
+ * (clear it) on edit and left out on create. The form used to send the
+ * whole task — id, createdAt, ref … — and the server rejected every edit. */
+function formPayload(values: Record<string, unknown>, mode: 'create' | 'edit'): Record<string, unknown> {
+  const keys = buildSchema([], []).map((f) => f.key as string);
+  const out: Record<string, unknown> = {};
+  for (const k of keys) {
+    if (!(k in values)) continue;
+    let v = values[k];
+    if (v === '' || v === undefined || (typeof v === 'number' && Number.isNaN(v))) v = null;
+    if (v === null && mode === 'create') continue;
+    out[k] = v;
+  }
+  return out;
 }
 
 export interface TaskSectionProps {
@@ -166,6 +193,8 @@ export function TaskSection({ title, emptyTitle, newLabel, user, fetchList, head
             <span className="nx-task__chips">
               {r.status !== 'done' && <span className={'nx-tchip' + (daysSince(r.createdAt) > 30 ? ' nx-tchip--red' : '')} title="Days since created">{daysSince(r.createdAt)}d</span>}
               {!!r.checklistTotal && <span className="nx-tchip" title="Checklist">✓ {r.checklistDone ?? 0}/{r.checklistTotal}</span>}
+              {r.recurrence && <span className="nx-tchip" title={`Repeats ${r.recurrence}: a fresh copy each day it's due`}>↻ {r.recurrence}</span>}
+              {r.followUpHours && <span className="nx-tchip" title={`Nudges the assignee after ${r.followUpHours}h without an update`}>⏱ {r.followUpHours}h</span>}
               {r.dependsOnTaskId && (
                 <span className={'nx-tchip' + (dep && dep.status !== 'done' ? ' nx-tchip--red' : '')} title={dep ? `Depends on: ${dep.title}` : 'Depends on another task'}>
                   ⛓ {dep?.ref ?? (dep ? dep.title.slice(0, 18) + '…' : 'task')}
@@ -249,7 +278,7 @@ export function TaskSection({ title, emptyTitle, newLabel, user, fetchList, head
   async function handleCreate(values: Record<string, unknown>) {
     setSaving(true);
     try {
-      await createTask(values as unknown as TaskCreateInput);
+      await createTask(formPayload(values, 'create') as unknown as TaskCreateInput);
       show('Created.', 'success');
       setFormModal(null);
       load();
@@ -278,7 +307,7 @@ export function TaskSection({ title, emptyTitle, newLabel, user, fetchList, head
   async function handleUpdate(id: string, values: Record<string, unknown>) {
     setSaving(true);
     try {
-      const updated = await updateTask(id, values as TaskUpdateInput);
+      const updated = await updateTask(id, formPayload(values, 'edit') as TaskUpdateInput);
       show('Saved.', 'success');
       setFormModal(null);
       // Keeps an open drawer in sync with the edit that was just made,

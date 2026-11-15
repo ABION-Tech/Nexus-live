@@ -14,6 +14,8 @@
 //   - daily_follow_up_escalation → runFollowUpEscalation
 //   - daily_morning_digest       → runMorningDigest
 //
+// Session 60 (C-11): the two below are now built on 0047's columns
+// (runRecurringTasks, runHourlyFollowUp). The original note follows.
 // Two are NOT implemented — see IMPLEMENTED_JOBS below and
 // routes/automationMaintenance.ts's own handling of the gap:
 //   - daily_recurring_tasks — PRD §12 says "from recurring templates on
@@ -39,6 +41,7 @@
 // EmailService exists, these jobs are the natural place to add a second
 // notify call per job, not a rewrite.
 import { withOrgContext, pool } from '../db.js';
+import { logActivityCreated } from './activityLogService.js';
 import { notifyInApp } from './notifications/notificationService.js';
 import { updateTask } from './taskService.js';
 import { getMissingEod } from './eodService.js';
@@ -540,7 +543,101 @@ export async function runMorningDigest(): Promise<JobRunResult[]> {
   });
 }
 
+// ---- daily_recurring_tasks (10:00) ---------------------------------------
+// Session 60 (C-11). Rules and idempotency: 0047's own header. Lagos
+// calendar days throughout (the company's working day), not UTC ones.
+export async function runRecurringTasks(): Promise<JobRunResult[]> {
+  return dispatchToEnabledOrgs('daily_recurring_tasks', async (orgId) => {
+    return withOrgContext(orgId, async (client) => {
+      const { rows: created } = await client.query<{ id: string; source_id: string; title: string; assigned_to_user_id: string | null }>(
+        `with today as (select (now() at time zone 'Africa/Lagos')::date as d),
+         due as (
+           select t.*, coalesce(t.start_date, (t.created_at at time zone 'Africa/Lagos')::date) as anchor
+             from tasks t
+            where t.org_id = $1::uuid and t.archived_at is null and t.recurrence is not null
+         )
+         insert into tasks (org_id, title, description, status, priority, start_date, deadline,
+                            assigned_to_user_id, support_user_id, supervisor_user_id, business, department,
+                            goal_id, project_id, recurrence_source_id)
+         select due.org_id, due.title, due.description, 'not_started', due.priority, today.d,
+                case
+                  when due.deadline is null then null
+                  when due.start_date is not null then
+                    ((today.d + ((due.deadline at time zone 'Africa/Lagos')::date - due.start_date))
+                      + (due.deadline at time zone 'Africa/Lagos')::time) at time zone 'Africa/Lagos'
+                  else (today.d + (due.deadline at time zone 'Africa/Lagos')::time) at time zone 'Africa/Lagos'
+                end,
+                due.assigned_to_user_id, due.support_user_id, due.supervisor_user_id, due.business, due.department,
+                due.goal_id, due.project_id, due.id
+           from due, today
+          where today.d > due.anchor
+            and (due.recurrence = 'daily'
+              or (due.recurrence = 'weekdays' and extract(isodow from today.d) <= 5)
+              or (due.recurrence = 'weekly' and extract(isodow from today.d) = extract(isodow from due.anchor))
+              or (due.recurrence = 'monthly' and extract(day from today.d) =
+                    least(extract(day from due.anchor), extract(day from (date_trunc('month', today.d) + interval '1 month - 1 day')))))
+         on conflict (recurrence_source_id, start_date) where recurrence_source_id is not null do nothing
+         returning id, recurrence_source_id as source_id, title, assigned_to_user_id`,
+        [orgId]
+      );
+      let notified = 0;
+      for (const t of created) {
+        await client.query(
+          `insert into task_checklists (org_id, task_id, item_text, is_done, position)
+           select $1::uuid, $2::uuid, item_text, false, position from task_checklists where org_id = $1::uuid and task_id = $3::uuid order by position`,
+          [orgId, t.id, t.source_id]
+        );
+        await logActivityCreated(client, { orgId, actorUserId: null, resourceType: 'tasks', resourceId: t.id });
+        if (t.assigned_to_user_id) {
+          await notifyInApp(client, {
+            orgId,
+            userId: t.assigned_to_user_id,
+            taskId: t.id,
+            type: 'recurring_task',
+            title: 'New for today',
+            body: `"${t.title}" is on your list again today.`,
+          });
+          notified++;
+        }
+      }
+      return { created: created.length, notificationsSent: notified };
+    });
+  });
+}
+
+// ---- hourly_follow_up (hourly, 08:00–19:00 weekdays) --------------------
+// Session 60 (C-11). Only tasks with follow_up_hours set (0047): nudge the
+// assignee when nobody has updated the task for that long, then again
+// only after another follow_up_hours of silence.
+export async function runHourlyFollowUp(): Promise<JobRunResult[]> {
+  return dispatchToEnabledOrgs('hourly_follow_up', async (orgId) => {
+    return withOrgContext(orgId, async (client) => {
+      const { rows } = await client.query<{ id: string; title: string; assigned_to_user_id: string; follow_up_hours: number }>(
+        `update tasks set last_follow_up_at = now()
+          where org_id = $1 and archived_at is null and status <> 'done'
+            and follow_up_hours is not null and assigned_to_user_id is not null
+            and now() - greatest(updated_at, coalesce(last_follow_up_at, updated_at)) >= make_interval(hours => follow_up_hours)
+          returning id, title, assigned_to_user_id, follow_up_hours`,
+        [orgId]
+      );
+      for (const t of rows) {
+        await notifyInApp(client, {
+          orgId,
+          userId: t.assigned_to_user_id,
+          taskId: t.id,
+          type: 'follow_up',
+          title: 'Time for an update',
+          body: `No update on "${t.title}" for ${t.follow_up_hours} hour${t.follow_up_hours === 1 ? '' : 's'}.`,
+        });
+      }
+      return { nudged: rows.length };
+    });
+  });
+}
+
 export const IMPLEMENTED_JOBS: Record<string, () => Promise<JobRunResult[]>> = {
+  daily_recurring_tasks: runRecurringTasks,
+  hourly_follow_up: runHourlyFollowUp,
   daily_task_snapshot: runDailyTaskSnapshot,
   daily_dependency_sweep: runDependencySweep,
   daily_overdue_check: runOverdueCheck,
@@ -553,7 +650,8 @@ export const IMPLEMENTED_JOBS: Record<string, () => Promise<JobRunResult[]>> = {
 // Real, named, not silently absent — routes/automationMaintenance.ts
 // checks a job key against this set to return a distinct 501 rather
 // than a misleading 200 "ran successfully" for zero real effect.
-export const UNIMPLEMENTED_JOBS = new Set(['daily_recurring_tasks', 'hourly_follow_up']);
+// Session 60 (C-11): both built; kept so callers can still ask.
+export const UNIMPLEMENTED_JOBS = new Set<string>();
 
 // ---- billing_grace_check (Session 47) -----------------------------------
 // Deliberately NOT one of the nine §12 jobs above — it has no

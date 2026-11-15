@@ -18,6 +18,7 @@ vi.mock('../services/automationJobs.js', () => ({
   IMPLEMENTED_JOBS: {
     daily_cob_reminders: runDailyCobRemindersMock,
   },
+  // Session 60: both are built now; kept here only to exercise the 501 path.
   UNIMPLEMENTED_JOBS: new Set(['daily_recurring_tasks', 'hourly_follow_up']),
 }));
 

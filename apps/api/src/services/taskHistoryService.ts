@@ -26,6 +26,8 @@ const FIELD: Record<string, string> = {
   business: 'business',
   department: 'department',
   archived_at: 'archivedAt',
+  recurrence: 'recurrence', // Session 60 (0047)
+  follow_up_hours: 'followUpHours',
   'people:assignee': 'people:assignee',
   'people:support': 'people:support',
 };

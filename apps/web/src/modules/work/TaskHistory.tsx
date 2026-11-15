@@ -20,6 +20,8 @@ const FIELD: Record<string, string> = {
   dependsOnTaskId: 'depends on',
   business: 'business',
   department: 'department',
+  recurrence: 'repeats',
+  followUpHours: 'follow-up',
 };
 const STATUS: Record<string, string> = { not_started: 'Not started', in_progress: 'In progress', blocked: 'Blocked', done: 'Done' };
 const PRIORITY: Record<string, string> = { urgent: 'Urgent', high: 'High', medium: 'Medium', low: 'Low' };
@@ -38,6 +40,8 @@ function show(field: string, v: string | null | undefined, peopleById: Map<strin
   }
   if (field === 'description') return v.length > 60 ? `${v.slice(0, 60)}…` : v;
   if (field === 'dependsOnTaskId') return 'another task';
+  if (field === 'recurrence') return { daily: 'Daily', weekdays: 'Weekdays', weekly: 'Weekly', monthly: 'Monthly' }[v] ?? v;
+  if (field === 'followUpHours') return `every ${v}h`;
   return v;
 }
 

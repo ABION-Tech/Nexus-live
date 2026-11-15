@@ -203,6 +203,8 @@ export const NOTIFICATION_TYPES = [
   'escalation',
   'deadline_soon',
   'digest',
+  'recurring_task', // Session 60 (C-11)
+  'follow_up', // Session 60 (C-11)
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -213,6 +215,8 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   escalation: 'Follow-up escalation',
   deadline_soon: 'Deadline approaching',
   digest: 'Daily digest',
+  recurring_task: 'Recurring task due today',
+  follow_up: 'Task needs an update',
 };
 
 // email/whatsapp stay reserved in the `notifications.channel` check
@@ -285,6 +289,12 @@ export interface Task {
   business?: string;
   department?: string;
   deadline?: string;
+  /** Session 60 (C-11, 0047): repeats — a fresh copy each day it's due. */
+  recurrence?: TaskRecurrence;
+  /** Session 60: the repeating task this one is a copy of. */
+  recurrenceSourceId?: string;
+  /** Session 60: nudge the assignee after this many hours without an update. */
+  followUpHours?: number;
   createdAt: string;
   updatedAt: string;
   // PRD §6.4.1 — DELETE archives, never hard-deletes. Null/undefined means
@@ -1284,6 +1294,10 @@ export interface AutomationRunLogEntry {
  * automationService.ts's getAutomationHealth for why `lastRun` is
  * undefined (not a fabricated placeholder) for a job that hasn't run. */
 /** Session 60 (C-12) — one entry in a task's history (TaskDrawer). */
+/** Session 60 (C-11) — how a task repeats (0047). */
+export const TASK_RECURRENCES = ['daily', 'weekdays', 'weekly', 'monthly'] as const;
+export type TaskRecurrence = (typeof TASK_RECURRENCES)[number];
+
 export interface TaskHistoryEntry {
   id: string;
   /** task.created | task.updated | task.archived | task.restored | task.assignee_added | task.assignee_removed */

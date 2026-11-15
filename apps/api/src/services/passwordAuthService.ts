@@ -8,6 +8,7 @@
 // Failure handling deliberately doesn't reveal whether an email has an
 // account: login says "email or password is incorrect" either way, and
 // requesting a link always reports success.
+import { revokeAllSessionsForUser } from './sessionService.js';
 import crypto from 'node:crypto';
 import { pool } from '../db.js';
 import { hashPassword, verifyPassword } from './passwordHashing.js';
@@ -144,6 +145,10 @@ export async function setPasswordWithToken(params: {
   }
 
   await pool.query(`select set_user_password($1, $2)`, [userId, hashPassword(params.password)]);
+  // Session 60 (C-18): a new password signs out every existing session —
+  // someone resetting because their account was taken over must not leave
+  // the intruder signed in. The route then signs this person in afresh.
+  if (!createdAccount) await revokeAllSessionsForUser(userId);
   // Any other outstanding links for this address stop working.
   await pool.query(`update password_tokens set used_at = now() where lower(email) = $1 and used_at is null`, [email]);
   return { userId, orgId, createdAccount };

@@ -1,31 +1,41 @@
-// Session 60 (C-12) — which changes make it into a task's history.
+// Session 60 (C-12) — turning activity_log's one-row-per-column into
+// readable history entries.
 import { describe, expect, it } from 'vitest';
-import { diffTask } from './taskHistoryService.js';
-import type { Task } from '@nexus/shared';
+import { groupHistory } from './taskHistoryService.js';
 
-const base = { id: 't', orgId: 'o', title: 'Deck', status: 'not_started', priority: 'medium', createdAt: '', updatedAt: '' } as Task;
+const t1 = new Date('2026-11-15T10:00:00Z');
+const t2 = new Date('2026-11-15T11:00:00Z');
+const row = (at: Date, field: string | null, oldValue: string | null, newValue: string | null, actor: string | null = 'u1') => ({
+  changed_at: at, actor_user_id: actor, actor_name: actor ? 'Ayo' : null, field, old_value: oldValue, new_value: newValue,
+});
 
-describe('diffTask', () => {
-  it('records only the fields that changed, before and after', () => {
-    expect(diffTask(base, { ...base, status: 'done', priority: 'high' })).toEqual({
-      previous: { status: 'not_started', priority: 'medium' },
-      next: { status: 'done', priority: 'high' },
-    });
+describe('groupHistory', () => {
+  it('one change to several fields becomes one entry, before → after', () => {
+    const [e] = groupHistory([row(t2, 'status', 'not_started', 'done'), row(t2, 'priority', 'medium', 'high')]);
+    expect(e).toMatchObject({ action: 'task.updated', userName: 'Ayo', previous: { status: 'not_started', priority: 'medium' }, next: { status: 'done', priority: 'high' } });
   });
 
-  it('nothing changed → nothing to record', () => {
-    expect(diffTask(base, { ...base, updatedAt: 'later' })).toBeNull();
+  it('separate changes stay separate', () => {
+    expect(groupHistory([row(t2, 'status', 'in_progress', 'done'), row(t1, 'status', 'not_started', 'in_progress')])).toHaveLength(2);
   });
 
-  it('treats empty, missing and null as the same (no phantom changes)', () => {
-    expect(diffTask({ ...base, description: '' }, { ...base, description: undefined })).toBeNull();
+  it('created, archived and people changes read as their own events', () => {
+    const out = groupHistory([
+      row(t2, 'archived_at', null, '2026-11-15T11:00:00Z'),
+      row(t1, 'people:support', null, 'u9'),
+      row(t1, null, null, 'created'),
+    ]);
+    expect(out.map((e) => e.action)).toEqual(['task.archived', 'task.assignee_added', 'task.created']);
+    expect(out[1]!.next).toEqual({ userId: 'u9', role: 'support' });
   });
 
-  it('a new task lists what it was created with', () => {
-    expect(diffTask({}, { ...base, deadline: '2026-11-20T16:00:00.000Z' })?.next).toMatchObject({ title: 'Deck', deadline: '2026-11-20T16:00:00.000Z' });
+  it('column names become the field names the app uses; bookkeeping is hidden', () => {
+    const [e] = groupHistory([row(t2, 'assigned_to_user_id', null, 'u2'), row(t2, 'pre_block_status', null, 'in_progress')]);
+    expect(e!.next).toEqual({ assignedToUserId: 'u2' });
   });
 
-  it('ignores fields people do not edit (ids, timestamps, counts)', () => {
-    expect(diffTask(base, { ...base, checklistDone: 3, ref: 'T-9' } as Task)).toBeNull();
+  it('automation changes have no person', () => {
+    const [e] = groupHistory([row(t2, 'status', 'in_progress', 'blocked', null)]);
+    expect(e!.userName).toBeUndefined();
   });
 });

@@ -1286,16 +1286,15 @@ export interface AutomationRunLogEntry {
 /** Session 60 (C-12) — one entry in a task's history (TaskDrawer). */
 export interface TaskHistoryEntry {
   id: string;
-  /** task.created | task.updated | task.archived | task.assignee_added | task.assignee_removed | tasks.import */
+  /** task.created | task.updated | task.archived | task.restored | task.assignee_added | task.assignee_removed */
   action: string;
   at: string;
+  /** Absent for changes made by automations. */
   userId?: string;
   userName?: string;
   /** Changed fields only: before → after (ids for people, ISO for dates). */
   previous?: Record<string, string | null>;
   next?: Record<string, string | null>;
-  /** Done by staff viewing as this person. */
-  viaImpersonation?: boolean;
 }
 
 export interface AutomationHealthEntry {

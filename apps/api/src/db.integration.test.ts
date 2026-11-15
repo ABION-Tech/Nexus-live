@@ -37,7 +37,7 @@ describe.skipIf(!ADMIN_URL || !APP_URL)('database (real Postgres)', () => {
   });
 
   afterAll(async () => {
-    await admin.query(`delete from audit_log where org_id in ($1, $2)`, [A, B]);
+    await admin.query(`delete from activity_log where org_id in ($1, $2)`, [A, B]);
     await admin.query(`delete from tasks where org_id in ($1, $2)`, [A, B]);
     await admin.query(`delete from organizations where id in ($1, $2)`, [A, B]);
     await admin.end();
@@ -124,17 +124,16 @@ describe.skipIf(!ADMIN_URL || !APP_URL)('database (real Postgres)', () => {
     }
   });
 
-  it('task history is written and read back inside the company only (C-12)', async () => {
+  it('task history is read back inside the company only (C-12)', async () => {
     process.env.DATABASE_URL = APP_URL;
-    const { recordTaskEvent, listTaskHistory } = await import('./services/taskHistoryService.js');
+    const { listTaskHistory } = await import('./services/taskHistoryService.js');
     const { rows } = await admin.query<{ id: string }>(`select id from tasks where org_id = $1 limit 1`, [A]);
     const taskId = rows[0]!.id;
-    const asA = { userId: undefined, orgId: A } as unknown as Parameters<typeof recordTaskEvent>[0];
-    await recordTaskEvent(asA, taskId, 'task.updated', { previous: { status: 'not_started' }, next: { status: 'done' } });
+    await admin.query(`insert into activity_log (org_id, resource_type, resource_id, field, old_value, new_value) values ($1, 'tasks', $2, 'status', 'not_started', 'done')`, [A, taskId]);
     const mine = await listTaskHistory(A, taskId);
     expect(mine[0]).toMatchObject({ action: 'task.updated', previous: { status: 'not_started' }, next: { status: 'done' } });
     expect(await listTaskHistory(B, taskId)).toEqual([]);
-    await admin.query(`delete from audit_log where resource_id = $1`, [taskId]);
+    await admin.query(`delete from activity_log where resource_id = $1`, [taskId]);
   });
 
   it("a company can't write into another company", async () => {

@@ -24,6 +24,8 @@ const FIELD: Record<string, string> = {
 const STATUS: Record<string, string> = { not_started: 'Not started', in_progress: 'In progress', blocked: 'Blocked', done: 'Done' };
 const PRIORITY: Record<string, string> = { urgent: 'Urgent', high: 'High', medium: 'Medium', low: 'Low' };
 const PEOPLE = new Set(['assignedToUserId', 'supportUserId', 'supervisorUserId']);
+// activity_log rows imported from the original sheet use its own column
+// names ("Status", "% Progress"); they're shown as they are.
 
 function show(field: string, v: string | null | undefined, peopleById: Map<string, string>): string {
   if (v === null || v === undefined || v === '') return '—';
@@ -45,6 +47,8 @@ function describe(e: TaskHistoryEntry, peopleById: Map<string, string>): string[
       return ['created this task'];
     case 'task.archived':
       return ['archived this task'];
+    case 'task.restored':
+      return ['restored this task'];
     case 'tasks.import':
       return ['imported this task'];
     case 'task.assignee_added':
@@ -87,14 +91,13 @@ export function TaskHistory({ taskId, peopleById }: { taskId: string; peopleById
         ) : entries === null ? (
           <p className="nx-cell-dim" style={{ fontSize: 13 }}>Loading…</p>
         ) : entries.length === 0 ? (
-          <p className="nx-cell-dim" style={{ fontSize: 13 }}>No changes recorded yet. History starts from 15 November 2026.</p>
+          <p className="nx-cell-dim" style={{ fontSize: 13 }}>No changes recorded yet.</p>
         ) : (
           <ol className="nx-taskhist">
             {entries.map((e) => (
               <li key={e.id}>
                 <div>
-                  <b>{e.userName ?? 'NEXUS'}</b>
-                  {e.viaImpersonation && <span className="nx-cell-dim"> (by staff viewing as them)</span>}{' '}
+                  <b>{e.userName ?? (e.userId ? 'Someone' : 'NEXUS (automation)')}</b>{' '}
                   {describe(e, peopleById).map((line, i) => (
                     <span key={i} className="nx-taskhist__line">
                       {line}

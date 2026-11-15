@@ -8,6 +8,7 @@
 // a member of it (checked here with my_workspaces).
 import type { TaskPriority, TaskStatus } from '@nexus/shared';
 import { pool, withOrgContext } from '../db.js';
+import { logActivityCreated } from './activityLogService.js';
 
 export interface ImportTaskInput {
   externalRef: string;
@@ -103,6 +104,7 @@ export async function importTasks(userId: string, orgId: string, tasks: ImportTa
         ]
       );
       const id = rows[0]!.id;
+      await logActivityCreated(c, { orgId, actorUserId: userId, resourceType: 'tasks', resourceId: id });
       let pos = 0;
       for (const item of (t.checklist ?? []).slice(0, 50)) {
         const text = clip(item.text, 500);

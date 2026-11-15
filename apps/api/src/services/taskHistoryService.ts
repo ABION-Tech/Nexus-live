@@ -1,107 +1,116 @@
-// Session 60 (C-12) — a task's history: who created it, who changed
-// what (before → after), who archived it, who was added or removed.
+// Session 60 (C-12) — a task's history: who created it, who changed what
+// (before → after), who archived it, who was added or removed.
 //
-// Kept in audit_log (resource_type 'task', resource_id = task id), the
-// company's own RLS-isolated log, rather than a new table: it already
-// carries user, time, before/after values and the impersonation trail.
-// Written by routes/tasks.ts for changes people make in the app, and by
-// the import endpoint. Changes made by automations aren't recorded here.
+// Read from activity_log (0009, PRD §13.10 "field-level change history"),
+// which taskService already writes in the same transaction as every
+// change — including changes made by automations (actor = none) and
+// imports. One row per changed column; rows written by one change share
+// a timestamp and actor, so they're grouped back into one entry here.
 import { withOrgContext } from '../db.js';
-import { logOrgAction } from './auditLogService.js';
-import type { SessionUser } from './sessionService.js';
-import type { Task, TaskHistoryEntry } from '@nexus/shared';
+import type { TaskHistoryEntry } from '@nexus/shared';
 
-/** The fields a person can change that are worth showing in history. */
-export const TRACKED_FIELDS = [
-  'title',
-  'description',
-  'status',
-  'priority',
-  'startDate',
-  'deadline',
-  'assignedToUserId',
-  'supportUserId',
-  'supervisorUserId',
-  'dependsOnTaskId',
-  'business',
-  'department',
-] as const satisfies readonly (keyof Task)[];
+/** activity_log stores column names; the app speaks Task field names. */
+const FIELD: Record<string, string> = {
+  title: 'title',
+  description: 'description',
+  status: 'status',
+  priority: 'priority',
+  start_date: 'startDate',
+  deadline: 'deadline',
+  assigned_to_user_id: 'assignedToUserId',
+  support_user_id: 'supportUserId',
+  supervisor_user_id: 'supervisorUserId',
+  depends_on_task_id: 'dependsOnTaskId',
+  goal_id: 'goalId',
+  project_id: 'projectId',
+  business: 'business',
+  department: 'department',
+  archived_at: 'archivedAt',
+  'people:assignee': 'people:assignee',
+  'people:support': 'people:support',
+};
+/** Bookkeeping columns that mean nothing to a reader. */
+const HIDDEN = new Set(['pre_block_status']);
 
-type Tracked = (typeof TRACKED_FIELDS)[number];
-type Snapshot = Partial<Record<Tracked, string | null>>;
+interface Row {
+  changed_at: Date;
+  actor_user_id: string | null;
+  actor_name: string | null;
+  field: string | null;
+  old_value: string | null;
+  new_value: string | null;
+}
 
-const norm = (v: unknown): string | null => (v === undefined || v === null || v === '' ? null : String(v));
-
-/** Only the tracked fields that actually changed, as before/after pairs. */
-export function diffTask(before: Partial<Task>, after: Partial<Task>): { previous: Snapshot; next: Snapshot } | null {
-  const previous: Snapshot = {};
-  const next: Snapshot = {};
-  for (const f of TRACKED_FIELDS) {
-    const a = norm(before[f]);
-    const b = norm(after[f]);
-    if (a !== b) {
-      previous[f] = a;
-      next[f] = b;
+/** Groups one-row-per-column into one entry per change. Exported for tests. */
+export function groupHistory(rows: Row[]): TaskHistoryEntry[] {
+  const out: TaskHistoryEntry[] = [];
+  let cur: TaskHistoryEntry | null = null;
+  let curKey = '';
+  for (const r of rows) {
+    if (r.field && HIDDEN.has(r.field)) continue;
+    const key = `${r.changed_at.toISOString()}|${r.actor_user_id ?? ''}`;
+    if (r.field === null) {
+      // Whole-task events: "created" (or legacy markers).
+      out.push({
+        id: `${key}|${r.new_value}`,
+        action: r.new_value === 'created' ? 'task.created' : 'task.updated',
+        at: r.changed_at.toISOString(),
+        userId: r.actor_user_id ?? undefined,
+        userName: r.actor_name ?? undefined,
+      });
+      cur = null;
+      continue;
     }
+    const field = FIELD[r.field] ?? r.field;
+    if (field === 'archivedAt') {
+      out.push({ id: `${key}|archived`, action: r.new_value ? 'task.archived' : 'task.restored', at: r.changed_at.toISOString(), userId: r.actor_user_id ?? undefined, userName: r.actor_name ?? undefined });
+      cur = null;
+      continue;
+    }
+    if (field.startsWith('people:')) {
+      const role = field.slice('people:'.length);
+      out.push({
+        id: `${key}|${field}|${r.old_value ?? r.new_value}`,
+        action: r.new_value ? 'task.assignee_added' : 'task.assignee_removed',
+        at: r.changed_at.toISOString(),
+        userId: r.actor_user_id ?? undefined,
+        userName: r.actor_name ?? undefined,
+        previous: r.old_value ? { userId: r.old_value, role } : undefined,
+        next: r.new_value ? { userId: r.new_value, role } : undefined,
+      });
+      cur = null;
+      continue;
+    }
+    if (!cur || curKey !== key || cur.action !== 'task.updated') {
+      cur = {
+        id: `${key}|u`,
+        action: 'task.updated',
+        at: r.changed_at.toISOString(),
+        userId: r.actor_user_id ?? undefined,
+        userName: r.actor_name ?? undefined,
+        previous: {},
+        next: {},
+      };
+      curKey = key;
+      out.push(cur);
+    }
+    cur.previous![field] = r.old_value;
+    cur.next![field] = r.new_value;
   }
-  return Object.keys(next).length ? { previous, next } : null;
+  return out;
 }
 
-export type TaskHistoryAction = 'task.created' | 'task.updated' | 'task.archived' | 'task.assignee_added' | 'task.assignee_removed';
-
-/** Records one event. Never throws: history must not fail the change. */
-export async function recordTaskEvent(
-  user: SessionUser,
-  taskId: string,
-  action: TaskHistoryAction,
-  values: { previous?: unknown; next?: unknown } = {}
-): Promise<void> {
-  try {
-    await logOrgAction(user.orgId, {
-      userId: user.userId,
-      action,
-      resourceType: 'task',
-      resourceId: taskId,
-      result: 'success',
-      previousValue: values.previous ?? undefined,
-      newValue: values.next ?? undefined,
-      impersonatedBy: user.impersonatedBy
-        ? {
-            impersonationId: user.impersonatedBy.impersonationId,
-            actorUserId: user.impersonatedBy.actorUserId,
-            actorName: user.impersonatedBy.actorName,
-            mode: user.impersonatedBy.mode,
-          }
-        : undefined,
-    });
-  } catch {
-    // best effort
-  }
-}
-
-/** Newest first, at most 200 entries. */
+/** Newest first, from the last 500 changes. */
 export async function listTaskHistory(orgId: string, taskId: string): Promise<TaskHistoryEntry[]> {
   return withOrgContext(orgId, async (c) => {
-    const { rows } = await c.query<{
-      id: string; action: string; at: Date; user_id: string | null; user_name: string | null;
-      previous_value: Snapshot | null; new_value: Snapshot | null; metadata: Record<string, unknown> | null;
-    }>(
-      `select a.id, a.action, a."timestamp" as at, a.user_id, u.name as user_name, a.previous_value, a.new_value, a.metadata
-         from audit_log a left join users u on u.id = a.user_id
-        where a.org_id = $1 and a.resource_type = 'task' and a.resource_id = $2
-        order by a."timestamp" desc
-        limit 200`,
+    const { rows } = await c.query<Row>(
+      `select a.changed_at, a.actor_user_id, u.name as actor_name, a.field, a.old_value, a.new_value
+         from activity_log a left join users u on u.id = a.actor_user_id
+        where a.org_id = $1 and a.resource_type = 'tasks' and a.resource_id = $2
+        order by a.changed_at desc, a.field nulls first
+        limit 500`,
       [orgId, taskId]
     );
-    return rows.map((r) => ({
-      id: r.id,
-      action: r.action,
-      at: r.at.toISOString(),
-      userId: r.user_id ?? undefined,
-      userName: r.user_name ?? undefined,
-      previous: r.previous_value ?? undefined,
-      next: r.new_value ?? undefined,
-      viaImpersonation: Boolean(r.metadata && 'impersonatedBy' in r.metadata),
-    }));
+    return groupHistory(rows);
   });
 }

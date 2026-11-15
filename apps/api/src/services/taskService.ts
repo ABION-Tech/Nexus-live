@@ -453,6 +453,9 @@ export async function addTaskAssignee(
     const row = rows[0];
     if (!row) return null;
     await logActivityCreated(client, { orgId, actorUserId, resourceType: 'task_assignees', resourceId: row.id });
+    // Session 60 (C-12): also on the task itself, naming who and in which
+    // role, so the task's History can say "added Ada as support".
+    await logActivity(client, { orgId, actorUserId, resourceType: 'tasks', resourceId: taskId, changes: [{ field: `people:${role}`, oldValue: null, newValue: userId }] });
     return toTaskAssignee(row);
   });
 }
@@ -481,6 +484,7 @@ export async function removeTaskAssignee(
       resourceId: row.id,
       changes: [{ field: null, oldValue: 'existed', newValue: 'removed' }],
     });
+    await logActivity(client, { orgId, actorUserId, resourceType: 'tasks', resourceId: taskId, changes: [{ field: `people:${role}`, oldValue: userId, newValue: null }] });
     return true;
   });
 }

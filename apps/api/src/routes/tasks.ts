@@ -36,7 +36,7 @@ import {
   type UpdateTaskInput,
 } from '../services/taskService.js';
 import type { TaskListQuery, TaskPriority, TaskStatus } from '@nexus/shared';
-import { diffTask, listTaskHistory, recordTaskEvent } from '../services/taskHistoryService.js';
+import { listTaskHistory } from '../services/taskHistoryService.js';
 
 const VALID_STATUSES: TaskStatus[] = ['not_started', 'in_progress', 'blocked', 'done'];
 // 0033_task_priority.sql
@@ -152,7 +152,6 @@ export async function registerTaskRoutes(app: FastifyInstance) {
     }
 
     const task = await createTask(user.orgId, body as CreateTaskInput, user.userId);
-    await recordTaskEvent(user, task.id, 'task.created', { next: diffTask({}, task)?.next });
     reply.status(201).send(task);
   });
 
@@ -194,8 +193,6 @@ export async function registerTaskRoutes(app: FastifyInstance) {
     }
 
     const updated = await updateTask(user.orgId, id, input, user.userId);
-    const changed = updated ? diffTask(existing, updated) : null;
-    if (changed) await recordTaskEvent(user, id, 'task.updated', changed);
     reply.send(updated);
   });
 
@@ -217,7 +214,6 @@ export async function registerTaskRoutes(app: FastifyInstance) {
     }
 
     const archived = await archiveTask(user.orgId, id, user.userId);
-    await recordTaskEvent(user, id, 'task.archived');
     reply.send(archived);
   });
 
@@ -299,7 +295,6 @@ export async function registerTaskRoutes(app: FastifyInstance) {
       reply.status(409).send({ error: 'already_exists', message: 'That person already has this role on this task.' });
       return;
     }
-    await recordTaskEvent(user, id, 'task.assignee_added', { next: { userId: body.userId, role: body.role } });
     reply.status(201).send(created);
   });
 
@@ -329,7 +324,6 @@ export async function registerTaskRoutes(app: FastifyInstance) {
       reply.status(404).send({ error: 'not_found', message: 'That person is not on this task in that role.' });
       return;
     }
-    await recordTaskEvent(user, id, 'task.assignee_removed', { previous: { userId, role } });
     reply.status(204).send();
   });
 }

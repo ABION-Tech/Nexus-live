@@ -45,7 +45,7 @@ export async function registerBillingWebhookRoutes(app: FastifyInstance) {
     }
 
     try {
-      await processWebhookEvent(parsed);
+      await processWebhookEvent(parsed, rawBody);
     } catch (err) {
       // Recorded and marked unprocessed by processWebhookEvent itself
       // before this throw — still ack 200 so Paystack doesn't retry into

@@ -22,6 +22,7 @@
 // An event that resolves to neither is recorded (org_id null, same
 // audit_log-style carve-out 0025's own header describes) and left
 // unprocessed for manual reconciliation — never silently dropped.
+import { createHash } from 'node:crypto';
 import { pool, withOrgContext } from '../db.js';
 
 const RESOLVABLE_EVENT_TYPES = new Set([
@@ -37,6 +38,9 @@ interface PaystackEventPayload {
   event: string;
   data: {
     reference?: string;
+    /** invoice.* events: one per billing period. */
+    invoice_code?: string;
+    id?: number | string;
     amount?: number;
     status?: string;
     customer?: { customer_code?: string; email?: string };
@@ -50,16 +54,27 @@ interface PaystackEventPayload {
 }
 
 /** Stable dedupe key for billing_events' (provider, provider_event_id)
- * unique constraint — Paystack doesn't send one canonical event id in
- * every payload shape, so this is derived: reference (when present, the
- * more specific identifier) or a type+customer+timestamp fallback.
- * Prevents Paystack's documented at-least-once retry delivery from
- * double-applying the same event (e.g. crediting a payment twice). */
-function deriveEventId(payload: PaystackEventPayload): string {
-  const ref = payload.data.reference || payload.data.subscription_code;
-  if (ref) return `${payload.event}:${ref}`;
-  const customer = payload.data.customer?.customer_code ?? 'unknown';
-  return `${payload.event}:${customer}:${payload.data.paid_at ?? payload.data.next_payment_date ?? Date.now()}`;
+ * unique constraint. Paystack retries deliver the same body again, so the
+ * key must be identical for a retry and different for a genuinely new
+ * event. Session 60 (C-05) fixed two ways it wasn't:
+ *  - invoice.* events were keyed by subscription_code alone, so the
+ *    second month's failed charge on a subscription looked like a retry
+ *    of the first month's and was dropped. They now use invoice_code.
+ *  - the last-resort key used Date.now(), so a retry never matched. It
+ *    now hashes the body, which a retry repeats exactly. */
+export function deriveEventId(payload: PaystackEventPayload, rawBody?: string): string {
+  const d = payload.data ?? {};
+  if (d.reference) return `${payload.event}:${d.reference}`;
+  if (d.invoice_code) return `${payload.event}:${d.invoice_code}`;
+  const sub = d.subscription_code ?? d.subscription?.subscription_code;
+  if (sub) {
+    // Subscription lifecycle events happen once per state change; include
+    // the period date when present so a renewal cycle is its own event.
+    const period = d.next_payment_date ?? d.paid_at;
+    return `${payload.event}:${sub}${period ? `:${period}` : ''}`;
+  }
+  const body = rawBody ?? JSON.stringify(payload);
+  return `${payload.event}:sha256:${createHash('sha256').update(body).digest('hex')}`;
 }
 
 async function resolveOrgId(payload: PaystackEventPayload): Promise<string | null> {
@@ -190,62 +205,60 @@ export interface WebhookProcessResult {
   recorded: boolean;
   processed: boolean;
   orgId: string | null;
+  /** Session 60: this delivery was a retry of an event already applied
+   * (or being applied right now), so nothing was changed. */
+  duplicate?: boolean;
 }
 
 /** Entry point called by routes/billingWebhook.ts once the signature is
- * verified. Always records first (`record_billing_event`, before any
- * org resolution or state change) — a parsing/lookup failure downstream
- * must never mean an incoming Paystack event was never durably recorded
- * at all, same posture 0025_billing.sql's own header describes for that
- * function. */
-export async function processWebhookEvent(rawPayload: unknown): Promise<WebhookProcessResult> {
+ * verified. Always records first, before any state change, so an incoming
+ * Paystack event is durably kept even if applying it fails.
+ *
+ * Session 60 (C-05): claim_billing_event (0045) decides whether this
+ * delivery may apply the event. A retry of an event that was already
+ * applied — or that another delivery is applying right now — changes
+ * nothing. A retry of an event whose earlier attempt failed is applied
+ * again (after 5 minutes). */
+export async function processWebhookEvent(rawPayload: unknown, rawBody?: string): Promise<WebhookProcessResult> {
   const payload = rawPayload as PaystackEventPayload;
   if (!payload?.event) {
     return { recorded: false, processed: false, orgId: null };
   }
 
   const orgId = await resolveOrgId(payload);
-  const eventId = deriveEventId(payload);
+  const eventId = deriveEventId(payload, rawBody);
 
-  const { rows } = await pool.query<{ id: string }>(`select id from record_billing_event($1, $2, $3, $4)`, [
-    orgId,
-    payload.event,
-    eventId,
-    JSON.stringify(payload),
-  ]);
-  const eventRowId = rows[0]?.id;
+  const { rows } = await pool.query<{ id: string; is_new: boolean; claimed: boolean }>(
+    `select id, is_new, claimed from claim_billing_event($1, $2, $3, $4)`,
+    [orgId, payload.event, eventId, JSON.stringify(payload)]
+  );
+  const claim = rows[0];
+  if (!claim) return { recorded: false, processed: false, orgId };
+  if (!claim.claimed) return { recorded: true, processed: false, orgId, duplicate: true };
+  const eventRowId = claim.id;
 
   if (!orgId || !RESOLVABLE_EVENT_TYPES.has(payload.event)) {
     // Recorded either way — org-less (needs manual reconciliation) or a
-    // real event type this handler has nothing to do for (e.g. a
-    // Paystack event type not in RESOLVABLE_EVENT_TYPES at all).
-    if (eventRowId) {
-      await pool.query(`select mark_billing_event_processed($1, $2, $3)`, [
-        eventRowId,
-        Boolean(orgId),
-        orgId ? null : 'No org resolved from customer/subscription code or metadata.',
-      ]);
-    }
+    // real event type this handler has nothing to do for.
+    await pool.query(`select mark_billing_event_processed($1, $2, $3)`, [
+      eventRowId,
+      Boolean(orgId),
+      orgId ? null : 'No org resolved from customer/subscription code or metadata.',
+    ]);
     return { recorded: true, processed: Boolean(orgId), orgId };
   }
 
   try {
     await applyEvent(orgId, payload);
-    if (eventRowId) {
-      await pool.query(`select mark_billing_event_processed($1, true, null)`, [eventRowId]);
-    }
+    await pool.query(`select mark_billing_event_processed($1, true, null)`, [eventRowId]);
     return { recorded: true, processed: true, orgId };
   } catch (err) {
-    if (eventRowId) {
-      await pool.query(`select mark_billing_event_processed($1, false, $2)`, [
-        eventRowId,
-        err instanceof Error ? err.message : String(err),
-      ]);
-    }
+    await pool.query(`select mark_billing_event_processed($1, false, $2)`, [
+      eventRowId,
+      err instanceof Error ? err.message : String(err),
+    ]);
     // Re-thrown so the route can decide its own response (still 200 to
-    // Paystack — see routes/billingWebhook.ts's own comment on always
-    // acking receipt regardless of processing outcome, same as
-    // calendarWebhook.ts's posture).
+    // Paystack — see routes/billingWebhook.ts).
     throw err;
   }
 }

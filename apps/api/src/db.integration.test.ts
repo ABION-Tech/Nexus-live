@@ -98,6 +98,31 @@ describe.skipIf(!ADMIN_URL || !APP_URL)('database (real Postgres)', () => {
     expect(seenByNone).toBe(0);
   });
 
+  it('a Paystack event is claimed for processing exactly once (C-05)', async () => {
+    const key = `test.event:${Date.now()}:${Math.random()}`;
+    const claim = async () =>
+      (await app.query(`select is_new, claimed from claim_billing_event(null, 'test.event', $1, '{}'::jsonb)`, [key])).rows[0];
+    try {
+      expect(await claim()).toEqual({ is_new: true, claimed: true });
+      // A retry while the first is still being applied: recorded, not claimed.
+      expect(await claim()).toEqual({ is_new: false, claimed: false });
+      // Two simultaneous deliveries of a new event: only one may apply it.
+      const key2 = `${key}:race`;
+      const both = await Promise.all([1, 2].map(() => app.query(`select claimed from claim_billing_event(null, 'test.event', $1, '{}'::jsonb)`, [key2])));
+      expect(both.map((r) => r.rows[0].claimed).sort()).toEqual([false, true]);
+      // Applied successfully: no retry ever re-claims it.
+      const { rows } = await admin.query(`select id from billing_events where provider_event_id = $1`, [key]);
+      await app.query(`select mark_billing_event_processed($1, true, null)`, [rows[0].id]);
+      await admin.query(`update billing_events set processing_started_at = now() - interval '1 hour' where id = $1`, [rows[0].id]);
+      expect((await claim()).claimed).toBe(false);
+      // A failed attempt older than 5 minutes may be retried.
+      await admin.query(`update billing_events set processed = false where id = $1`, [rows[0].id]);
+      expect((await claim()).claimed).toBe(true);
+    } finally {
+      await admin.query(`delete from billing_events where provider_event_id like $1`, [`${key}%`]);
+    }
+  });
+
   it("a company can't write into another company", async () => {
     await expect(asCompany(A, (c) => c.query(`insert into tasks (org_id, title) values ($1, 'smuggled')`, [B]))).rejects.toThrow(/row-level security/);
     const changed = await asCompany(A, async (c) => (await c.query(`update tasks set title = 'hijacked' where org_id = $1`, [B])).rowCount);

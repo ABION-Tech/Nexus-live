@@ -1,0 +1,75 @@
+name: CI
+
+# Session 60 (C-03). Before this, nothing ran the tests: not on push, not
+# before deploy. Railway deploys main on its own, so a red run here
+# doesn't block a deploy yet — it is the alarm that something is wrong.
+#
+# Two jobs:
+#   checks   — typecheck, lint, every unit test, production build.
+#   database — a real Postgres 16, migrated from scratch the way Railway's
+#              preDeploy does, then src/db.integration.test.ts as the app's
+#              own RLS-bound role (company isolation, privileged-function
+#              grants, the scheduler's dispatch query). This is the job
+#              that would have caught 0043.
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm test
+      - name: Build
+        run: npm run build
+
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: nexus
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: nexus_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U nexus" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      MIGRATION_DATABASE_URL: postgres://nexus:ci-only@localhost:5432/nexus_ci
+      NEXUS_APP_DB_PASSWORD: ci-app-only
+      INTEGRATION_DATABASE_URL: postgres://nexus:ci-only@localhost:5432/nexus_ci
+      INTEGRATION_APP_DATABASE_URL: postgres://nexus_app:ci-app-only@localhost:5432/nexus_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Migrate a fresh database (every migration, in order)
+        run: npm run migrate -w apps/api
+      - name: Migrations are re-runnable (second run applies nothing)
+        run: npm run migrate -w apps/api | tee /tmp/second.log && ! grep -q "Applying" /tmp/second.log
+      - name: Real-Postgres checks as the app's own role
+        working-directory: apps/api
+        run: npx vitest run src/db.integration.test.ts

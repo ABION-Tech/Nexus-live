@@ -28,7 +28,7 @@ export function Dropdown({ trigger, items }: DropdownProps) {
     <div className="nx-dropdown" ref={ref}>
       <span onClick={() => setOpen((v) => !v)}>{trigger}</span>
       {open && (
-        <div className="nx-dropdown__menu" role="menu">
+        <div className="nx-dropdown__menu nx-pop" role="menu">
           {items.map((item) => (
             <button
               key={item.label}

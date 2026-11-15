@@ -151,6 +151,8 @@ export function TaskSection({ title, emptyTitle, newLabel, user, fetchList, head
   const [f, setF] = useState({ q: '', status: '', assignee: '', priority: '', dept: '', support: '' });
   const [sort, setSort] = useState<'newest' | 'deadline' | 'priority'>('newest');
   const filtersOn = Object.values(f).some(Boolean);
+  const activeFilters = [f.status, f.assignee, f.priority, f.dept, f.support].filter(Boolean).length;
+  const [showFilters, setShowFilters] = useState(false);
   const byId = useMemo(() => new Map(allRows.map((t) => [t.id, t])), [allRows]);
   const blocking = useMemo(() => {
     const m = new Map<string, number>();
@@ -363,11 +365,21 @@ export function TaskSection({ title, emptyTitle, newLabel, user, fetchList, head
     <div className="nx-dashboard-overview nx-view-enter">
       {header}
 
-      <Card className="nx-filterbar">
+      <Card className={'nx-filterbar' + (showFilters ? ' nx-filterbar--open' : '')}>
         <label className="nx-filterbar__search">
           <span>Search</span>
           <input className="nx-input" value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })} placeholder="Task, ID or person…" />
         </label>
+        {/* Session 61: phones show search and this button; the five
+            filters open on tap, so the list starts on the first screen. */}
+        <button
+          type="button"
+          className="nx-filterbar__toggle"
+          aria-expanded={showFilters}
+          onClick={() => setShowFilters((v) => !v)}
+        >
+          Filters{activeFilters > 0 ? ` · ${activeFilters}` : ''}
+        </button>
         <label>
           <span>Status</span>
           <select className="nx-select" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>

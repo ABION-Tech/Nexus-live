@@ -8,6 +8,7 @@ import './modules/network/network.css';
 import './modules/work/calendar.css';
 import './modules/people/people.css';
 import './components/navigation/navigation.css';
+import './components/navigation/shell.css';
 import { App } from './app/App';
 import { registerServiceWorker } from './utils/registerServiceWorker';
 

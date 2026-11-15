@@ -9,6 +9,8 @@ import { Sidebar, ComingSoon, ImpersonationBanner } from '../components/navigati
 import { WorkspaceProvider } from '../components/navigation/WorkspaceContext';
 import { NavCountsProvider } from '../components/navigation/NavCounts';
 import { Topbar } from '../components/navigation/Topbar';
+import { CommandPalette } from '../components/navigation/CommandPalette';
+import { MobileTabBar } from '../components/navigation/MobileTabBar';
 import { InvitationBanner } from '../components/navigation/InvitationBanner';
 import { IA } from './ia';
 import type { IaSection, IaSubsection } from './ia';
@@ -57,7 +59,6 @@ import { NotificationsPreferences as SettingsNotificationsPreferences } from '..
 import { AutomationToggles } from '../modules/automation/AutomationToggles';
 import { LoginPage } from './LoginPage';
 import { ThemeProvider, useTheme } from './ThemeContext';
-import { ThemeToggle } from '../components/navigation/ThemeToggle';
 import { getCurrentSession, logout, listenForMobileOAuthCallback, type CurrentUser } from '../services/authService';
 import { replayQueuedWrite } from '../services/apiClient';
 import { drainQueue, subscribeToQueueEvents } from '../services/offlineQueue';
@@ -249,6 +250,35 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
   const [navOpen, setNavOpen] = useState(false);
   const { pathname } = useLocation();
   useEffect(() => setNavOpen(false), [pathname]);
+  // Session 61 — desktop sidebar collapses to an icon rail ("[" toggles),
+  // remembered on this device.
+  const [rail, setRail] = useState(() => {
+    try {
+      return localStorage.getItem('nx-rail') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const toggleRail = () =>
+    setRail((r) => {
+      try {
+        localStorage.setItem('nx-rail', r ? '0' : '1');
+      } catch {
+        /* not remembered */
+      }
+      return !r;
+    });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const typing = e.target instanceof HTMLElement && (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName));
+      if (e.key === '[' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) toggleRail();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+  const signOut = () => {
+    void logout().finally(onLoggedOut);
+  };
   useEffect(() => {
     if (!navOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setNavOpen(false);
@@ -268,43 +298,11 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
           GET /session comes back anonymous and the actor lands on
           LoginPage to sign back in for real. */}
       {user.impersonatedBy && <ImpersonationBanner info={user.impersonatedBy} onEnded={onLoggedOut} />}
-      <div className={'nx-app-shell' + (navOpen ? ' nx-app-shell--nav-open' : '')}>
-        <Sidebar
-          user={user}
-          open={navOpen}
-          onClose={() => setNavOpen(false)}
-          footer={
-            <>
-              <div className="nx-sidebar__me">
-                <Avatar name={user.name} size="sm" />
-                <span>{user.name}</span>
-              </div>
-              <div className="nx-sidebar__utils">
-                <ThemeToggle />
-                <Button size="sm" variant="ghost" onClick={() => logout().finally(onLoggedOut)}>
-                  Log out
-                </Button>
-              </div>
-            </>
-          }
-        />
+      <div className={'nx-app-shell' + (navOpen ? ' nx-app-shell--nav-open' : '') + (rail ? ' nx-app-shell--rail' : '')}>
+        <Sidebar user={user} open={navOpen} onClose={() => setNavOpen(false)} rail={rail} onToggleRail={toggleRail} onLogout={signOut} />
         <div className="nx-scrim" onClick={() => setNavOpen(false)} aria-hidden="true" />
       <main className="nx-app-main">
-        <Topbar
-          user={user}
-          onMenu={() => setNavOpen(true)}
-          menuOpen={navOpen}
-          account={
-            <div className="nx-app-main__user">
-              <ThemeToggle />
-              <Avatar name={user.name} size="sm" />
-              <span className="nx-app-main__username">{user.name}</span>
-              <Button size="sm" variant="ghost" className="nx-app-main__logout" onClick={() => logout().finally(onLoggedOut)}>
-                Log out
-              </Button>
-            </div>
-          }
-        />
+        <Topbar user={user} />
 
         {/* Session 57 — a company has invited you (Join / Decline). */}
         <InvitationBanner readOnly={Boolean(user.impersonatedBy)} />
@@ -371,6 +369,8 @@ function AuthenticatedApp({ user, onLoggedOut }: { user: CurrentUser; onLoggedOu
           <Route path="*" element={<Navigate to={firstPath} replace />} />
         </Routes>
       </main>
+      <MobileTabBar user={user} onMore={() => setNavOpen((o) => !o)} moreOpen={navOpen} />
+      <CommandPalette user={user} />
       </div>
       </NavCountsProvider>
     </WorkspaceProvider>

@@ -15,7 +15,9 @@ function initials(name: string): string {
     .join('');
 }
 
-export function WorkspaceSwitcher({ disabled = false }: { disabled?: boolean }) {
+/** `compact` (Session 61): the sidebar's icon rail — just the mark; the
+ * menu opens beside it. */
+export function WorkspaceSwitcher({ disabled = false, compact = false }: { disabled?: boolean; compact?: boolean }) {
   const { workspaces, invitations, current, loaded, switchTo, reload } = useWorkspaces();
   const { show } = useToast();
   const [open, setOpen] = useState(false);
@@ -61,7 +63,7 @@ export function WorkspaceSwitcher({ disabled = false }: { disabled?: boolean }) 
   }
 
   return (
-    <div className="nx-ws" ref={ref}>
+    <div className={'nx-ws' + (compact ? ' nx-ws--compact' : '') + (open ? ' nx-ws--open' : '')} ref={ref}>
       <button
         type="button"
         className={'nx-ws__current' + (canOpen ? '' : ' nx-ws__current--static')}
@@ -86,7 +88,7 @@ export function WorkspaceSwitcher({ disabled = false }: { disabled?: boolean }) 
       </button>
 
       {open && (
-        <div className="nx-ws__menu" role="menu">
+        <div className="nx-ws__menu nx-pop" role="menu">
           <div className="nx-ws__label">Your companies</div>
           {workspaces.map((w) => (
             <button

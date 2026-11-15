@@ -61,7 +61,7 @@ export function NotificationBell() {
         {unread > 0 && <span className="nx-bell__n">{unread > 9 ? '9+' : unread}</span>}
       </button>
       {open && (
-        <div className="nx-bell__menu" role="dialog" aria-label="Notifications">
+        <div className="nx-bell__menu nx-pop" role="dialog" aria-label="Notifications">
           <div className="nx-bell__head">Notifications</div>
           {items.length === 0 ? (
             <div className="nx-bell__empty">Nothing yet. Assignments, escalations and reminders show up here.</div>

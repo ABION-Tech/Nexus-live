@@ -23,3 +23,6 @@ export function useQuickAdd(open: () => void) {
 
 /** Tell the shell something changed (counts refresh straight away). */
 export const dataChanged = () => window.dispatchEvent(new Event('nx:data-changed'));
+
+/** Session 61 — opens the command palette (⌘K) from anywhere. */
+export const OPEN_PALETTE_EVENT = 'nx:open-palette';

@@ -118,7 +118,7 @@ export function Table<T>({ columns, rows, rowKey, onRowClick, rowClassName, expo
               Cols ▾
             </button>
             {colsOpen && (
-              <div className="nx-tablebox__menu" role="menu">
+              <div className="nx-tablebox__menu nx-pop" role="menu">
                 {columns.map((c) => (
                   <label key={c.key} className="nx-tablebox__opt">
                     <input

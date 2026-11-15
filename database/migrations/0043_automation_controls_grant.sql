@@ -1,0 +1,14 @@
+-- Session 59 — the daily automations never ran in production.
+--
+-- list_orgs_with_automation_enabled (0024) is SECURITY DEFINER and owned
+-- by nexus_bootstrap, so its body reads automation_controls with
+-- nexus_bootstrap's privileges. That role was never granted SELECT on
+-- the table, so every scheduled run (overdue check, morning digest,
+-- dependency sweep, close-of-business reminders, follow-up escalation)
+-- failed with "permission denied for table automation_controls" before
+-- doing any work. Tests didn't catch it because they connect as the
+-- migration owner.
+--
+-- Read-only, and only what the function needs: nexus_bootstrap bypasses
+-- RLS by design (0003), and this function returns org_id only.
+grant select on automation_controls to nexus_bootstrap;

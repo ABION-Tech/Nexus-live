@@ -4813,3 +4813,11 @@ Same-data screenshots against the old app; desktop and phone. Overview counts ma
 - `services/taskImportService.ts` + `POST /api/v1/integrations/tasks/import` (personal key with the new `tasks:import` scope; only into companies you belong to; ≤200 per call). Matches an existing task with the same title instead of duplicating; bare-date deadlines land at 17:00 Abuja; checklist items supported.
 - `scripts/ensurePersonalKeys.ts`: optional 5th grant field adds scopes; `MEMBER_COMPANIES="email|Company|role;…"` creates a company if missing and adds the membership (additive only).
 - 3 tests (`routes/taskImport.test.ts`); import re-run, title match and company setup checked against Postgres.
+- Synergia `nexus-push` (Supabase edge function, Synergia repo `5961d1a`): 246 Synergia work tasks sent and linked (RescueTap 101, ABION Industries 76, Tova Star 42, Plinth and Pillars 27) plus 22 from the original sheet. The next 15-minute sync: 258 unchanged, 0 changed, no duplicates.
+
+### Launch-readiness audit (15 November, brief "Product Correction, Enhancement & Launch Readiness")
+- **Daily automations had never run in production.** `list_orgs_with_automation_enabled` (SECURITY DEFINER, owner `nexus_bootstrap`) could not read `automation_controls`: every run of the seven scheduled jobs failed with "permission denied". `0043_automation_controls_grant.sql` grants SELECT; reproduced and verified as `nexus_app` locally (all seven succeed). A sweep of all 29 `nexus_bootstrap` functions found no other missing grant.
+- **Android build** failed on every push since Session 54: `setup-android` asked for the removed `tools` package, then Gradle needed JDK 21. Both fixed in the workflow.
+- **Backups have never run**: the GitHub secrets `MIGRATION_DATABASE_URL` and `BACKUP_R2_*` are not set (owner action).
+- **Paystack is not configured in production** (no `PAYSTACK_*` variables).
+- Full register: "NEXUS correction register" (project docs).

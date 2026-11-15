@@ -11,5 +11,6 @@ export interface PersonalKey {
 }
 
 export const listPersonalKeys = () => apiClient.get<{ keys: PersonalKey[] }>('/me/keys').then((r) => r.keys);
-export const createPersonalKey = (name: string) => apiClient.post<{ key: PersonalKey; secret: string }>('/me/keys', { name });
+export const createPersonalKey = (name: string, canImport = false) =>
+  apiClient.post<{ key: PersonalKey; secret: string }>('/me/keys', { name, canImport });
 export const revokePersonalKey = (id: string) => apiClient.delete<{ ok: true }>(`/me/keys/${id}`);

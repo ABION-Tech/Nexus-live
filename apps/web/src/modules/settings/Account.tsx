@@ -77,6 +77,7 @@ function PersonalKeys() {
   const [keys, setKeys] = useState<PersonalKey[] | null>(null);
   const [name, setName] = useState('Synergia');
   const [busy, setBusy] = useState(false);
+  const [canImport, setCanImport] = useState(false);
   const [secret, setSecret] = useState<{ name: string; value: string } | null>(null);
 
   const load = () =>
@@ -91,9 +92,10 @@ function PersonalKeys() {
     e.preventDefault();
     setBusy(true);
     try {
-      const r = await createPersonalKey(name.trim());
+      const r = await createPersonalKey(name.trim(), canImport);
       setSecret({ name: r.key.name, value: r.secret });
       setName('');
+      setCanImport(false);
       await load();
     } catch (err) {
       show(err instanceof Error ? err.message : 'Could not create the key.', 'danger');
@@ -127,8 +129,9 @@ function PersonalKeys() {
       <div>
         <h3 style={{ margin: 0, fontSize: 16 }}>Personal keys</h3>
         <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--text-dim)' }}>
-          A key lets another app of yours, like Synergia, read <b>your own tasks</b> in NEXUS. It can't change anything, can't see
-          anyone else's work, and stops working the moment you revoke it.
+          A key lets another app of yours, like Synergia, read <b>your own tasks</b> in NEXUS, across every company you're in. It
+          can't see anyone else's work, and stops working the moment you revoke it. A key can also be allowed to <b>add tasks</b> to
+          your companies (as yours); without that, it can't change anything.
         </p>
       </div>
 
@@ -161,7 +164,7 @@ function PersonalKeys() {
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 600 }}>{k.name}</div>
                 <div style={{ fontSize: 12, color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
-                  {k.prefix}… · reads tasks · {when(k.lastUsedAt)}
+                  {k.prefix}… · {k.scopes?.includes('tasks:import') ? 'reads and adds tasks' : 'reads tasks'} · {when(k.lastUsedAt)}
                 </div>
               </div>
               <Button size="sm" variant="ghost" onClick={() => revoke(k)}>
@@ -176,6 +179,10 @@ function PersonalKeys() {
         <div style={{ flex: '1 1 200px' }}>
           <Input label="New key name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Synergia" maxLength={60} />
         </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, flex: '1 1 100%' }}>
+          <input type="checkbox" checked={canImport} onChange={(e) => setCanImport(e.target.checked)} />
+          Can also add tasks to my companies (for importing from another app)
+        </label>
         <Button type="submit" disabled={busy || !name.trim()}>
           {busy ? 'Creating…' : 'Create key'}
         </Button>

@@ -68,8 +68,12 @@ export async function listKeys(userId: string): Promise<PersonalKey[]> {
 }
 
 /** Creates a key. The returned `secret` is the only time it exists in full. */
-export async function createKey(userId: string, orgId: string, name: unknown): Promise<{ key: PersonalKey; secret: string }> {
+export async function createKey(userId: string, orgId: string, name: unknown, canImport = false): Promise<{ key: PersonalKey; secret: string }> {
   const clean = typeof name === 'string' ? name.trim() : '';
+  // Session 60 (C-14): a key can also be allowed to import tasks into the
+  // companies you belong to. Before this, 'tasks:import' could only be
+  // granted at deploy time (PERSONAL_KEY_GRANTS).
+  const scopes: KeyScope[] = canImport ? ['tasks:read', 'tasks:import'] : ['tasks:read'];
   if (clean.length < 1 || clean.length > 60) throw new PersonalKeyError('bad_name', 'Give the key a name of up to 60 characters, like "Synergia".');
   const { rows: count } = await pool.query<{ n: number }>(
     `select count(*)::int as n from personal_api_keys where user_id = $1 and revoked_at is null`,
@@ -81,10 +85,10 @@ export async function createKey(userId: string, orgId: string, name: unknown): P
   const secret = KEY_PREFIX + crypto.randomBytes(32).toString('base64url');
   const prefix = secret.slice(0, 12);
   const { rows } = await pool.query<KeyRow>(
-    `insert into personal_api_keys (user_id, org_id, name, prefix, key_hash)
-     values ($1, $2, $3, $4, $5)
+    `insert into personal_api_keys (user_id, org_id, name, prefix, key_hash, scopes)
+     values ($1, $2, $3, $4, $5, $6)
      returning id, name, prefix, scopes, created_at, last_used_at`,
-    [userId, orgId, clean, prefix, hash(secret)]
+    [userId, orgId, clean, prefix, hash(secret), scopes]
   );
   return { key: toKey(rows[0]!), secret };
 }

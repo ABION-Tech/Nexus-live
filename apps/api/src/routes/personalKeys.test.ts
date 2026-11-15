@@ -97,9 +97,16 @@ describe('Session 56 — personal API keys', () => {
     const res = await app.inject({ method: 'POST', url: '/api/v1/me/keys', cookies: cookie, payload: { name: 'Synergia' } });
     expect(res.statusCode).toBe(201);
     expect(res.json().secret).toBe(GOOD_KEY);
-    expect(createKey).toHaveBeenCalledWith(ME.userId, ME.orgId, 'Synergia');
+    expect(createKey).toHaveBeenCalledWith(ME.userId, ME.orgId, 'Synergia', false);
     const bad = await app.inject({ method: 'POST', url: '/api/v1/me/keys', cookies: cookie, payload: {} });
     expect(bad.statusCode).toBe(400);
+  });
+
+  it('a key may be allowed to import tasks only when asked for explicitly (C-14)', async () => {
+    await app.inject({ method: 'POST', url: '/api/v1/me/keys', cookies: cookie, payload: { name: 'Importer', canImport: true } });
+    expect(createKey).toHaveBeenLastCalledWith(ME.userId, ME.orgId, 'Importer', true);
+    await app.inject({ method: 'POST', url: '/api/v1/me/keys', cookies: cookie, payload: { name: 'Sneaky', canImport: 'yes' } });
+    expect(createKey).toHaveBeenLastCalledWith(ME.userId, ME.orgId, 'Sneaky', false);
   });
 
   it('revokes only your own key', async () => {

@@ -26,6 +26,12 @@ vi.mock('../services/taskImportService.js', async () => {
   };
 });
 
+const logOrgActionMock = vi.fn(async () => ({}));
+vi.mock('../services/auditLogService.js', async () => {
+  const actual = await vi.importActual<Record<string, unknown>>('../services/auditLogService.js');
+  return { ...actual, logOrgAction: logOrgActionMock };
+});
+
 import { importTasks } from '../services/taskImportService.js';
 
 describe('Session 59 — task import', () => {
@@ -57,6 +63,19 @@ describe('Session 59 — task import', () => {
     expect(ok.statusCode).toBe(200);
     expect(importTasks).toHaveBeenCalledWith('u1', 'o2', expect.any(Array));
     expect(ok.json().results.map((r: { externalRef: string }) => r.externalRef)).toEqual(['a', 'b']);
+  });
+
+  it("logs each import in the company's audit log, with the key and outcomes (C-14)", async () => {
+    await post(IMPORTER, { company: 'RescueTap', tasks: [{ externalRef: 'a', title: 'x' }, { externalRef: 'b', title: 'y' }] });
+    expect(logOrgActionMock).toHaveBeenCalledWith(
+      'o2',
+      expect.objectContaining({ userId: 'u1', action: 'tasks.import', result: 'success', metadata: expect.objectContaining({ keyId: 'k2', sent: 2, created: 2 }) }),
+    );
+  });
+
+  it("doesn't write to any company's log when you aren't a member", async () => {
+    await post(IMPORTER, { company: 'Someone Else Ltd', tasks: [{ externalRef: 'a', title: 'x' }] });
+    expect(logOrgActionMock).not.toHaveBeenCalled();
   });
 
   it('rejects an empty or oversized batch', async () => {

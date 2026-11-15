@@ -2,7 +2,7 @@
 //
 //   /api/v1/me/keys          (signed in, browser session)
 //     GET     list my active keys (never the key itself)
-//     POST    { name } → create; the response carries the key ONCE
+//     POST    { name, canImport? } → create; the response carries the key ONCE
 //     DELETE  /:id → revoke
 //
 //   /api/v1/integrations     (personal key: "Authorization: Bearer nxk_…")
@@ -15,6 +15,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { listMyWorkAcrossCompanies } from '../services/workspaceService.js';
 import { findMyCompany, importTasks, TaskImportError, type ImportTaskInput } from '../services/taskImportService.js';
+import { logOrgAction } from '../services/auditLogService.js';
 import { createKey, listKeys, revokeKey, verifyKey, PersonalKeyError, type KeyIdentity } from '../services/personalKeyService.js';
 
 const WEB_ORIGIN = () => (process.env.WEB_ORIGIN || 'https://app.nexusabion.com').replace(/\/$/, '');
@@ -33,7 +34,8 @@ export async function registerPersonalKeyRoutes(app: FastifyInstance) {
         return reply.status(403).send({ error: 'forbidden', message: "Keys can't be created while viewing as someone else." });
       }
       try {
-        const { key, secret } = await createKey(user.userId, user.orgId, (req.body as { name?: unknown } | null)?.name);
+        const body = req.body as { name?: unknown; canImport?: unknown } | null;
+        const { key, secret } = await createKey(user.userId, user.orgId, body?.name, body?.canImport === true);
         return reply.status(201).send({ key, secret });
       } catch (err) {
         if (err instanceof PersonalKeyError) return reply.status(400).send({ error: err.code, message: err.message });
@@ -130,11 +132,38 @@ export async function registerImportRoutes(app: FastifyInstance) {
     if (typeof body?.company !== 'string' || !Array.isArray(body.tasks) || body.tasks.length === 0 || body.tasks.length > 200) {
       return reply.status(400).send({ error: 'invalid_body', message: 'Send { company, tasks: [...] } with 1 to 200 tasks.' });
     }
+    // Session 60 (C-14): every import is logged — in the server log, and
+    // in the company's own Activity/audit log once we know the company —
+    // with which key did it and what happened to each task.
+    const source = String(req.headers['user-agent'] ?? '').slice(0, 120);
+    let company: { orgId: string; name: string } | null = null;
     try {
-      const company = await findMyCompany(who.userId, body.company);
+      company = await findMyCompany(who.userId, body.company);
       const results = await importTasks(who.userId, company.orgId, body.tasks as ImportTaskInput[]);
+      const counts = results.reduce<Record<string, number>>((m, r) => ((m[r.outcome] = (m[r.outcome] ?? 0) + 1), m), {});
+      req.log.info({ keyId: who.keyId, userId: who.userId, orgId: company.orgId, counts }, 'tasks imported');
+      await logOrgAction(company.orgId, {
+        userId: who.userId,
+        action: 'tasks.import',
+        resourceType: 'task',
+        result: 'success',
+        userAgent: source,
+        metadata: { keyId: who.keyId, sent: results.length, ...counts },
+      }).catch((e: unknown) => req.log.error({ err: e instanceof Error ? e.message : String(e) }, 'import audit log failed'));
       return { company, results };
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      req.log.warn({ keyId: who.keyId, userId: who.userId, company: body.company, err: message }, 'task import failed');
+      if (company) {
+        await logOrgAction(company.orgId, {
+          userId: who.userId,
+          action: 'tasks.import',
+          resourceType: 'task',
+          result: 'error',
+          userAgent: source,
+          metadata: { keyId: who.keyId, sent: body.tasks.length, error: message.slice(0, 500) },
+        }).catch(() => undefined);
+      }
       if (err instanceof TaskImportError) return reply.status(err.code === 'not_member' ? 403 : 400).send({ error: err.code, message: err.message });
       throw err;
     }

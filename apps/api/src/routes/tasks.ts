@@ -36,6 +36,7 @@ import {
   type UpdateTaskInput,
 } from '../services/taskService.js';
 import type { TaskListQuery, TaskPriority, TaskStatus } from '@nexus/shared';
+import { diffTask, listTaskHistory, recordTaskEvent } from '../services/taskHistoryService.js';
 
 const VALID_STATUSES: TaskStatus[] = ['not_started', 'in_progress', 'blocked', 'done'];
 // 0033_task_priority.sql
@@ -151,6 +152,7 @@ export async function registerTaskRoutes(app: FastifyInstance) {
     }
 
     const task = await createTask(user.orgId, body as CreateTaskInput, user.userId);
+    await recordTaskEvent(user, task.id, 'task.created', { next: diffTask({}, task)?.next });
     reply.status(201).send(task);
   });
 
@@ -192,6 +194,8 @@ export async function registerTaskRoutes(app: FastifyInstance) {
     }
 
     const updated = await updateTask(user.orgId, id, input, user.userId);
+    const changed = updated ? diffTask(existing, updated) : null;
+    if (changed) await recordTaskEvent(user, id, 'task.updated', changed);
     reply.send(updated);
   });
 
@@ -213,7 +217,26 @@ export async function registerTaskRoutes(app: FastifyInstance) {
     }
 
     const archived = await archiveTask(user.orgId, id, user.userId);
+    await recordTaskEvent(user, id, 'task.archived');
     reply.send(archived);
+  });
+
+  // Session 60 (C-12): the task's history. Same read gate as the thread
+  // and the People panel: tasks.read OR assignee/support/supervisor.
+  app.get('/:id/history', async (req, reply) => {
+    const user = req.sessionUser!;
+    const { id } = req.params as { id: string };
+    const task = await getTaskById(user.orgId, id);
+    if (!task) {
+      reply.status(404).send({ error: 'not_found', message: 'Task not found.' });
+      return;
+    }
+    const allowed = (await hasPermission(user, 'tasks', 'read')) || canViewTaskThread(task, user.userId);
+    if (!allowed) {
+      reply.status(403).send({ error: 'forbidden', message: 'Missing access to this task.' });
+      return;
+    }
+    reply.send(await listTaskHistory(user.orgId, id));
   });
 
   // Session 35 follow-up (0032_task_assignees.sql) — TaskDrawer.tsx's
@@ -276,6 +299,7 @@ export async function registerTaskRoutes(app: FastifyInstance) {
       reply.status(409).send({ error: 'already_exists', message: 'That person already has this role on this task.' });
       return;
     }
+    await recordTaskEvent(user, id, 'task.assignee_added', { next: { userId: body.userId, role: body.role } });
     reply.status(201).send(created);
   });
 
@@ -305,6 +329,7 @@ export async function registerTaskRoutes(app: FastifyInstance) {
       reply.status(404).send({ error: 'not_found', message: 'That person is not on this task in that role.' });
       return;
     }
+    await recordTaskEvent(user, id, 'task.assignee_removed', { previous: { userId, role } });
     reply.status(204).send();
   });
 }

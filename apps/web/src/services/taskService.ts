@@ -5,7 +5,7 @@
 // for now (Work's list views don't paginate yet; the API already does
 // the enforcement server-side regardless of what the client asks for).
 import { apiClient, postQueueable } from './apiClient';
-import type { Task, TaskPriority, TaskStatus } from '@nexus/shared';
+import type { Task, TaskPriority, TaskStatus, TaskHistoryEntry } from '@nexus/shared';
 
 // Mirrors apps/api/src/services/taskService.ts's *Input interfaces —
 // same reasoning as networkService.ts's CosInput/PartnershipInput: those
@@ -126,6 +126,11 @@ export interface TaskAssignee {
   userId: string;
   role: TaskAssigneeRole;
   createdAt: string;
+}
+
+/** Session 60 (C-12): who changed what on this task, newest first. */
+export function fetchTaskHistory(taskId: string): Promise<TaskHistoryEntry[]> {
+  return apiClient.get<TaskHistoryEntry[]>(`/tasks/${taskId}/history`);
 }
 
 export function fetchTaskAssignees(taskId: string): Promise<TaskAssignee[]> {

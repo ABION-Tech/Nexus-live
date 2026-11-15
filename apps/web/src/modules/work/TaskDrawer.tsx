@@ -3,6 +3,7 @@ import { Drawer, Button, StatusBadge, Select } from '../../components/ui';
 import type { CurrentUser } from '../../services/authService';
 import type { Task } from '@nexus/shared';
 import { ChatThread } from '../ai-analyst/ChatThread';
+import { TaskHistory } from './TaskHistory';
 import {
   fetchTaskAssignees,
   addTaskAssignee,
@@ -209,6 +210,8 @@ export function TaskDrawer({ task, onClose, onEdit, onArchive, canEdit, canArchi
               resolveName={(id) => peopleById.get(id)}
             />
           </div>
+
+          <TaskHistory key={`h-${task.id}`} taskId={task.id} peopleById={peopleById} />
         </div>
       )}
     </Drawer>

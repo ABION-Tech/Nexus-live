@@ -163,7 +163,10 @@
 }
 .nx-drawer {
   margin-left: auto; height: 100%; width: min(440px, 100vw); background: var(--surface);
-  border-left: 1px solid var(--border); box-shadow: var(--shadow-raised); padding: 0; overflow: hidden;
+  border-left: 1px solid var(--border); box-shadow: var(--shadow-raised);
+  /* Session 60: was padding 0 + overflow hidden — content touched the edge
+     and a long task (discussion + history) couldn't be scrolled. */
+  padding: var(--space-5); overflow-y: auto; overscroll-behavior: contain;
   display: flex; flex-direction: column;
 }
 .nx-modal__header, .nx-drawer__header {

@@ -168,3 +168,13 @@
 .nx-hr__ok { color: var(--accent2); border-color: color-mix(in srgb, var(--accent2) 40%, transparent); }
 .nx-hr__statbtn { border: 0; font: inherit; text-align: left; cursor: pointer; }
 .nx-hr__statbtn:hover, .nx-hr__statbtn[aria-pressed='true'] { background: var(--surface2); }
+
+/* Session 60 (C-12) — task History in TaskDrawer */
+.nx-taskhist__toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; background: none; border: 0; padding: 0; color: inherit; cursor: pointer; text-align: left; }
+.nx-taskhist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.nx-taskhist li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; line-height: 1.45; }
+.nx-taskhist li:last-child { border-bottom: 0; }
+.nx-taskhist li > div { min-width: 0; overflow-wrap: anywhere; }
+.nx-taskhist time { flex: none; font-size: 12px; white-space: nowrap; }
+.nx-taskhist__line { display: block; }
+.nx-taskhist__line:first-of-type { display: inline; }

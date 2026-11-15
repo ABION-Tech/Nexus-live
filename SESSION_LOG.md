@@ -4821,3 +4821,20 @@ Same-data screenshots against the old app; desktop and phone. Overview counts ma
 - **Backups have never run**: the GitHub secrets `MIGRATION_DATABASE_URL` and `BACKUP_R2_*` are not set (owner action).
 - **Paystack is not configured in production** (no `PAYSTACK_*` variables).
 - Full register: "NEXUS correction register" (project docs).
+
+## Session 60 — correction register, Phase 2 (15 November 2026)
+
+Everything in the register that didn't need an owner decision. Base `a60d780` (end of Session 59).
+
+- **C-03 CI**: `.github/workflows/ci.yml`: typecheck, lint, tests and build on every push, plus a real-Postgres job (fresh migrate, re-run applies nothing, `src/db.integration.test.ts` as `nexus_app`). It fails if 0043's grant is removed.
+- **C-04 automation failures visible**: 0044 `automation_dispatch_log`. A failing dispatch is recorded and emails platform admins (once a day per job). The company panel shows "Didn't run (system problem)" and the next run; Super Admin has a Scheduled jobs card. `AUTOMATION_SCHEDULE` and `nextCronRun` are in shared, with a parity test against the scheduler.
+- **C-05 Paystack**: 0045 `claim_billing_event`. Before this, a retried webhook was applied again every time (dedupe recorded duplicates but never stopped them). Invoice events are keyed by `invoice_code`; the last-resort key hashes the body, no longer `Date.now()`.
+- **C-14 integration**: `docs/INTEGRATIONS.md` rewritten. Imports are logged to the server log and the company audit log. Keys can be created with "can also add tasks" (`tasks:import`).
+- **C-12 task history**: History in the task drawer, read from the existing `activity_log`, which recorded every change but had no reader. People added or removed are now logged on the task; imports log "created". Tasks already had a Discussion thread; the register was wrong there. The task drawer had no padding and couldn't scroll; fixed.
+- **C-11**: 0047 `recurrence`, `recurrence_source_id`, `follow_up_hours`, `last_follow_up_at`. `daily_recurring_tasks` and `hourly_follow_up` are built and scheduled. Task form: Repeats, Nudge if no update for.
+- **Bug: saving from the task Edit form failed for every task** (the whole task was sent; the server tried to update a column "undefined"). PATCH now whitelists editable fields, so `preBlockStatus` can no longer be set from outside, and the form sends only what it edits.
+- **C-09**: AI provider keys are encrypted at rest (AES-256-GCM, `SECRET_ENCRYPTION_KEY` in Railway). The new deploy step `ensureEncryptedSecrets` reported 0 plain keys in production, so no company has an AI provider configured yet.
+- **C-18**: dependency audit went from 13 (4 high) to 4 moderate. Fastify was patched; `xlsx` moved to devDependencies. A password reset now signs out every other session. Results: `docs/SECURITY.md`.
+- **C-19**: `docs/RELEASE.md`, the release checklist and rollback.
+- **C-15**: `DEV_LOGIN`, `MEMBER_COMPANIES` and `PERSONAL_KEY_GRANTS` blanked in Railway.
+- **Production**: 0043 confirmed (the 16:00, 18:00 and 18:05 runs succeeded). 0044–0047 applied. Pushes still don't redeploy the API reliably, so redeploy by reconnecting the source.

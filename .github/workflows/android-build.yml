@@ -44,11 +44,11 @@ jobs:
       - name: Build web bundle
         run: npm run build
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
       # Installs the SDK components AGP needs (platform, build-tools) —
       # this step alone needs dl.google.com, which is exactly what's

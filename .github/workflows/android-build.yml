@@ -55,6 +55,12 @@ jobs:
       # blocked in the sandboxed environment this workflow replaces.
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # The action's default list still asks for the long-removed
+          # 'tools' package, which made sdkmanager exit 1 on every run
+          # since Session 54. AGP installs the platform/build-tools it
+          # needs itself; platform-tools is all this step must provide.
+          packages: 'platform-tools'
 
       - name: Sync Capacitor Android project
         run: npx cap sync android

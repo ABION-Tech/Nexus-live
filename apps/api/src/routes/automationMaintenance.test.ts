@@ -22,12 +22,19 @@ vi.mock('../services/automationJobs.js', () => ({
 }));
 
 const recordAutomationRunMock = vi.fn(async () => undefined);
+const recordDispatchMock = vi.fn(async (_input: { status: string; orgsRun: number; orgsFailed: number; error?: string }) => 'd-1');
+const claimDispatchAlertMock = vi.fn(async () => true);
+const alertMock = vi.fn(async () => 1);
+
+vi.mock('../services/automationAlertService.js', () => ({ alertPlatformAdminsOfAutomationFailure: alertMock }));
 
 vi.mock('../services/automationService.js', async () => {
   const actual = await vi.importActual<typeof import('../services/automationService.js')>('../services/automationService.js');
   return {
     ...actual, // keeps isKnownAutomationKey real — it reads AUTOMATION_CONTROL_KEYS from @nexus/shared
     recordAutomationRun: recordAutomationRunMock,
+    recordDispatch: recordDispatchMock,
+    claimDispatchAlert: claimDispatchAlertMock,
   };
 });
 
@@ -123,6 +130,46 @@ describe('POST /automation/maintenance/run/:jobKey', () => {
     expect(recordAutomationRunMock).toHaveBeenCalledWith(
       expect.objectContaining({ orgId: 'org-2', jobKey: 'daily_cob_reminders', status: 'error', error: 'resend timeout' }),
     );
+  });
+
+  it('records the dispatch and alerts the platform admins when a company fails', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/automation/maintenance/run/daily_cob_reminders',
+      headers: { 'x-nexus-maintenance-secret': SECRET },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(recordDispatchMock).toHaveBeenCalledWith(
+      expect.objectContaining({ jobKey: 'daily_cob_reminders', status: 'error', orgsRun: 2, orgsFailed: 1, error: 'resend timeout' }),
+    );
+    expect(claimDispatchAlertMock).toHaveBeenCalledWith('d-1', 'daily_cob_reminders');
+    expect(alertMock).toHaveBeenCalledWith(expect.objectContaining({ jobKey: 'daily_cob_reminders', orgsFailed: 1, orgsRun: 2 }));
+  });
+
+  it("doesn't alert again when today's alert for that job already went out", async () => {
+    claimDispatchAlertMock.mockResolvedValueOnce(false);
+    await app.inject({
+      method: 'POST',
+      url: '/api/v1/automation/maintenance/run/daily_cob_reminders',
+      headers: { 'x-nexus-maintenance-secret': SECRET },
+    });
+    expect(alertMock).not.toHaveBeenCalled();
+  });
+
+  it('a dispatch that fails before any company ran is recorded, alerted and returns 500 (the 0043 failure)', async () => {
+    runDailyCobRemindersMock.mockRejectedValueOnce(new Error('permission denied for table automation_controls'));
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/automation/maintenance/run/daily_cob_reminders',
+      headers: { 'x-nexus-maintenance-secret': SECRET },
+    });
+    expect(res.statusCode).toBe(500);
+    expect(res.json().error).toBe('dispatch_failed');
+    expect(recordAutomationRunMock).not.toHaveBeenCalled();
+    expect(recordDispatchMock).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'error', orgsRun: 0, error: 'permission denied for table automation_controls' }),
+    );
+    expect(alertMock).toHaveBeenCalledWith(expect.objectContaining({ orgsRun: 0, error: 'permission denied for table automation_controls' }));
   });
 
   it('rate-limits repeated triggers past the configured max', async () => {

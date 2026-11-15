@@ -685,5 +685,7 @@ a.nx-adminhome__stat:hover { background: var(--surface2); }
 .nx-adminhome__orgs li:last-child, .nx-adminhome__health li:last-child { border-bottom: 0; }
 .nx-adminhome__orgs b { flex: 1; min-width: 0; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nx-adminhome__health li { justify-content: space-between; font-size: 13.5px; }
+.nx-adminhome__health li { flex-wrap: wrap; }
+.nx-adminhome__health li > span:first-child { flex: 1; min-width: 140px; }
 @media (max-width: 900px) { .nx-adminhome__grid { grid-template-columns: 1fr; } }
 .nx-sidebar__brand { margin-bottom: 0 !important; padding: 0 var(--space-2) var(--space-1); }

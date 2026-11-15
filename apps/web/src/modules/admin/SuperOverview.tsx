@@ -2,9 +2,21 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, CreditCard, ShieldCheck, ShieldAlert, Users } from 'lucide-react';
 import { Badge, LoadingState, ErrorState } from '../../components/ui';
-import { fetchAuditLog, fetchPlatformAnalytics, fetchSystemHealth, searchOrganizations, searchPlatformUsers } from '../../services/superAdminService';
-import type { AuditLogEntry, Organization, PlatformAnalyticsSummary, SubsystemStatus, SystemHealthReport } from '@nexus/shared';
+import { fetchAuditLog, fetchAutomationDispatch, fetchPlatformAnalytics, fetchSystemHealth, searchOrganizations, searchPlatformUsers } from '../../services/superAdminService';
+import type { AuditLogEntry, AutomationDispatchEntry, Organization, PlatformAnalyticsSummary, SubsystemStatus, SystemHealthReport } from '@nexus/shared';
 import { AdminHome } from './AdminHome';
+import { nextRunLabel, relativeTime } from '../automation/automationTime';
+
+// Session 60 (C-04): names for the Scheduled jobs card.
+const JOB_LABEL: Record<string, string> = {
+  daily_overdue_check: 'Overdue check',
+  daily_morning_digest: 'Morning digest',
+  daily_dependency_sweep: 'Dependency sweep',
+  daily_cob_reminders: 'Close-of-business reminders',
+  daily_follow_up_escalation: 'Follow-up escalation',
+  daily_eod_nudge: 'EOD nudge',
+  daily_task_snapshot: 'Nightly task snapshot',
+};
 
 const TONE: Record<SubsystemStatus, 'success' | 'warning' | 'danger' | 'neutral'> = { ok: 'success', degraded: 'warning', down: 'danger', unknown: 'neutral' };
 
@@ -19,6 +31,7 @@ export function SuperOverview() {
   >({ status: 'loading' });
   const [activity, setActivity] = useState<AuditLogEntry[] | null>(null);
   const [names, setNames] = useState<Map<string, string>>(new Map());
+  const [jobs, setJobs] = useState<AutomationDispatchEntry[] | null>(null);
 
   function load() {
     setState({ status: 'loading' });
@@ -26,6 +39,7 @@ export function SuperOverview() {
       .then(([summary, health, orgs]) => setState({ status: 'ready', summary, health, orgs }))
       .catch((err: unknown) => setState({ status: 'error', message: err instanceof Error ? err.message : 'Something went wrong.' }));
     fetchAuditLog({ limit: 8 }).then(setActivity).catch(() => setActivity([]));
+    fetchAutomationDispatch().then(setJobs).catch(() => setJobs([]));
     searchPlatformUsers().then((u) => setNames(new Map(u.map((x) => [x.id, x.name])))).catch(() => undefined);
   }
   useEffect(load, []);
@@ -95,6 +109,39 @@ export function SuperOverview() {
             {unchecked.length > 0 && (
               <p className="nx-cell-dim" style={{ margin: '10px 0 0', fontSize: 12 }}>
                 Not monitored yet: {unchecked.map((x) => x.name).join(', ')}.
+              </p>
+            )}
+          </section>
+          <section className="nx-card" style={{ gridColumn: '1 / -1' }}>
+            <div className="nx-adminhome__feedhead">
+              <h2 className="nx-adminhome__h2">Scheduled jobs</h2>
+              {jobs && jobs.length > 0 && (
+                <Badge tone={jobs.some((j) => j.status === 'error') ? 'danger' : 'success'} dot>
+                  {jobs.some((j) => j.status === 'error') ? `${jobs.filter((j) => j.status === 'error').length} failing` : 'All ran'}
+                </Badge>
+              )}
+            </div>
+            {jobs === null ? (
+              <p className="nx-cell-dim">Loading…</p>
+            ) : (
+              <ul className="nx-adminhome__health">
+                {jobs.map((j) => (
+                  <li key={j.jobKey} title={j.error}>
+                    <span>{JOB_LABEL[j.jobKey] ?? j.jobKey}</span>
+                    <span className="nx-cell-dim" style={{ fontSize: 12 }}>
+                      {j.startedAt ? `${relativeTime(j.startedAt)}${j.orgsRun ? ` · ${j.orgsRun - j.orgsFailed}/${j.orgsRun} companies` : ''}` : 'Not run since tracking began'}
+                      {j.nextRunAt ? ` · next ${nextRunLabel(j.nextRunAt)}` : ''}
+                    </span>
+                    <Badge tone={j.status === 'error' ? 'danger' : j.status === 'never' ? 'neutral' : 'success'} dot>
+                      {j.status === 'error' ? (j.orgsRun === 0 ? "Didn't start" : 'Failed') : j.status === 'never' ? '—' : 'OK'}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {jobs?.some((j) => j.status === 'error') && (
+              <p className="nx-cell-dim" style={{ margin: '10px 0 0', fontSize: 12 }}>
+                Hover a failing job to see the error. Super Admins get one email a day per failing job.
               </p>
             )}
           </section>

@@ -5,6 +5,7 @@
 // logic here.
 import { apiClient } from './apiClient';
 import type {
+  AutomationDispatchEntry,
   BillingSummary,
   BillingTierKey,
   MemberRole,
@@ -24,6 +25,11 @@ import type {
 
 export function fetchPlatformAnalytics(): Promise<PlatformAnalyticsSummary> {
   return apiClient.get<PlatformAnalyticsSummary>('/admin/super/analytics/overview');
+}
+
+/** Session 60 (C-04): every scheduled job's latest dispatch. */
+export function fetchAutomationDispatch(): Promise<AutomationDispatchEntry[]> {
+  return apiClient.get<AutomationDispatchEntry[]>('/admin/super/automation-dispatch');
 }
 
 export function fetchSystemHealth(): Promise<SystemHealthReport> {

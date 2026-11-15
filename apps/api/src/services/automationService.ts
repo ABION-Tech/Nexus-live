@@ -7,9 +7,16 @@
 // more, no fewer, so listAutomationControls seeds any missing key to its
 // PRD-documented default (enabled) rather than an org organically ending
 // up with a subset depending on when they first loaded the panel.
-import { withOrgContext } from '../db.js';
-import { AUTOMATION_CONTROL_KEYS } from '@nexus/shared';
-import type { AutomationControl, AutomationControlKey, AutomationHealthEntry, AutomationLogEntry, AutomationRunLogEntry } from '@nexus/shared';
+import { pool, withOrgContext } from '../db.js';
+import { AUTOMATION_CONTROL_KEYS, AUTOMATION_SCHEDULE, nextCronRun } from '@nexus/shared';
+import type {
+  AutomationControl,
+  AutomationControlKey,
+  AutomationDispatchEntry,
+  AutomationHealthEntry,
+  AutomationLogEntry,
+  AutomationRunLogEntry,
+} from '@nexus/shared';
 import { UNIMPLEMENTED_JOBS } from './automationJobs.js';
 
 interface AutomationControlRow {
@@ -241,10 +248,106 @@ export async function getAutomationHealth(orgId: string): Promise<AutomationHeal
       [orgId]
     );
     const byKey = new Map(rows.map((r) => [r.job_key, toRunLogEntry(r)]));
-    return AUTOMATION_CONTROL_KEYS.map((key) => ({
-      key,
-      implemented: !UNIMPLEMENTED_JOBS.has(key),
-      lastRun: byKey.get(key),
-    }));
+    const failures = await latestDispatchFailures();
+    const now = new Date();
+    return AUTOMATION_CONTROL_KEYS.map((key) => {
+      const implemented = !UNIMPLEMENTED_JOBS.has(key);
+      const lastRun = byKey.get(key);
+      const failedAt = failures.get(key);
+      return {
+        key,
+        implemented,
+        lastRun,
+        // Only when the platform failure is the newest thing that happened
+        // to this job — a later successful run for this company wins.
+        systemFailureAt: failedAt && (!lastRun || failedAt > lastRun.startedAt) ? failedAt : undefined,
+        nextRunAt: implemented ? nextCronRun(AUTOMATION_SCHEDULE[key], now)?.toISOString() : undefined,
+      };
+    });
+  });
+}
+
+// ---------------------------------------------------------------------
+// Session 60 (C-04) — automation_dispatch_log (0044): one row per
+// scheduler call, platform-wide. Plain pool queries: the table has no
+// org_id and no RLS (it describes the platform, not a company).
+// ---------------------------------------------------------------------
+export interface RecordDispatchInput {
+  jobKey: string;
+  startedAt: Date;
+  finishedAt: Date;
+  status: 'success' | 'error';
+  orgsRun: number;
+  orgsFailed: number;
+  error?: string;
+}
+
+/** Records one dispatch. Never throws: a broken log must not turn a
+ * successful run into a failed request. Returns the row id, or null. */
+export async function recordDispatch(input: RecordDispatchInput): Promise<string | null> {
+  try {
+    const { rows } = await pool.query<{ id: string }>(
+      `insert into automation_dispatch_log (job_key, started_at, finished_at, status, orgs_run, orgs_failed, error)
+       values ($1, $2, $3, $4, $5, $6, $7) returning id`,
+      [input.jobKey, input.startedAt, input.finishedAt, input.status, input.orgsRun, input.orgsFailed, input.error?.slice(0, 2000) ?? null]
+    );
+    return rows[0]?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** True (and marks `id` as the alert) when no alert for this job went out
+ * in the last 24 hours. One statement, so two concurrent failures can't
+ * both win. */
+export async function claimDispatchAlert(id: string, jobKey: string): Promise<boolean> {
+  const { rowCount } = await pool.query(
+    `update automation_dispatch_log set alerted_at = now()
+      where id = $1
+        and not exists (select 1 from automation_dispatch_log
+                         where job_key = $2 and alerted_at > now() - interval '24 hours')`,
+    [id, jobKey]
+  );
+  return (rowCount ?? 0) > 0;
+}
+
+/** job_key → started_at (ISO) of its latest dispatch, when that latest
+ * dispatch failed before running anyone. */
+async function latestDispatchFailures(): Promise<Map<string, string>> {
+  try {
+    // orgs_run = 0: the dispatch never reached any company. A partial
+    // failure (some companies errored) already shows on those companies'
+    // own run-log rows and must not flag everyone else.
+    const { rows } = await pool.query<{ job_key: string; started_at: Date; status: string; orgs_run: number }>(
+      `select distinct on (job_key) job_key, started_at, status, orgs_run from automation_dispatch_log
+        order by job_key, started_at desc`
+    );
+    return new Map(rows.filter((r) => r.status === 'error' && r.orgs_run === 0).map((r) => [r.job_key, r.started_at.toISOString()]));
+  } catch {
+    return new Map();
+  }
+}
+
+/** Super Admin: the latest dispatch of every job, in schedule order. */
+export async function listDispatchHealth(): Promise<AutomationDispatchEntry[]> {
+  const { rows } = await pool.query<{
+    job_key: string; started_at: Date; finished_at: Date | null; status: 'success' | 'error'; orgs_run: number; orgs_failed: number; error: string | null;
+  }>(`select distinct on (job_key) * from automation_dispatch_log order by job_key, started_at desc`);
+  const byKey = new Map(rows.map((r) => [r.job_key, r]));
+  const now = new Date();
+  return AUTOMATION_CONTROL_KEYS.filter((k) => !UNIMPLEMENTED_JOBS.has(k)).map((key) => {
+    const r = byKey.get(key);
+    const nextRunAt = nextCronRun(AUTOMATION_SCHEDULE[key], now)?.toISOString();
+    if (!r) return { jobKey: key, status: 'never', orgsRun: 0, orgsFailed: 0, nextRunAt };
+    return {
+      jobKey: key,
+      startedAt: r.started_at.toISOString(),
+      finishedAt: r.finished_at?.toISOString(),
+      status: r.status,
+      orgsRun: r.orgs_run,
+      orgsFailed: r.orgs_failed,
+      error: r.error ?? undefined,
+      nextRunAt,
+    };
   });
 }

@@ -1287,6 +1287,108 @@ export interface AutomationHealthEntry {
   key: AutomationControlKey;
   implemented: boolean;
   lastRun?: AutomationRunLogEntry;
+  /** Session 60 (C-04): the latest scheduler dispatch for this job failed
+   * before any company ran (so no run-log row exists for anyone). Only
+   * set when it is newer than `lastRun`. The reason itself stays on the
+   * platform side; companies see that it failed and when. */
+  systemFailureAt?: string;
+  /** Session 60: next scheduled run (ISO), from AUTOMATION_SCHEDULE in
+   * Africa/Lagos. Absent for jobs that aren't built. */
+  nextRunAt?: string;
+}
+
+// ---------------------------------------------------------------------
+// Session 60 (C-04) — the schedule, shared so the app can show "next
+// run". apps/scheduler/src/jobs.ts keeps its own literal copy on purpose
+// (it never imports app code); routes/automationSchedule.test.ts fails if
+// the two ever disagree. A CRON_* override set on the scheduler service
+// is not reflected here.
+// ---------------------------------------------------------------------
+export const AUTOMATION_TZ = 'Africa/Lagos';
+
+export const AUTOMATION_SCHEDULE: Record<AutomationControlKey, string> = {
+  daily_overdue_check: '0 8 * * *',
+  daily_morning_digest: '5 8 * * *',
+  daily_dependency_sweep: '0 9 * * *',
+  daily_recurring_tasks: '0 10 * * *',
+  daily_cob_reminders: '0 16 * * *',
+  daily_follow_up_escalation: '0 18 * * *',
+  daily_eod_nudge: '5 18 * * *',
+  hourly_follow_up: '0 8-19 * * 1-5',
+  daily_task_snapshot: '0 23 * * *',
+};
+
+/** Values a 5-field cron field allows: `*`, `*\/n`, `a`, `a-b`, `a-b/n`, lists. */
+function cronField(field: string, min: number, max: number): Set<number> {
+  const out = new Set<number>();
+  for (const part of field.split(',')) {
+    const [range, stepText] = part.split('/');
+    const step = stepText ? Number(stepText) : 1;
+    let lo = min;
+    let hi = max;
+    if (range !== '*') {
+      const [a, b] = range!.split('-');
+      lo = Number(a);
+      hi = b === undefined ? (stepText ? max : lo) : Number(b);
+    }
+    if (![lo, hi, step].every(Number.isInteger) || step < 1 || lo < min || hi > max || lo > hi) {
+      throw new Error(`Invalid cron field "${field}"`);
+    }
+    for (let v = lo; v <= hi; v += step) out.add(v);
+  }
+  return out;
+}
+
+/** The first time strictly after `from` that `expr` fires, in `tz`.
+ * Supports the standard 5 fields (minute hour day-of-month month
+ * day-of-week; Sunday is 0 or 7). Day-of-month and day-of-week are ANDed
+ * when both are restricted — every schedule NEXUS uses leaves one as `*`.
+ * Returns null if nothing matches in the next 366 days. */
+export function nextCronRun(expr: string, from: Date = new Date(), tz: string = AUTOMATION_TZ): Date | null {
+  const fields = expr.trim().split(/\s+/);
+  if (fields.length !== 5) throw new Error(`Cron needs 5 fields: "${expr}"`);
+  const minutes = cronField(fields[0]!, 0, 59);
+  const hours = cronField(fields[1]!, 0, 23);
+  const doms = cronField(fields[2]!, 1, 31);
+  const months = cronField(fields[3]!, 1, 12);
+  const dows = cronField(fields[4]!, 0, 7);
+  if (dows.has(7)) dows.add(0);
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', weekday: 'short',
+  });
+  const DOW: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  const sortedMinutes = [...minutes].sort((a, b) => a - b);
+  // Walk whole hours (wall-clock hours in tz), then pick the minute.
+  const start = new Date(Math.floor(from.getTime() / 60000) * 60000 + 60000); // next whole minute
+  let t = start.getTime() - (start.getTime() % 3600000); // top of that UTC hour
+  for (let i = 0; i < 366 * 24 + 2; i++, t += 3600000) {
+    const parts = Object.fromEntries(fmt.formatToParts(new Date(t)).map((p) => [p.type, p.value]));
+    const hour = Number(parts.hour);
+    if (!hours.has(hour) || !months.has(Number(parts.month)) || !doms.has(Number(parts.day)) || !dows.has(DOW[parts.weekday!]!)) continue;
+    // Minutes past the top of this UTC hour equal minutes past the top of
+    // the local hour for whole-hour offsets; for half-hour zones the
+    // local hour starts 30 min off, so take the local minute into account.
+    const localMinuteAtT = Number(parts.minute);
+    for (const m of sortedMinutes) {
+      const candidate = t + (m - localMinuteAtT) * 60000;
+      if (candidate >= start.getTime()) return new Date(candidate);
+    }
+  }
+  return null;
+}
+
+/** Session 60 (C-04) — one scheduler dispatch, platform-wide (Super Admin). */
+export interface AutomationDispatchEntry {
+  jobKey: string;
+  /** Absent when the scheduler has never called this job since 0044. */
+  startedAt?: string;
+  finishedAt?: string;
+  /** 'never' — no dispatch recorded yet. */
+  status: 'success' | 'error' | 'never';
+  orgsRun: number;
+  orgsFailed: number;
+  error?: string;
+  nextRunAt?: string;
 }
 
 // ---------------------------------------------------------------------

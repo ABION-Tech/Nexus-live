@@ -23,6 +23,7 @@ import {
 } from '../../services/organizationService.js';
 import { logPlatformActionSafely, searchAuditLog } from '../../services/auditLogService.js';
 import { getSystemHealth } from '../../services/systemMetricsService.js';
+import { listDispatchHealth } from '../../services/automationService.js';
 import { listBillingPendingReview, resolveBillingReviewEntry } from '../../services/billingService.js';
 import { pool } from '../../db.js';
 import { listOrgPeople } from '../../services/peopleService.js';
@@ -277,6 +278,12 @@ export async function registerSuperAdminRoutes(app: FastifyInstance) {
     if (!(await requirePlatformAdmin(req, reply))) return;
     const report = await getSystemHealth();
     reply.send(report);
+  });
+
+  // Session 60 (C-04): every scheduled job's latest dispatch, platform-wide.
+  app.get('/automation-dispatch', async (req, reply) => {
+    if (!(await requirePlatformAdmin(req, reply))) return;
+    reply.send(await listDispatchHealth());
   });
 
   // ---- Audit query/filter --------------------------------------------------

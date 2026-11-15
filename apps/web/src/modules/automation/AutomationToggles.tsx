@@ -25,6 +25,7 @@ import {
   toggleAutomationControl,
 } from '../../services/automationService';
 import type { AutomationControl, AutomationControlKey, AutomationHealthEntry, AutomationLogEntry } from '@nexus/shared';
+import { nextRunLabel, relativeTime } from './automationTime';
 
 // ─── Job metadata ────────────────────────────────────────────────────────────
 // Label / schedule / description per PRD §12 table — kept here rather than
@@ -136,18 +137,6 @@ function ToggleSwitch({
   );
 }
 
-// ─── Relative time helper ─────────────────────────────────────────────────────
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
-}
-
 // ─── Health badge ─────────────────────────────────────────────────────────────
 // Renders the four real states GET /automation/health can report for a
 // job: not implemented (schema gap, not a wiring gap), never run yet
@@ -155,31 +144,28 @@ function relativeTime(iso: string): string {
 // succeeded, last run errored. No fifth "currently running" state —
 // this endpoint has no concept of an in-flight run, only completed ones.
 function HealthBadge({ health }: { health: AutomationHealthEntry | undefined }) {
+  const mono = { fontSize: 11, fontFamily: 'var(--font-mono)' } as const;
   if (!health || !health.implemented) {
+    return <span style={{ ...mono, color: 'var(--muted)' }}>Not yet implemented</span>;
+  }
+  const next = health.nextRunAt ? <span style={{ color: 'var(--muted)' }}> · next {nextRunLabel(health.nextRunAt)}</span> : null;
+  // Session 60 (C-04): the scheduler failed before reaching any company.
+  // Before this it read "Not yet run" for weeks while every run failed.
+  if (health.systemFailureAt) {
     return (
-      <span style={{ fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
-        Not yet implemented
+      <span style={{ ...mono, color: 'var(--danger)' }} title="NEXUS couldn't start this job. The NEXUS team has been alerted.">
+        ✗ Didn't run {relativeTime(health.systemFailureAt)} (system problem){next}
       </span>
     );
   }
   if (!health.lastRun) {
-    return (
-      <span style={{ fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
-        Not yet run
-      </span>
-    );
+    return <span style={{ ...mono, color: 'var(--muted)' }}>Not yet run{next}</span>;
   }
   const ok = health.lastRun.status === 'success';
   return (
-    <span
-      style={{
-        fontSize: 11,
-        fontFamily: 'var(--font-mono)',
-        color: ok ? 'var(--success)' : 'var(--danger)',
-      }}
-      title={health.lastRun.error ?? undefined}
-    >
+    <span style={{ ...mono, color: ok ? 'var(--success)' : 'var(--danger)' }} title={health.lastRun.error ?? undefined}>
       {ok ? '✓' : '✗'} {ok ? 'Ran' : 'Failed'} {relativeTime(health.lastRun.finishedAt)}
+      {next}
     </span>
   );
 }

@@ -29,7 +29,8 @@
 import type { FastifyInstance } from 'fastify';
 import crypto from 'node:crypto';
 import { IMPLEMENTED_JOBS, UNIMPLEMENTED_JOBS } from '../services/automationJobs.js';
-import { isKnownAutomationKey, recordAutomationRun } from '../services/automationService.js';
+import { claimDispatchAlert, isKnownAutomationKey, recordAutomationRun, recordDispatch } from '../services/automationService.js';
+import { alertPlatformAdminsOfAutomationFailure } from '../services/automationAlertService.js';
 
 function timingSafeEqualStrings(a: string, b: string): boolean {
   const aBuf = Buffer.from(a, 'utf8');
@@ -93,7 +94,25 @@ export async function registerAutomationMaintenanceRoutes(app: FastifyInstance) 
     }
 
     const startedAt = new Date();
-    const results = await runFn();
+    let results: Awaited<ReturnType<typeof runFn>>;
+    try {
+      results = await runFn();
+    } catch (err) {
+      // Session 60 (C-04): the dispatch itself failed — no company ran, so
+      // no automation_run_log row exists anywhere. Record it platform-wide,
+      // tell the platform admins (once a day per job), then fail the
+      // request so the scheduler logs it too.
+      const message = err instanceof Error ? err.message : String(err);
+      req.log.error({ jobKey, err: message }, 'automation dispatch failed before any company ran');
+      const id = await recordDispatch({ jobKey, startedAt, finishedAt: new Date(), status: 'error', orgsRun: 0, orgsFailed: 0, error: message });
+      if (id && (await claimDispatchAlert(id, jobKey).catch(() => false))) {
+        await alertPlatformAdminsOfAutomationFailure({ jobKey, error: message, orgsFailed: 0, orgsRun: 0 }).catch((e: unknown) =>
+          req.log.error({ err: e instanceof Error ? e.message : String(e) }, 'automation failure alert could not be sent')
+        );
+      }
+      reply.status(500).send({ error: 'dispatch_failed', message: `'${jobKey}' could not start: ${message}` });
+      return;
+    }
     const finishedAt = new Date();
 
     for (const result of results) {
@@ -109,6 +128,23 @@ export async function registerAutomationMaintenanceRoutes(app: FastifyInstance) 
     }
 
     const failed = results.filter((r) => r.status === 'error');
+    const dispatchId = await recordDispatch({
+      jobKey,
+      startedAt,
+      finishedAt,
+      status: failed.length > 0 ? 'error' : 'success',
+      orgsRun: results.length,
+      orgsFailed: failed.length,
+      error: failed.length > 0 ? failed.map((f) => f.error).filter(Boolean).slice(0, 3).join(' | ') : undefined,
+    });
+    if (failed.length > 0 && dispatchId && (await claimDispatchAlert(dispatchId, jobKey).catch(() => false))) {
+      await alertPlatformAdminsOfAutomationFailure({
+        jobKey,
+        error: failed.map((f) => f.error).filter(Boolean).slice(0, 3).join(' | '),
+        orgsFailed: failed.length,
+        orgsRun: results.length,
+      }).catch((e: unknown) => req.log.error({ err: e instanceof Error ? e.message : String(e) }, 'automation failure alert could not be sent'));
+    }
     reply.send({
       jobKey,
       orgsRun: results.length,

@@ -6,6 +6,7 @@ import { pool, withOrgContext } from '../db.js';
 import { DEFAULT_AI_MODEL } from '@nexus/shared';
 import type { AiSettings, AiSettingsInput, AiTestResult, AiTestTarget } from '@nexus/shared';
 import { AIProviderNotConfiguredError, OpenAICompatibleProvider, StubAIProvider, type AIProvider } from '../integrations/aiProvider.js';
+import { decryptSecret, encryptSecret } from './secretBox.js';
 
 interface AiSettingsRow {
   org_id: string;
@@ -23,7 +24,11 @@ async function fetchRow(orgId: string): Promise<AiSettingsRow | null> {
       `select * from ai_settings where org_id = $1`,
       [orgId]
     );
-    return rows[0] ?? null;
+    const row = rows[0];
+    if (!row) return null;
+    // Session 60 (C-09): stored encrypted; everything above this file
+    // only ever sees the decrypted key, exactly as before.
+    return { ...row, api_key: row.api_key ? decryptSecret(row.api_key) : null };
   });
 }
 
@@ -84,7 +89,7 @@ export async function upsertAiSettings(
       [
         orgId,
         input.baseUrl?.trim() || null,
-        apiKey,
+        apiKey ? encryptSecret(apiKey) : null,
         input.chatModel || DEFAULT_AI_MODEL,
         input.reportModel?.trim() || null,
         meetingIngestSecret,

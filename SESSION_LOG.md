@@ -4838,3 +4838,24 @@ Everything in the register that didn't need an owner decision. Base `a60d780` (e
 - **C-19**: `docs/RELEASE.md`, the release checklist and rollback.
 - **C-15**: `DEV_LOGIN`, `MEMBER_COMPANIES` and `PERSONAL_KEY_GRANTS` blanked in Railway.
 - **Production**: 0043 confirmed (the 16:00, 18:00 and 18:05 runs succeeded). 0044–0047 applied. Pushes still don't redeploy the API reliably, so redeploy by reconnecting the source.
+
+## Session 61 — an app shell that feels alive (15 November 2026)
+
+Asked: sidebar and in-app polish for phone and desktop, less flat, better dropdowns and animation, benchmarked on the best dashboards (Linear, Vercel, Stripe, Notion). Brand type (Syne, Space Mono labels) and colours were kept deliberately (the Session 11 "ops console" brief); the work is structure and motion.
+
+- `components/navigation/navModel.ts`: one model of reachable pages and the active item, shared by the sidebar, the palette and the tab bar.
+- `Sidebar.tsx` rewritten:
+  - folding groups (CSS grid-rows animation, remembered in `nx-nav-closed`), and a shut group keeps its red count;
+  - a sliding active highlight (measured, ResizeObserver);
+  - an icon rail (`nx-rail`, `[` key) with fixed tooltips;
+  - the account menu at the foot (theme, Settings, palette, Log out);
+  - swipe-to-close on phones.
+- `CommandPalette.tsx` + `paletteScore.ts`: ⌘K / Ctrl K / `/` opens it; pages, new task or goal, switch company, theme; keyboard driven.
+- `MobileTabBar.tsx`: Home, Tasks, Mine, Follow-ups (with its count), More (opens the sidebar as a sheet above the bar).
+- `Topbar.tsx`: account cluster and hamburger removed (now in the sidebar and tab bar); search button on phones.
+- `shell.css` (loaded after `navigation.css`):
+  - motion primitives (`.nx-pop`) applied to the company, notification, columns, dropdown and account menus;
+  - press feedback;
+  - everything off under `prefers-reduced-motion`.
+- Task filters fold behind a "Filters · n" button on phones.
+- Tests: `navModel.test.ts` (8).

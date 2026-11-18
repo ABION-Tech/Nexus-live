@@ -50,7 +50,7 @@ const VALID_ASSIGNEE_ROLES: TaskAssigneeRole[] = ['assignee', 'support'];
 // separate notes column in 0001_init.sql.
 /** Session 60 (C-11): recurrence and follow-up hours, checked on create
  * and update. Returns an error message, or null when fine. null clears. */
-function invalidRepeatFields(body: { recurrence?: unknown; followUpHours?: unknown }): string | null {
+function invalidRepeatFields(body: { recurrence?: unknown; followUpHours?: unknown; estimateMinutes?: unknown }): string | null {
   if (body.recurrence !== undefined && body.recurrence !== null && !(TASK_RECURRENCES as readonly unknown[]).includes(body.recurrence)) {
     return `recurrence must be one of ${TASK_RECURRENCES.join(', ')}, or null.`;
   }
@@ -58,17 +58,23 @@ function invalidRepeatFields(body: { recurrence?: unknown; followUpHours?: unkno
     const n = body.followUpHours;
     if (typeof n !== 'number' || !Number.isInteger(n) || n < 1 || n > 720) return 'followUpHours must be a whole number from 1 to 720, or null.';
   }
+  // Session 62 (0048): time needed, in minutes.
+  if (body.estimateMinutes !== undefined && body.estimateMinutes !== null) {
+    const n = body.estimateMinutes;
+    if (typeof n !== 'number' || !Number.isInteger(n) || n < 1 || n > 10080) return 'estimateMinutes must be a whole number from 1 to 10080, or null.';
+  }
   return null;
 }
 
-const OWN_UPDATE_FIELDS = new Set<keyof UpdateTaskInput>(['status', 'description']);
+// Session 62: the person doing the task knows best how long it takes.
+const OWN_UPDATE_FIELDS = new Set<keyof UpdateTaskInput>(['status', 'description', 'estimateMinutes']);
 
 /** Session 60: what a person may set through PATCH. Anything else in the
  * body (id, createdAt, ref, … from a whole Task) is ignored, and the
  * dependency sweep's internal preBlockStatus can't be set from outside. */
 const CLIENT_UPDATE_FIELDS = new Set<keyof UpdateTaskInput>([
   'title', 'description', 'status', 'priority', 'startDate', 'assignedToUserId', 'supportUserId', 'supervisorUserId',
-  'dependsOnTaskId', 'goalId', 'projectId', 'business', 'department', 'deadline', 'recurrence', 'followUpHours',
+  'dependsOnTaskId', 'goalId', 'projectId', 'business', 'department', 'deadline', 'recurrence', 'followUpHours', 'estimateMinutes',
 ]);
 
 export async function registerTaskRoutes(app: FastifyInstance) {

@@ -28,6 +28,7 @@ const FIELD: Record<string, string> = {
   archived_at: 'archivedAt',
   recurrence: 'recurrence', // Session 60 (0047)
   follow_up_hours: 'followUpHours',
+  estimate_minutes: 'estimateMinutes',
   'people:assignee': 'people:assignee',
   'people:support': 'people:support',
 };

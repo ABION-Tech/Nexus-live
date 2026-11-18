@@ -46,6 +46,20 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     window.location.assign(path);
   }, []);
 
+  // Session 62: a link with ?org=<company> (the morning email's task
+  // links) moves you into that company first, then lands on the same page.
+  useEffect(() => {
+    if (!loaded) return;
+    const url = new URL(window.location.href);
+    const org = url.searchParams.get('org');
+    if (!org) return;
+    url.searchParams.delete('org');
+    const rest = url.pathname + url.search + url.hash;
+    const target = workspaces.find((w) => w.orgId === org);
+    if (target && !target.isCurrent) void switchTo(org, rest);
+    else window.history.replaceState(window.history.state, '', rest);
+  }, [loaded, workspaces, switchTo]);
+
   return (
     <Ctx.Provider value={{ workspaces, invitations, current: workspaces.find((w) => w.isCurrent), loaded, reload, switchTo }}>
       {children}

@@ -295,6 +295,8 @@ export interface Task {
   recurrenceSourceId?: string;
   /** Session 60: nudge the assignee after this many hours without an update. */
   followUpHours?: number;
+  /** Session 62 (0048): how long it should take, in minutes. */
+  estimateMinutes?: number;
   createdAt: string;
   updatedAt: string;
   // PRD §6.4.1 — DELETE archives, never hard-deletes. Null/undefined means

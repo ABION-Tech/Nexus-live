@@ -50,8 +50,9 @@ import {
   sendCobReminderEmail,
   sendEodNudgeEmail,
   sendFollowUpEscalationEmail,
-  sendMorningDigestEmail,
 } from './emailService.js';
+import { buildMyDay } from './myDayService.js';
+import { sendMyDayEmail } from './myDayEmail.js';
 import type { AutomationControlKey } from '@nexus/shared';
 
 // This session (post-46) wires EmailService (PRD §10.3) into the four
@@ -470,77 +471,87 @@ export async function runFollowUpEscalation(): Promise<JobRunResult[]> {
   });
 }
 
-// ---- daily_morning_digest (08:00) ---------------------------------------
-// "Mon=full, Tue-Fri=light" (PRD §12). Light: open + overdue task
-// counts. Full (Monday): adds active goal count — the closest available
-// proxy for the MVP's "full" digest without inventing content this
-// session has no source for. One digest per user who has at least one
-// open task; a user with zero open tasks has nothing to digest.
+// ---- daily_morning_digest (08:05) ---------------------------------------
+// Session 62: the digest used to be counts ("12 open tasks · 3 overdue").
+// Now each person gets their day (myDayService.ts): what's overdue and by
+// how long, what's due and by when, their calendar, free time against the
+// work due, the week ahead, and, for leaders, who on the team is stuck.
+//
+// Two passes:
+//   1. For each company with the digest on: who it's for (anyone with
+//      open work there, and its leaders), and an in-app notification that
+//      names the tasks, not just how many there are.
+//   2. One email per person, covering every company in pass 1 they're in,
+//      so someone in five companies gets one email, not five. A person
+//      with nothing due, nothing late, nothing on the calendar and nothing
+//      to watch on the team gets no email.
+// Mondays say "Your week" (PRD §12's Monday "full" digest).
 export async function runMorningDigest(): Promise<JobRunResult[]> {
-  return dispatchToEnabledOrgs('daily_morning_digest', async (orgId) => {
-    return withOrgContext(orgId, async (client) => {
-      const isMonday = new Date().getUTCDay() === 1;
+  const isMonday = new Date(new Date().toLocaleString('en-US', { timeZone: 'Africa/Lagos' })).getDay() === 1;
+  const people = new Map<string, { email: string; orgIds: string[] }>();
 
-      const { rows } = await client.query<{ assigned_to_user_id: string; open_tasks: string; overdue: string }>(
-        `select assigned_to_user_id,
-                count(*) filter (where status != 'done')::text as open_tasks,
-                count(*) filter (where status != 'done' and deadline is not null and deadline < now())::text as overdue
-           from tasks
-          where org_id = $1 and archived_at is null and assigned_to_user_id is not null
-          group by assigned_to_user_id
-         having count(*) filter (where status != 'done') > 0`,
+  const results = await dispatchToEnabledOrgs('daily_morning_digest', async (orgId) => {
+    return withOrgContext(orgId, async (client) => {
+      const { rows } = await client.query<{ id: string; name: string; email: string; due_today: string[] | null; overdue: string[] | null }>(
+        `with mine as (
+           select u.id as user_id, t.title, (t.deadline at time zone 'Africa/Lagos')::date as due
+             from tasks t
+             join users u on u.id in (t.assigned_to_user_id, t.support_user_id, t.supervisor_user_id)
+            where t.org_id = $1 and t.archived_at is null and t.status <> 'done'
+         ), who as (
+           select user_id from mine
+           union
+           select m.user_id from org_memberships m where m.org_id = $1 and m.role = 'leader'
+         )
+         select u.id, u.name, u.email,
+                array_remove(array_agg(mi.title order by mi.title) filter (where mi.due = (now() at time zone 'Africa/Lagos')::date), null) as due_today,
+                array_remove(array_agg(mi.title order by mi.due) filter (where mi.due < (now() at time zone 'Africa/Lagos')::date), null) as overdue
+           from who w
+           join users u on u.id = w.user_id
+           left join mine mi on mi.user_id = u.id
+          group by u.id, u.name, u.email`,
         [orgId]
       );
 
-      let goalCount: number | null = null;
-      if (isMonday) {
-        const { rows: goalRows } = await client.query<{ count: string }>(
-          `select count(*)::text as count from goals where org_id = $1 and status = 'active'`,
-          [orgId]
-        );
-        goalCount = Number(goalRows[0]?.count ?? 0);
-      }
+      for (const r of rows) {
+        const entry = people.get(r.id) ?? { email: r.email, orgIds: [] };
+        entry.orgIds.push(orgId);
+        people.set(r.id, entry);
 
-      const { rows: contactRows } = await client.query<{ id: string; name: string; email: string }>(
-        `select id, name, email from users where id = any($1)`,
-        [rows.map((r) => r.assigned_to_user_id)]
-      );
-      const contactById = new Map(contactRows.map((c) => [c.id, c]));
-
-      for (const row of rows) {
-        const openTasks = Number(row.open_tasks);
-        const overdue = Number(row.overdue);
-        const bodyParts = [`${openTasks} open task${openTasks === 1 ? '' : 's'}`, `${overdue} overdue`];
-        if (isMonday && goalCount !== null) bodyParts.push(`${goalCount} active org goal${goalCount === 1 ? '' : 's'}`);
-
+        const due = r.due_today ?? [];
+        const late = r.overdue ?? [];
+        if (!due.length && !late.length) continue;
+        const name = (xs: string[]) => (xs.length > 2 ? `${xs.slice(0, 2).join(', ')} and ${xs.length - 2} more` : xs.join(' and '));
+        const parts: string[] = [];
+        if (due.length) parts.push(`Due today: ${name(due)}.`);
+        if (late.length) parts.push(`Overdue: ${name(late)}.`);
         await notifyInApp(client, {
           orgId,
-          userId: row.assigned_to_user_id,
+          userId: r.id,
           type: 'digest',
           title: isMonday ? 'Your week ahead' : 'Your day ahead',
-          body: bodyParts.join(' · '),
+          body: parts.join(' '),
         });
-
-        const contact = contactById.get(row.assigned_to_user_id);
-        if (contact) {
-          sendMorningDigestEmail(
-            orgId,
-            { email: contact.email, name: contact.name },
-            { openTasks, overdue, activeGoals: isMonday ? goalCount ?? undefined : undefined },
-            isMonday ? 'full' : 'light'
-          ).catch((err) => {
-            console.error('[automationJobs] daily_morning_digest email send failed', {
-              orgId,
-              userId: row.assigned_to_user_id,
-              err,
-            });
-          });
-        }
       }
-
-      return { digestsSent: rows.length, variant: isMonday ? 'full' : 'light' };
+      return { people: rows.length };
     });
   });
+
+  const base = (process.env.WEB_ORIGIN ?? '').replace(/\/$/, '') || 'https://app.nexusabion.com';
+  let emailed = 0;
+  for (const [userId, p] of people) {
+    try {
+      const day = await buildMyDay(userId, { orgIds: p.orgIds });
+      const anything = day.overdue.length || day.dueToday.length || day.events.length || day.team.length || day.upcoming.length || day.onTheGo.length;
+      if (!anything || !p.email) continue;
+      await sendMyDayEmail(p.email, day, base, { monday: isMonday });
+      emailed++;
+    } catch (err) {
+      console.error('[automationJobs] daily_morning_digest email failed', { userId, err });
+    }
+  }
+  for (const r of results) if (r.status === 'success') r.detail = { ...r.detail, emailsSent: emailed, variant: isMonday ? 'full' : 'light' };
+  return results;
 }
 
 // ---- daily_recurring_tasks (10:00) ---------------------------------------

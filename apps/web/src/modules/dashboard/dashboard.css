@@ -52,3 +52,107 @@
 .nx-late { color: var(--danger); font-weight: 600; }
 .nx-progress-cell { display: flex; flex-direction: column; gap: 4px; min-width: 70px; font-size: 12px; }
 @media (max-width: 900px) { .nx-kpi__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ------------------------------------------------------------------
+   Session 62 — My day: your day across every company, at the top of
+   the dashboard. Closable (hidden until tomorrow).
+   ------------------------------------------------------------------ */
+.nx-myday {
+  display: flex; flex-direction: column; gap: 18px; padding: 20px 22px 22px;
+  border: 1px solid var(--border2); border-radius: var(--radius-lg);
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 55%),
+    var(--surface);
+}
+.nx-myday__head { display: flex; align-items: flex-start; gap: 12px; }
+.nx-myday__head > div { flex: 1; min-width: 0; }
+.nx-myday__eyebrow { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--accent-bright); }
+[data-theme='light'] .nx-myday__eyebrow { color: var(--accent); }
+.nx-myday__headline { margin: 8px 0 0; font-family: var(--font-display); font-size: clamp(17px, 2.1vw, 21px); font-weight: 600; line-height: 1.35; color: var(--text); max-width: 68ch; text-wrap: pretty; }
+.nx-myday__close { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border2); background: transparent; color: var(--muted); cursor: pointer; }
+.nx-myday__close:hover { color: var(--text); background: var(--surface2); }
+.nx-myday-reopen { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; }
+
+.nx-myday__time { display: flex; flex-direction: column; gap: 10px; }
+.nx-myday__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.nx-myday__stat { display: flex; flex-direction: column; gap: 2px; padding: 11px 13px; border-radius: 10px; background: var(--surface2); }
+.nx-myday__stat span { font-size: 12px; color: var(--text-dim); }
+.nx-myday__stat b { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text); line-height: 1.15; }
+.nx-myday__stat small { font-size: 12px; color: var(--muted); }
+.nx-myday__stat--free b { color: var(--accent2); }
+.nx-myday__stat--short { background: var(--danger-bg); }
+.nx-myday__stat--short b { color: var(--danger); }
+
+.nx-myday__bar { position: relative; height: 10px; margin: 2px 0 16px; border-radius: 99px; background: var(--surface3); }
+.nx-myday__past { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: color-mix(in srgb, var(--text) 10%, transparent); }
+.nx-myday__block { position: absolute; top: 0; bottom: 0; border-radius: 99px; background: var(--accent); min-width: 4px; }
+.nx-myday__due { position: absolute; top: -4px; width: 2px; height: 18px; margin-left: -1px; border-radius: 2px; background: var(--accent3); }
+.nx-myday__now { position: absolute; top: -5px; width: 2px; height: 20px; margin-left: -1px; border-radius: 2px; background: var(--danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 22%, transparent); animation: nx-myday-pulse 2.4s ease-in-out infinite; }
+.nx-myday__tick { position: absolute; top: 14px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+.nx-myday__tick:first-of-type { transform: none; }
+.nx-myday__tick:last-of-type { transform: translateX(-100%); }
+@keyframes nx-myday-pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--danger) 6%, transparent); } }
+
+.nx-myday__cols { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 22px; }
+.nx-myday__col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.nx-myday__group { display: flex; flex-direction: column; gap: 8px; }
+.nx-myday__h { display: flex; align-items: center; gap: 6px; margin: 0; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-dim); }
+.nx-myday__h em { font-style: normal; font-weight: 700; padding: 0 6px; border-radius: 99px; background: var(--surface2); color: var(--text); }
+.nx-myday__h--red { color: var(--danger); }
+.nx-myday__h--red em { background: var(--danger-bg); color: var(--danger); }
+.nx-myday__h--accent { color: var(--accent-bright); }
+[data-theme='light'] .nx-myday__h--accent { color: var(--accent); }
+
+.nx-myday__tasks, .nx-myday__events, .nx-myday__week, .nx-myday__team { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.nx-myday__task {
+  width: 100%; display: flex; flex-direction: column; gap: 3px; padding: 10px 12px 10px 13px; text-align: left; cursor: pointer;
+  border: 1px solid var(--border); border-left: 3px solid var(--border2); border-radius: 9px; background: var(--bg); color: var(--text);
+  transition: border-color .15s, transform .15s var(--ease-out), background .15s;
+}
+.nx-myday__task:hover { transform: translateX(2px); border-color: var(--border2); background: var(--surface2); }
+.nx-myday__task--red { border-left-color: var(--danger); }
+.nx-myday__task--accent { border-left-color: var(--accent); }
+.nx-myday__title { font-size: 14px; font-weight: 600; line-height: 1.35; }
+.nx-myday__pri { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 5px; font-size: 10.5px; font-weight: 700; vertical-align: 1px; }
+.nx-myday__pri--urgent { color: var(--danger); background: var(--danger-bg); }
+.nx-myday__pri--high { color: var(--accent3); background: color-mix(in srgb, var(--accent3) 14%, transparent); }
+.nx-myday__meta { font-size: 12.5px; color: var(--text-dim); }
+.nx-myday__next { font-size: 12.5px; color: var(--text); }
+.nx-myday__next b { color: var(--accent-bright); font-weight: 700; }
+[data-theme='light'] .nx-myday__next b { color: var(--accent); }
+.nx-myday__more { display: inline-flex; align-items: center; gap: 4px; padding: 4px 2px; border: 0; background: none; color: var(--accent-bright); font-size: 13px; cursor: pointer; }
+[data-theme='light'] .nx-myday__more { color: var(--accent); }
+.nx-myday__empty { margin: 0; font-size: 13px; color: var(--muted); }
+
+.nx-myday__events li { display: grid; grid-template-columns: 112px 1fr; column-gap: 10px; padding: 8px 10px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); }
+.nx-myday__events li.is-past { opacity: .5; }
+.nx-myday__events li.is-live { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--bg)); }
+.nx-myday__when { grid-row: span 2; font-family: var(--font-mono); font-size: 11.5px; color: var(--accent-bright); padding-top: 2px; }
+[data-theme='light'] .nx-myday__when { color: var(--accent); }
+.nx-myday__what { font-size: 13.5px; font-weight: 600; }
+.nx-myday__what i { margin-left: 6px; font-style: normal; font-size: 10.5px; font-weight: 700; padding: 0 6px; border-radius: 99px; background: var(--accent); color: #fff; }
+.nx-myday__where { font-size: 12px; color: var(--muted); }
+
+.nx-myday__week li { display: flex; flex-direction: column; gap: 2px; }
+.nx-myday__day { font-size: 12px; font-weight: 700; color: var(--text-dim); margin-top: 2px; }
+.nx-myday__week button, .nx-myday__team button { border: 0; background: none; padding: 3px 0; text-align: left; color: var(--text); font-size: 13.5px; cursor: pointer; line-height: 1.4; }
+.nx-myday__week button:hover, .nx-myday__team button:hover { color: var(--accent-bright); }
+.nx-myday__week small, .nx-myday__team small { color: var(--muted); font-size: 12px; }
+.nx-myday__team em { font-style: normal; font-size: 11px; font-weight: 700; margin-right: 4px; }
+.nx-myday__team em.is-red { color: var(--danger); }
+.nx-myday__team em.is-amber { color: var(--accent3); }
+.nx-myday__co { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-top: 4px; }
+.nx-myday__eod { font-size: 13px; color: var(--text-dim); }
+.nx-myday__eod em { color: var(--muted); }
+
+@media (max-width: 1000px) { .nx-myday__cols { grid-template-columns: 1fr; } }
+@media (max-width: 700px) {
+  .nx-myday { padding: 16px 14px 18px; gap: 14px; }
+  .nx-myday__stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .nx-myday__stat { padding: 9px 10px; }
+  .nx-myday__stat b { font-size: 18px; }
+  .nx-myday__stat small { display: none; }
+  .nx-myday__events li { grid-template-columns: 1fr; }
+  .nx-myday__when { grid-row: auto; }
+}
+@media (prefers-reduced-motion: reduce) { .nx-myday__now { animation: none; } .nx-myday__task:hover { transform: none; } }

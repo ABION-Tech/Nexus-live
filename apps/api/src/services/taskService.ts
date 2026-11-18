@@ -46,6 +46,7 @@ export interface TaskRow {
   recurrence: TaskRecurrence | null; // Session 60 (0047)
   recurrence_source_id: string | null;
   follow_up_hours: number | null;
+  estimate_minutes: number | null; // Session 62 (0048)
   pre_block_status: string | null; // 0024 — see migration's own comment; internal to the dependency sweep, not exposed on the public Task type
 }
 
@@ -75,6 +76,7 @@ export function toTask(row: TaskRow): Task {
     recurrence: row.recurrence ?? undefined, // Session 60 (0047)
     recurrenceSourceId: row.recurrence_source_id ?? undefined,
     followUpHours: row.follow_up_hours ?? undefined,
+    estimateMinutes: row.estimate_minutes ?? undefined,
     // Session 58: the short id people use (T-031) and checklist progress,
     // as the original HTML app showed on every task row.
     ref: row.legacy_sheet_id ?? undefined,
@@ -198,6 +200,7 @@ export interface CreateTaskInput {
   projectId?: string; // Session 38
   recurrence?: TaskRecurrence | null; // Session 60 (0047)
   followUpHours?: number | null;
+  estimateMinutes?: number | null; // Session 62 (0048)
 }
 
 /**
@@ -214,8 +217,8 @@ export async function insertTaskRow(client: PoolClient, orgId: string, input: Cr
     `insert into tasks (
        org_id, title, description, status, priority, start_date, assigned_to_user_id, support_user_id,
        supervisor_user_id, depends_on_task_id, goal_id, source_pending_task_id,
-       business, department, deadline, marketing_content_id, project_id, recurrence, follow_up_hours
-     ) values ($1, $2, $3, coalesce($4, 'not_started'), coalesce($5, 'medium'), $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+       business, department, deadline, marketing_content_id, project_id, recurrence, follow_up_hours, estimate_minutes
+     ) values ($1, $2, $3, coalesce($4, 'not_started'), coalesce($5, 'medium'), $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
      returning *`,
     [
       orgId,
@@ -237,6 +240,7 @@ export async function insertTaskRow(client: PoolClient, orgId: string, input: Cr
       input.projectId ?? null, // Session 38
       input.recurrence ?? null, // Session 60 (0047)
       input.followUpHours ?? null,
+      input.estimateMinutes ?? null, // Session 62 (0048)
     ]
   );
   return toTask(rows[0]!);
@@ -272,6 +276,7 @@ export interface UpdateTaskInput {
   deadline?: string | null;
   recurrence?: TaskRecurrence | null; // Session 60 (0047)
   followUpHours?: number | null;
+  estimateMinutes?: number | null; // Session 62 (0048)
   /** 0024 — internal-only field the dependency sweep (automationJobs.ts)
    * uses to record/clear what a task's status was immediately before an
    * auto-block, so an auto-unblock can restore it rather than guessing
@@ -297,6 +302,7 @@ const UPDATABLE_COLUMNS: Record<keyof UpdateTaskInput, string> = {
   deadline: 'deadline',
   recurrence: 'recurrence', // Session 60 (0047)
   followUpHours: 'follow_up_hours',
+  estimateMinutes: 'estimate_minutes',
   preBlockStatus: 'pre_block_status',
 };
 

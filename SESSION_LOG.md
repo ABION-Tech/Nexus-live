@@ -4859,3 +4859,30 @@ Asked: sidebar and in-app polish for phone and desktop, less flat, better dropdo
   - everything off under `prefers-reduced-motion`.
 - Task filters fold behind a "Filters · n" button on phones.
 - Tests: `navModel.test.ts` (8).
+
+## Session 62 — "My day": the morning email and the dashboard say what to do (18 November 2026)
+
+Asked: the morning summary email only gave numbers ("12 open tasks · 3 overdue"), which tells nobody what to do. It should break down the tasks, the time there is to do them, and what's planned for the day. The dashboard gets the same, closable.
+
+- `services/myDayService.ts`: one person's day across every company they're in, each read in its own `withOrgContext`. It covers:
+  - due today, timed deadlines first ("by 3 pm, in 6h 8m"), then overdue ("105 days late"), then on the go, then the next 7 days;
+  - the first unticked checklist item as the "next step";
+  - meetings and connected Google Calendar events;
+  - free time left in a 09:00–18:00 Lagos day after meetings, against the time today's work needs;
+  - a one-sentence headline;
+  - for leaders: blocked and late work by others, and who missed the last working day's EOD.
+  - Pure `assembleMyDay` is split from loading so it can be tested.
+- `services/myDayEmail.ts`: the email, as HTML and text. The subject names the first task. Every task links to `/work/my-tasks?task=…&org=…`.
+- `runMorningDigest` rewritten:
+  - in-app notifications name the tasks;
+  - **one email per person** covering all their companies with the digest on (was one per company);
+  - no email when there's nothing.
+- `0048_task_estimate.sql`: `tasks.estimate_minutes` ("Time needed"). Assignees may set it (added to the own-update fields). It shows in the form, a ⏳ chip and the drawer.
+- `GET /overview/my-day`. Dashboard `MyDay.tsx`:
+  - headline, three time figures and a 9–6 bar (meetings, timed deadlines, a live "now" line);
+  - task lists that open in the right company;
+  - calendar, coming up, team;
+  - × hides it until tomorrow; "My day" brings it back.
+- Deep links: `?task=` opens the drawer (TaskSection); `?org=` switches company first (WorkspaceContext).
+- Date-only deadlines (midnight UTC from the form, or midnight Lagos from imports) count as that date.
+- Tests: `myDay.test.ts` (14). API 402, web 40.

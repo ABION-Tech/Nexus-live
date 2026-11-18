@@ -27,6 +27,7 @@ export interface TaskCreateInput {
   startDate?: string;
   recurrence?: TaskRecurrence; // Session 60 (C-11)
   followUpHours?: number;
+  estimateMinutes?: number; // Session 62
 }
 
 export interface TaskUpdateInput {
@@ -45,6 +46,7 @@ export interface TaskUpdateInput {
   startDate?: string | null;
   recurrence?: TaskRecurrence | null; // Session 60 (C-11)
   followUpHours?: number | null;
+  estimateMinutes?: number | null; // Session 62
 }
 
 export interface TaskListParams {

@@ -51,11 +51,20 @@ function buildSchema(peopleOptions: { value: string; label: string }[], taskOpti
     { key: 'department', label: 'Department', type: 'text', leaderOnly: true },
     { key: 'startDate', label: 'Start date', type: 'date', leaderOnly: true },
     { key: 'deadline', label: 'Deadline', type: 'date', leaderOnly: true },
+    // Session 62: anyone on the task can say how long it should take; the
+    // morning email and My day add these up against the free time left.
+    { key: 'estimateMinutes', label: 'Time needed (minutes)', type: 'number' },
     { key: 'dependsOnTaskId', label: 'Depends on', type: 'select', options: taskOptions, leaderOnly: true },
     // Session 60 (C-11, 0047).
     { key: 'recurrence', label: 'Repeats', type: 'select', options: REPEAT_OPTIONS, leaderOnly: true },
     { key: 'followUpHours', label: 'Nudge if no update for (hours)', type: 'number', leaderOnly: true },
   ];
+}
+
+function fmtMinutes(m: number): string {
+  const h = Math.floor(m / 60);
+  const r = m % 60;
+  return h ? (r ? `${h}h ${r}m` : `${h}h`) : `${r}m`;
 }
 
 const REPEAT_OPTIONS = [
@@ -135,6 +144,19 @@ export function TaskSection({ title, emptyTitle, newLabel, user, fetchList, head
   }
 
   useEffect(load, []);
+
+  // Session 62: /work/my-tasks?task=<id> (from My day and the morning
+  // email) opens that task's drawer once the list has loaded.
+  useEffect(() => {
+    if (state.status !== 'ready') return;
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get('task');
+    if (!id) return;
+    const row = state.rows.find((t) => t.id === id);
+    if (row) setDrawerTask(row);
+    url.searchParams.delete('task');
+    window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+  }, [state]);
   useQuickAdd(() => setFormModal({ mode: 'create' }));
 
   const peopleById = useMemo(() => new Map(people.map((p) => [p.id, p.name])), [people]);
@@ -196,6 +218,7 @@ export function TaskSection({ title, emptyTitle, newLabel, user, fetchList, head
               {r.status !== 'done' && <span className={'nx-tchip' + (daysSince(r.createdAt) > 30 ? ' nx-tchip--red' : '')} title="Days since created">{daysSince(r.createdAt)}d</span>}
               {!!r.checklistTotal && <span className="nx-tchip" title="Checklist">✓ {r.checklistDone ?? 0}/{r.checklistTotal}</span>}
               {r.recurrence && <span className="nx-tchip" title={`Repeats ${r.recurrence}: a fresh copy each day it's due`}>↻ {r.recurrence}</span>}
+              {r.estimateMinutes && r.status !== 'done' && <span className="nx-tchip" title="Time needed">⏳ {fmtMinutes(r.estimateMinutes)}</span>}
               {r.followUpHours && <span className="nx-tchip" title={`Nudges the assignee after ${r.followUpHours}h without an update`}>⏱ {r.followUpHours}h</span>}
               {r.dependsOnTaskId && (
                 <span className={'nx-tchip' + (dep && dep.status !== 'done' ? ' nx-tchip--red' : '')} title={dep ? `Depends on: ${dep.title}` : 'Depends on another task'}>

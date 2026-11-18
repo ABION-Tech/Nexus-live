@@ -3,6 +3,7 @@
 import type { FastifyInstance } from 'fastify';
 import { hasPermission } from '../plugins/rbac.js';
 import { getOverview } from '../services/overviewService.js';
+import { buildMyDay } from '../services/myDayService.js';
 
 export async function registerOverviewRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.requireAuth);
@@ -16,5 +17,11 @@ export async function registerOverviewRoutes(app: FastifyInstance) {
       includeEod: user.role === 'leader',
       recent: q.recent ? Number(q.recent) || 10 : 10,
     });
+  });
+
+  // Session 62 — your day across every company you're in: the same data
+  // as the morning email (myDayService.ts), for the dashboard's My day.
+  app.get('/my-day', async (req) => {
+    return buildMyDay(req.sessionUser!.userId);
   });
 }

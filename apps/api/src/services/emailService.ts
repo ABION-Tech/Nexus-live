@@ -275,7 +275,8 @@ export interface MorningDigestStats {
   activeGoals?: number;
 }
 
-/** "Morning digest" — start-of-day summary. runMorningDigest's real
+/** Session 62: no longer used by the digest job (see myDayEmail.ts); kept for its tests.
+ * "Morning digest" — start-of-day summary. runMorningDigest's real
  * payload is open/overdue/active-goal *counts* per user, not an
  * itemized "Due today" / "Overdue" / "Goals at risk" section list — this
  * mirrors that exactly rather than the enumerable-items shape an

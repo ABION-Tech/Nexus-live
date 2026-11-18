@@ -4,6 +4,7 @@ import type { CurrentUser } from '../../services/authService';
 import type { Task } from '@nexus/shared';
 import { ChatThread } from '../ai-analyst/ChatThread';
 import { TaskHistory } from './TaskHistory';
+import { fmtMinutes } from '../../services/myDayService';
 import {
   fetchTaskAssignees,
   addTaskAssignee,
@@ -172,6 +173,8 @@ export function TaskDrawer({ task, onClose, onEdit, onArchive, canEdit, canArchi
               <span>{task.department ?? '—'}</span>
               <span style={{ color: 'var(--text-dim)' }}>Deadline</span>
               <span>{task.deadline ? new Date(task.deadline).toLocaleDateString() : '—'}</span>
+              <span style={{ color: 'var(--text-dim)' }}>Time needed</span>
+              <span>{task.estimateMinutes ? fmtMinutes(task.estimateMinutes) : 'Not set'}</span>
             </div>
             {task.description && (
               <p style={{ fontSize: 13, color: 'var(--text-dim)', whiteSpace: 'pre-wrap' }}>{task.description}</p>

@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AlertTriangle, Clock, ListChecks, Handshake, CalendarX, ShieldAlert } from 'lucide-react';
 import type { TaskPriority, TaskStatus } from '@nexus/shared';
 import { Card, ErrorState, LoadingState, PriorityBadge, ProgressBar, StatusBadge, Table, type TableColumn } from '../../components/ui';
+import { MyDay } from './MyDay';
 import { fetchOverview, shortRef, type Overview as Data, type RecentTask } from '../../services/overviewService';
 
 function fmtDeadline(iso: string | null): string {
@@ -69,6 +70,7 @@ export function Overview() {
 
   return (
     <div className="nx-dashboard-overview nx-view-enter nx-kpi">
+      <MyDay />
       {c.blocked > 0 && (
         <div className="nx-alertbar nx-alertbar--danger" role="alert">
           <AlertTriangle size={18} aria-hidden="true" />
